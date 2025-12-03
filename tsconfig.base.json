@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "strict": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "outDir": "dist", // 指定编译输出的目录
+    "lib": ["ESNext", "DOM"], // 指定要使用的库文件
+    "baseUrl": ".",
+    "paths": {
+      "@my-lego/*": ["packages/*/src"]
+    }
+  }
+}
