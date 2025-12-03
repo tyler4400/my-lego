@@ -1,0 +1,30 @@
+{
+  // 先继承 monorepo 根的公共 TS 配置（严格规则 + @my-lego/* 路径别名）
+  // 再叠加 Vue 官方为浏览器应用准备的 preset（DOM lib、bundler 解析等）
+  "extends": [
+    "../../tsconfig.base.json",
+    "@vue/tsconfig/tsconfig.dom.json"
+  ],
+
+  // 应用代码和 env 声明文件
+  "include": [
+    "env.d.ts",
+    "src/**/*",
+    "src/**/*.vue"
+  ],
+
+  // 排除测试目录（沿用脚手架默认）
+  "exclude": [
+    "src/**/__tests__/*"
+  ],
+
+  "compilerOptions": {
+    // TS 增量构建信息，脚手架默认即可
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+
+    // 在根 base 的 @my-lego/* 之外，再补上前端项目自己的 @ → src 别名
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
