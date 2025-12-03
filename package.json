@@ -1,0 +1,15 @@
+{
+  "name": "my-lego",
+  "version": "1.0.0",
+  "description": "慕课网课程：真实高质量低代码商业项目，前端/后端/运维/管理系统",
+  "main": "index.js",
+  "scripts": {
+    "build": "pnpm -r run build",
+    "lint": "pnpm -r run lint",
+    "format": "pnpm -r run format",
+    "dev:craft": "pnpm --filter @my-lego/craft dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
