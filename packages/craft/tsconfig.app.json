@@ -1,10 +1,8 @@
 {
   // 先继承 monorepo 根的公共 TS 配置（严格规则 + @my-lego/* 路径别名）
   // 再叠加 Vue 官方为浏览器应用准备的 preset（DOM lib、bundler 解析等）
-  "extends": [
-    "../../tsconfig.base.json",
-    "@vue/tsconfig/tsconfig.dom.json"
-  ],
+  // extends为数组形式，会导致引入shared包报错。所以这里不搞继承的形式了
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
 
   // 应用代码和 env 声明文件
   "include": [
@@ -24,6 +22,7 @@
 
     // 在根 base 的 @my-lego/* 之外，再补上前端项目自己的 @ → src 别名
     "paths": {
+      "@my-lego/shared": ["../shared/src"],
       "@/*": ["./src/*"]
     }
   }

@@ -22,7 +22,7 @@
     - 集成 Prettier 为 ESLint 规则（`prettier/prettier: error`）。
   - 子项目有极薄的 `eslint.config.mjs`，在 base 基础上按需叠加：
     - `@my-lego/shared`：纯 TS 库规则。
-    - `@my-lego/craft`：Vue3 + TypeScript + Prettier + `vue3-recommended`。
+    - `@my-lego/craft`：Vue3 + TypeScript + `eslint-plugin-vue` 的 `flat/recommended`（模板格式以 Vue 规则为主）；JS/TS 继续通过 Prettier 管理格式。
 - **路径别名与源码直连：**
   - TypeScript 层面：`@my-lego/shared` → `packages/shared/src`，开发时 IDE 能直接跳转到源码。
   - Vite 层面：**开发与构建都通过 alias 直连 `packages/shared/src` 源码（方案 B）**。
@@ -55,8 +55,8 @@
     - `dist/`（由 `tsc` 输出）
   - `packages/craft`：
     - `package.json`（含 `"@my-lego/shared": "workspace:*"`）
-    - `tsconfig.json`（extends 根 base）
-    - `eslint.config.mjs`（在 base 上加 Vue3 + Prettier）
+    - `tsconfig.json`（维护对 node/app/vitest 子 tsconfig 的 project references）
+    - `eslint.config.mjs`（在 base 上叠加 Vue3 flat/recommended + 浏览器 globals 配置）
     - `vite.config.ts`（alias `@my-lego/shared` → `../shared/src`）
     - `src/`（Vue3 应用源码）
 
@@ -80,8 +80,8 @@
       - `eslint:recommended` + `typescript-eslint` 严格规则；
       - `prettier/prettier: error` → 所有格式问题都以 ESLint 错误形式提示；
     - 所有 `.vue` 文件：
-      - `eslint-plugin-vue` 的 `vue3-recommended` 规则；
-      - 同样走 `prettier/prettier: error`，模板与脚本都统一风格。
+      - 使用 `eslint-plugin-vue` 的 `flat/recommended` 规则（包含 Vue 3 推荐规则 + 模板格式约束）；
+      - 不再对 `.vue` 启用 `prettier/prettier`，模板部分完全以 Vue 规则为主，避免与 Prettier 冲突。
   - `pnpm format`：
     - 按 `.prettierrc` 配置格式化全仓代码。
 
@@ -96,7 +96,7 @@
 - **Lint：**
   - ESLint 9（flat config）。
   - `typescript-eslint`（非 type-aware 严格配置）。
-  - `eslint-plugin-vue`（`vue3-recommended`）。
+  - `eslint-plugin-vue`（`flat/recommended`，用于 `.vue` 文件）。
   - `eslint-plugin-prettier` + `eslint-config-prettier`。
 - **格式化：** Prettier（通过 ESLint 执行 & 独立脚本）。
 
@@ -211,10 +211,11 @@
       "forceConsistentCasingInFileNames": true,
       "resolveJsonModule": true,
       "isolatedModules": true,
+      "outDir": "dist",
+      "lib": ["ESNext", "DOM"],
       "baseUrl": ".",
       "paths": {
-        "@my-lego/shared": ["packages/shared/src"],
-        "@my-lego/shared/*": ["packages/shared/src/*"]
+        "@my-lego/*": ["packages/*/src"]
       }
     }
   }
@@ -224,8 +225,8 @@
   - **关键效果：**
     - **严格模式**：通过 `strict`、`forceConsistentCasingInFileNames` 等开关增强类型安全。
     - **路径别名**：
-      - 任意子项目写 `import { x } from '@my-lego/shared'` 时，**TypeScript 会直接从 `packages/shared/src` 解析源码**。
-      - 避免在多个项目间写大量 `../../shared/src/...` 这种相对路径。
+    - 任意子项目写 `import { x } from '@my-lego/xxx'`（例如 `@my-lego/shared`）时，**TypeScript 会直接从对应的 `packages/xxx/src` 解析源码**。
+    - 避免在多个项目间写大量 `../../some-other-package/src/...` 这种相对路径。
     - 这些别名 **只影响 TS/IDE 的解析**，不会改变最终打包的 import 字符串。
 
 - **3.2 创建根 `tsconfig.json`（Project References）**
@@ -469,41 +470,51 @@ cd ../../
     "name": "@my-lego/craft",
     "scripts": {
       "dev": "vite",
-      "build": "vite build",
+      "build": "run-p type-check \"build-only {@}\" --",
       "preview": "vite preview",
-      "lint": "eslint src",
-      "format": "prettier --write ."
+      "test:unit": "vitest",
+      "build-only": "vite build",
+      "type-check": "vue-tsc --build"
     },
     "dependencies": {
       "@my-lego/shared": "workspace:*"
     },
     "devDependencies": {
-      "eslint-plugin-vue": "^9.0.0",
-      "vue-eslint-parser": "^9.0.0"
+      "@tsconfig/node24": "^24.0.3",
+      "@types/jsdom": "^27.0.0",
+      "@types/node": "^24.10.1",
+      "@vitejs/plugin-vue": "^6.0.2",
+      "@vue/test-utils": "^2.4.6",
+      "@vue/tsconfig": "^0.8.1",
+      "eslint-plugin-vue": "^10.6.2",
+      "globals": "^16.5.0",
+      "jsdom": "^27.2.0",
+      "npm-run-all2": "^8.0.4",
+      "typescript": "~5.9.0",
+      "vite": "^7.2.4",
+      "vite-plugin-vue-devtools": "^8.0.5",
+      "vitest": "^4.0.14",
+      "vue-tsc": "^3.1.5"
     }
   }
   ```
 
   - **效果：**
     - `workspace:*`：让 `@my-lego/craft` 使用 monorepo 中的 `@my-lego/shared` 包。
-    - Vue 相关 ESLint 插件只在该子项目中安装，方便未来拆分为独立仓库。
+  - `@vue/tsconfig` 等 devDeps 为前端提供浏览器/打包环境的 TS preset。
+  - `eslint-plugin-vue@^10.6.2` 提供 Vue 3 官方 flat 配置；`globals` 用于在 ESLint 中声明浏览器全局（`window` / `document` / `fetch` 等）。
 
 - **7.3 覆盖 `packages/craft/tsconfig.json`**
 
-方案已确认：`base` + `@vue/tsconfig` 双继承
+最终方案：仅继承 `@vue/tsconfig/tsconfig.dom.json`，并通过 `paths` 补充 `@my-lego/shared` 与 `@/*` 别名（避免多重继承带来的冲突）。
 
-`packages/craft/tsconfig.json` 和 `tsconfig.node.json` 都**保持不变**，只需要把 `tsconfig.app.json` 改成同时继承根 `tsconfig.base.json` 和 `@vue/tsconfig/tsconfig.dom.json`。
-
-你可以直接把 `packages/craft/tsconfig.app.json` 整个替换成下面这样（保留原来的 include/exclude 和 `@/*` 路径别名）：
+`packages/craft/tsconfig.json` 和 `tsconfig.node.json` 都**保持不变**，只需要把 `tsconfig.app.json` 修改为下面这样（保留原来的 include/exclude 和 `@/*` 路径别名）：
 
   ```json
   {
-    // 先继承 monorepo 根的公共 TS 配置（严格规则 + @my-lego/* 路径别名）
-    // 再叠加 Vue 官方为浏览器应用准备的 preset（DOM lib、bundler 解析等）
-    "extends": [
-      "../../tsconfig.base.json",
-      "@vue/tsconfig/tsconfig.dom.json"
-    ],
+    // 继承 Vue 官方为浏览器应用准备的 preset（DOM lib、bundler 解析等）
+    // 实际路径以 @vue/tsconfig 当前版本为准
+    "extends": "@vue/tsconfig/tsconfig.dom.json",
   
     // 应用代码和 env 声明文件
     "include": [
@@ -521,8 +532,11 @@ cd ../../
       // TS 增量构建信息，脚手架默认即可
       "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
   
-      // 在根 base 的 @my-lego/* 之外，再补上前端项目自己的 @ → src 别名
+      // 为前端项目补上自己的路径别名：
+      // - @my-lego/shared → 指向 monorepo 内的 shared 源码目录
+      // - @ → 指向当前包的 src 目录
       "paths": {
+        "@my-lego/shared": ["../shared/src"],
         "@/*": ["./src/*"]
       }
     }
@@ -533,11 +547,7 @@ cd ../../
 
 - 在 craft 里既可以用 `@/xxx`，也可以用 `@my-lego/shared`，并且 TS 会直接跳到 `packages/shared/src`。
 - Vue preset 继续负责 DOM lib、`moduleResolution: "bundler"`、`jsx: "preserve"` 等，与 Vite 官方推荐保持一致。
-
-  - **效果：**
-    - 继承根严格 TS 规则与路径别名；
-    - 支持 DOM API（浏览器环境）；
-    - `vite/client` 类型让 `import.meta.env` 等在 TS 中有智能提示。
+- 根 `tsconfig.base.json` 作为 monorepo 其他包的公共基础；craft 在 app 层通过 `extends` + `paths` 做了更贴合前端项目的组合。
 
 
 - **7.4 修改 `vite.config.ts`（直连 shared 源码）**
@@ -567,50 +577,68 @@ cd ../../
       - Vite：`@my-lego/shared` 也指向 `packages/shared/src`（通过 alias）。
     - 整个构建过程**直接打进 shared 源码**，不依赖 `dist`，实现“方案 B”。
 
-- **7.5 配置 `packages/craft/eslint.config.mjs`（Vue + Prettier）**
+- **7.5 配置 `packages/craft/eslint.config.mjs`（Vue flat config + 浏览器 globals）**
 
   ```bash
   cat > eslint.config.mjs << 'EOF'
   import baseConfig from '../../eslint.base.mjs'
   import vue from 'eslint-plugin-vue'
-  import prettierPlugin from 'eslint-plugin-prettier'
+  import globals from 'globals'
+  import tseslint from 'typescript-eslint'
 
   export default [
+    // 通用 JS/TS 规则（含 Prettier for js/ts）
     ...baseConfig,
 
+    // 为前端源码开启完整浏览器全局（window / document / fetch 等）
+    // 只作用于 craft 包的源码目录，不影响其他包
+    {
+      files: ['src/**/*.{js,ts,vue}'],
+      languageOptions: {
+        globals: {
+          // browser 环境内置的所有全局变量：window / document / fetch / console 等
+          ...globals.browser
+        }
+      }
+    },
+
+    // Vue 3 官方 flat 推荐配置（包含 parser / plugins / rules / processor 等）
+    // 注意：这里会自动为 .vue 文件启用 vue-eslint-parser、vue 插件以及推荐规则集合
+    ...vue.configs['flat/recommended'],
+
+    // 追加一段仅针对 .vue 的配置：
+    // 让 <script lang="ts"> 使用 TypeScript 解析器，避免 defineProps 泛型等 TS 语法被当成普通 JS 报 “Parsing error”
     {
       files: ['src/**/*.vue'],
       languageOptions: {
-        parser: vue.parsers['vue-eslint-parser'],
         parserOptions: {
-          parser: '@typescript-eslint/parser',
+          // 使用 typescript-eslint 暴露的 parser 解析 <script lang="ts"> 部分
+          parser: tseslint.parser,
           ecmaVersion: 'latest',
-          sourceType: 'module',
-          ecmaFeatures: {
-            jsx: true
-          }
+          sourceType: 'module'
         }
-      },
-      plugins: {
-        vue,
-        prettier: prettierPlugin
-      },
-      rules: {
-        ...vue.configs['vue3-recommended'].rules,
-        'prettier/prettier': 'error'
       }
     }
+
+    // 如果需要自定义 Vue 项目特有规则，可以在这里为 .vue 单独追加
+    // 例如：
+    // {
+    //   files: ['**/*.vue'],
+    //   rules: {
+    //     'vue/multi-word-component-names': 'off'
+    //   }
+    // }
   ]
   EOF
   ```
 
   - **效果：**
     - `.vue` 文件：
-      - 用 `vue-eslint-parser` 正确解析 template + script；
-      - 应用 `vue3-recommended`（比 `vue3-essential` 更严格、更风格化）；
-      - 用 `prettier/prettier: 'error'` 让所有格式问题也以 ESLint 错误形式出现。
+      - 通过 `vue.configs['flat/recommended']` 启用官方 Vue 3 flat 推荐规则（包含模板格式与语义检查）；
+      - 利用 `parserOptions.parser = tseslint.parser` 正确解析 `<script lang="ts">` 中的 TypeScript 语法（如 `defineProps<{ msg: string }>()`），避免被当成普通 JS 报解析错误。
+      - 模板格式全部由 Vue 规则管理，不再对 `.vue` 使用 `prettier/prettier`。
     - `.ts` / `.js` 文件：
-      - 通过 baseConfig 应用严格 JS/TS + Prettier 规则。
+      - 继续通过 `eslint.base.mjs` 应用严格 JS/TS 规则 + `prettier/prettier: 'error'`。
 
 - **7.6 在代码中使用 shared（验证源码直连）**
 
@@ -654,8 +682,8 @@ cd ../../
     pnpm lint
     ```
 
-    - `shared`：严格 JS/TS + Prettier；
-    - `craft`：严格 JS/TS + Vue3（`vue3-recommended`）+ Prettier（含 `.vue`）。
+    - `shared`：严格 JS/TS + Prettier（包括 `prettier/prettier: error`）。
+    - `craft`：严格 JS/TS（含 Prettier，仅作用于 JS/TS 文件）+ Vue3（`eslint-plugin-vue` flat/recommended，用于 `.vue` 模板和脚本；模板不再启用 `prettier/prettier`）。
 
   - 全仓 format：
 
@@ -666,21 +694,21 @@ cd ../../
 - **8.3 构建与开发**
 
   - 构建 shared：
-
+  
     ```bash
     pnpm --filter @my-lego/shared build
     ```
-
+  
   - 启动 craft 开发服务器：
-
+  
     ```bash
     pnpm dev:craft
     ```
-
+  
   - 构建 craft：
-
+  
     ```bash
     pnpm --filter @my-lego/craft build
     ```
-
----
+  
+  ---
