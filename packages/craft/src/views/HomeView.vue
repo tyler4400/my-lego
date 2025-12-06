@@ -1,9 +1,27 @@
+<template>
+  <div class="homepage-container">
+    <Layout :style="{ background: '#fff' }">
+      <LayoutHeader class="header">
+        <div class="page-title">
+          <router-link to="/">
+            i分享
+          </router-link>
+        </div>
+      </LayoutHeader>
+      <LayoutContent class="home-layout">
+        <router-view />
+      </LayoutContent>
+    </Layout>
+    <LayoutFooter>© IACG（iacg.com）版权所有 |</LayoutFooter>
+  </div>
+</template>
+
 <script setup lang="ts">
-import TheWelcome from '../components/TheWelcome.vue'
+import { Layout, LayoutHeader, LayoutContent, LayoutFooter } from 'ant-design-vue'
 </script>
 
-<template>
-  <main>
-    <TheWelcome />
-  </main>
-</template>
+<style>
+.page-title {
+  color: #fff;
+}
+</style>

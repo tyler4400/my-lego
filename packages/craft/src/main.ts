@@ -1,4 +1,4 @@
-import './assets/main.css'
+import './styles/index.css'
 import { isFunction } from '@my-lego/shared'
 console.log('main.ts--isFunction: ', isFunction(234))
 
