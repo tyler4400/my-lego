@@ -61,4 +61,11 @@ export default [
       'arrow-parens': ['error', 'as-needed'],
     },
   },
+  {
+    files: ['src/**/*.{js,ts,vue}'],
+    rules: {
+      // 可按需在此细化 TS 噪音级别，例如：
+      '@typescript-eslint/no-explicit-any': 'warn',
+    },
+  },
 ]

@@ -15,7 +15,14 @@
           <div
             id="canvas-area"
             class="preview-list"
-          />
+          >
+            <div
+              v-for="comp in editorStore.components"
+              :key="comp.id"
+            >
+              {{ comp.props.text }}
+            </div>
+          </div>
         </LayoutContent>
       </Layout>
       <layoutSider
@@ -31,6 +38,9 @@
 
 <script setup lang="ts">
 import { Layout, LayoutContent, LayoutSider } from 'ant-design-vue'
+import { useEditorStore } from '@/stores/editor.ts'
+
+const editorStore = useEditorStore()
 </script>
 
 <style>
