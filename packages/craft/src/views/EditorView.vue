@@ -16,12 +16,12 @@
             id="canvas-area"
             class="preview-list"
           >
-            <div
+            <component
+              :is="comp.name"
               v-for="comp in editorStore.components"
               :key="comp.id"
-            >
-              {{ comp.props.text }}
-            </div>
+              v-bind="comp.props"
+            />
           </div>
         </LayoutContent>
       </Layout>
@@ -39,8 +39,15 @@
 <script setup lang="ts">
 import { Layout, LayoutContent, LayoutSider } from 'ant-design-vue'
 import { useEditorStore } from '@/stores/editor.ts'
+import LText from '@/components/LText.vue'
 
 const editorStore = useEditorStore()
+
+defineOptions({
+  components: {
+    LText,
+  },
+})
 </script>
 
 <style>

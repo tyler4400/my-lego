@@ -15,7 +15,7 @@ export const useEditorStore = defineStore('editor', () => {
 const testComponents: ComponentData[] = [
   {
     id: uuidv4(),
-    name: 'c-text',
+    name: 'LText',
     props: {
       text: 'hello',
       fontSize: '20px',
@@ -27,7 +27,7 @@ const testComponents: ComponentData[] = [
   },
   {
     id: uuidv4(),
-    name: 'c-text',
+    name: 'LText',
     props: {
       text: 'hello2',
       fontSize: '10px',
@@ -39,7 +39,7 @@ const testComponents: ComponentData[] = [
   },
   {
     id: uuidv4(),
-    name: 'c-text',
+    name: 'LText',
     props: {
       text: 'hello3',
       fontSize: '15px',
