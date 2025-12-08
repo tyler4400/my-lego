@@ -8,32 +8,23 @@
   </component>
 </template>
 <script setup lang="ts">
-
 import { computed } from 'vue'
 import { pick } from 'lodash-es'
+import { textPropType, textStylePropsKeys } from '@/defaultProps.ts'
 
 defineOptions({
   name: 'LText',
 })
 
 const props = defineProps({
-  // eslint-disable-next-line vue/require-default-prop
-  text: {
-    type: String,
-    required: false,
-  },
-  fontSize: {
-    type: String,
-    required: true,
-  },
   tag: {
     type: String,
     default: 'div',
   },
+  ...textPropType,
 })
 
-
-const styleProps = computed(() => pick(props, 'fontSize'))
+const styleProps = computed(() => pick(props, textStylePropsKeys))
 </script>
 
 <style scoped>
@@ -48,5 +39,6 @@ button.l-text-component {
 .l-text-component {
   box-sizing: border-box;
   white-space: pre-wrap;
+  position: relative !important;
 }
 </style>
