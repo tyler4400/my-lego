@@ -44,7 +44,7 @@ const testComponents: ComponentData[] = [
       text: 'hello3',
       fontSize: '15px',
       actionType: 'url',
-      url: 'https://www.baidu.com',
+      url: 'https://www.imooc-lego.com/',
       lineHeight: '3',
       textAlign: 'left',
       fontFamily: '',

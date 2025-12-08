@@ -1,16 +1,16 @@
 <template>
   <component
     :is="tag"
-    :style="styleProps"
+    :style="stylesProps"
     class="l-text-component"
+    @click="handleClick"
   >
     {{ text }}
   </component>
 </template>
 <script setup lang="ts">
-import { computed } from 'vue'
-import { pick } from 'lodash-es'
 import { textPropType, textStylePropsKeys } from '@/defaultProps.ts'
+import useComponentCommon from '@/hooks/useComponentCommon.ts'
 
 defineOptions({
   name: 'LText',
@@ -24,7 +24,7 @@ const props = defineProps({
   ...textPropType,
 })
 
-const styleProps = computed(() => pick(props, textStylePropsKeys))
+const { stylesProps, handleClick } = useComponentCommon(props, textStylePropsKeys)
 </script>
 
 <style scoped>
