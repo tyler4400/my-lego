@@ -3,10 +3,14 @@
     <Layout>
       <LayoutSider
         width="300"
-        style="background: yellow"
+        style="background: #fff"
       >
         <div class="sidebar-container">
           组件列表
+          <ComponentList
+            :list="defaultTextTemplates"
+            @on-item-click="addComponent"
+          />
         </div>
       </LayoutSider>
       <Layout style="padding: 0 24px 24px">
@@ -40,6 +44,8 @@
 import { Layout, LayoutContent, LayoutSider } from 'ant-design-vue'
 import { useEditorStore } from '@/stores/editor.ts'
 import LText from '@/components/LText.vue'
+import ComponentList from '@/components/ComponentList.vue'
+import { defaultTextTemplates } from '@/defaultTemplates.ts'
 
 const editorStore = useEditorStore()
 
@@ -48,6 +54,11 @@ defineOptions({
     LText,
   },
 })
+
+const addComponent = (item: any) => {
+  console.log('EditorView.vue.58.addComponent.item: ', item)
+  editorStore.addComponent(item)
+}
 </script>
 
 <style>

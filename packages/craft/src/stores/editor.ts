@@ -9,7 +9,16 @@ export const useEditorStore = defineStore('editor', () => {
   // 当前编辑的是哪个元素，uuid
   const currentElement: string | null = null
 
-  return { components, currentElement }
+  const addComponent = (props: Record<string, any>): void => {
+    const newComp = {
+      id: uuidv4(),
+      name: 'LText',
+      props,
+    }
+    components.push(newComp)
+  }
+
+  return { components, currentElement, addComponent }
 })
 
 const testComponents: ComponentData[] = [
