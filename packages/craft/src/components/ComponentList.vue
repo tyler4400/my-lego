@@ -12,11 +12,12 @@
 </template>
 <script setup lang="ts">
 import LText from '@/components/LText.vue'
+import type { TextComponentProps } from '@/defaultProps.ts'
 
-defineProps<{ list: any[] }>()
+defineProps<{ list: Partial<TextComponentProps>[] }>()
 
 defineEmits<{
-  (e: 'onItemClick', item: any): void
+  (e: 'onItemClick', item: Partial<TextComponentProps>): void
 }>()
 </script>
 

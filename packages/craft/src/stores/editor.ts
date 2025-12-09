@@ -2,6 +2,7 @@ import { reactive } from 'vue'
 import { defineStore } from 'pinia'
 import { v4 as uuidv4 } from 'uuid'
 import type { ComponentData } from '@/types/editor.ts'
+import type { TextComponentProps } from '@/defaultProps.ts'
 
 export const useEditorStore = defineStore('editor', () => {
   // 供中间编辑器渲染的数组
@@ -9,7 +10,7 @@ export const useEditorStore = defineStore('editor', () => {
   // 当前编辑的是哪个元素，uuid
   const currentElement: string | null = null
 
-  const addComponent = (props: Record<string, any>): void => {
+  const addComponent = (props: Partial<TextComponentProps>): void => {
     const newComp = {
       id: uuidv4(),
       name: 'LText',

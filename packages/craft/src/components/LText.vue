@@ -9,19 +9,30 @@
   </component>
 </template>
 <script setup lang="ts">
-import { textPropType, textStylePropsKeys } from '@/defaultProps.ts'
+import { type TextComponentProps, textDefaultProps, textStylePropsKeys } from '@/defaultProps.ts'
 import useComponentCommon from '@/hooks/useComponentCommon.ts'
+
+export type LTextProps = Partial<TextComponentProps> & {
+  tag?: string
+}
 
 defineOptions({
   name: 'LText',
 })
 
-const props = defineProps({
-  tag: {
-    type: String,
-    default: 'div',
-  },
-  ...textPropType,
+/**
+ * 课程里使用的是运行时声明props。我这里改为类型声明。课程代码如下
+ * const props = defineProps({
+ *   tag: {
+ *     type: String,
+ *     default: 'div',
+ *   },
+ *   ...textPropType,
+ * })
+ */
+const props = withDefaults(defineProps<LTextProps>(), {
+  ...textDefaultProps,
+  tag: 'div',
 })
 
 const { stylesProps, handleClick } = useComponentCommon(props, textStylePropsKeys)

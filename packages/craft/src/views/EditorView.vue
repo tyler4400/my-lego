@@ -46,6 +46,7 @@ import { useEditorStore } from '@/stores/editor.ts'
 import LText from '@/components/LText.vue'
 import ComponentList from '@/components/ComponentList.vue'
 import { defaultTextTemplates } from '@/defaultTemplates.ts'
+import type { TextComponentProps } from '@/defaultProps.ts'
 
 const editorStore = useEditorStore()
 
@@ -55,7 +56,7 @@ defineOptions({
   },
 })
 
-const addComponent = (item: any) => {
+const addComponent = (item: Partial<TextComponentProps>) => {
   console.log('EditorView.vue.58.addComponent.item: ', item)
   editorStore.addComponent(item)
 }
