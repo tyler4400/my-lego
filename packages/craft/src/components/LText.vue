@@ -8,8 +8,10 @@
     {{ text }}
   </component>
 </template>
+
 <script setup lang="ts">
-import { type TextComponentProps, textDefaultProps, textStylePropsKeys } from '@/defaultProps.ts'
+import type { TextComponentProps } from '@/defaultProps.ts'
+import { textDefaultProps, textStylePropsKeys } from '@/defaultProps.ts'
 import useComponentCommon from '@/hooks/useComponentCommon.ts'
 
 export type LTextProps = Partial<TextComponentProps> & {

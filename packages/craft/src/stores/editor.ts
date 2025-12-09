@@ -1,30 +1,8 @@
-import { reactive, ref } from 'vue'
+import type { TextComponentProps } from '@/defaultProps.ts'
+import type { ComponentData } from '@/types/editor.ts'
 import { defineStore } from 'pinia'
 import { v4 as uuidv4 } from 'uuid'
-import type { ComponentData } from '@/types/editor.ts'
-import type { TextComponentProps } from '@/defaultProps.ts'
-
-export const useEditorStore = defineStore('editor', () => {
-  // 供中间编辑器渲染的数组
-  const components = reactive<ComponentData[]>(testComponents)
-  // 当前编辑的是哪个元素，uuid
-  const currentElement = ref<ComponentData>()
-
-  const setCurrentElement = (id: string) => {
-    currentElement.value = components.find(item => item.id === id)
-  }
-
-  const addComponent = (props: Partial<TextComponentProps>): void => {
-    const newComp = {
-      id: uuidv4(),
-      name: 'LText',
-      props,
-    }
-    components.push(newComp)
-  }
-
-  return { components, currentElement, addComponent, setCurrentElement }
-})
+import { reactive, ref } from 'vue'
 
 const testComponents: ComponentData[] = [
   {
@@ -65,3 +43,25 @@ const testComponents: ComponentData[] = [
     },
   },
 ]
+
+export const useEditorStore = defineStore('editor', () => {
+  // 供中间编辑器渲染的数组
+  const components = reactive<ComponentData[]>(testComponents)
+  // 当前编辑的是哪个元素，uuid
+  const currentElement = ref<ComponentData>()
+
+  const setCurrentElement = (id: string) => {
+    currentElement.value = components.find(item => item.id === id)
+  }
+
+  const addComponent = (props: Partial<TextComponentProps>): void => {
+    const newComp = {
+      id: uuidv4(),
+      name: 'LText',
+      props,
+    }
+    components.push(newComp)
+  }
+
+  return { components, currentElement, addComponent, setCurrentElement }
+})

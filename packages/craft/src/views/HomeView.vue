@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import { Layout, LayoutHeader, LayoutContent, LayoutFooter } from 'ant-design-vue'
+import { Layout, LayoutContent, LayoutFooter, LayoutHeader } from 'ant-design-vue'
 </script>
 
 <style>

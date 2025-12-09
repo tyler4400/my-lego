@@ -7,23 +7,24 @@
     <slot />
   </div>
 </template>
+
 <script setup lang="ts">
 export interface EditWrapperProps {
-    active: boolean
-    id: string
-  }
+  active: boolean
+  id: string
+}
 
 defineOptions({
-    name: 'EditWrapper',
+  name: 'EditWrapper',
 })
+
+const { active, id } = defineProps<EditWrapperProps>()
 
 const emit = defineEmits<{
   (e: 'setActive', id: string): void
 }>()
 
-const { active, id } = defineProps< EditWrapperProps>()
-
-const onItemClick = (id:  string ) =>{
+function onItemClick(id: string) {
   emit('setActive', id)
 }
 </script>

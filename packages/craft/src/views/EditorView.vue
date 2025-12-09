@@ -9,7 +9,7 @@
           组件列表
           <ComponentList
             :list="defaultTextTemplates"
-            @on-item-click="addComponent"
+            @onItemClick="addComponent"
           />
         </div>
       </LayoutSider>
@@ -25,7 +25,7 @@
               :id="comp.id"
               :key="comp.id"
               :active="editorStore.currentElement?.id === comp.id"
-              @set-active="editorStore.setCurrentElement"
+              @setActive="editorStore.setCurrentElement"
             >
               <component
                 :is="comp.name"
@@ -35,7 +35,7 @@
           </div>
         </LayoutContent>
       </Layout>
-      <layoutSider
+      <LayoutSider
         width="300"
         style="background: #fff"
         class="settings-panel"
@@ -44,21 +44,19 @@
         <pre>
           {{ editorStore.currentElement }}
         </pre>
-      </layoutSider>
+      </LayoutSider>
     </Layout>
   </div>
 </template>
 
 <script setup lang="ts">
+import type { TextComponentProps } from '@/defaultProps.ts'
 import { Layout, LayoutContent, LayoutSider } from 'ant-design-vue'
-import { useEditorStore } from '@/stores/editor.ts'
-import LText from '@/components/LText.vue'
 import ComponentList from '@/components/ComponentList.vue'
 import EditWrapper from '@/components/EditWrapper.vue'
+import LText from '@/components/LText.vue'
 import { defaultTextTemplates } from '@/defaultTemplates.ts'
-import type { TextComponentProps } from '@/defaultProps.ts'
-
-const editorStore = useEditorStore()
+import { useEditorStore } from '@/stores/editor.ts'
 
 defineOptions({
   components: {
@@ -66,7 +64,9 @@ defineOptions({
   },
 })
 
-const addComponent = (item: Partial<TextComponentProps>) => {
+const editorStore = useEditorStore()
+
+function addComponent(item: Partial<TextComponentProps>) {
   console.log('EditorView.vue.58.addComponent.item: ', item)
   editorStore.addComponent(item)
 }

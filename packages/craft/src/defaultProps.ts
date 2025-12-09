@@ -109,14 +109,15 @@ export const textDefaultProps: TextComponentProps = {
  * 将属性对象转换为 Vue 运行时 props 声明所需的对象结构
  * 目前在部分组件中使用泛型 props 声明，该方法保留用于兼容课程原始写法
  */
-export const transformToComponentProps = (props: TextComponentProps) =>
-  mapValues(props, item => {
+export function transformToComponentProps(props: TextComponentProps) {
+  return mapValues(props, (item) => {
     return {
       // 根据默认值推断构造器类型（string 或 number）
       type: item.constructor as StringConstructor | NumberConstructor,
       default: item,
     }
   })
+}
 
 /**
  * 文本组件的运行时 props 类型定义（课程原始写法中使用）
