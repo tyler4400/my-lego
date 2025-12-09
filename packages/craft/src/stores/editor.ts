@@ -1,4 +1,4 @@
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { v4 as uuidv4 } from 'uuid'
 import type { ComponentData } from '@/types/editor.ts'
@@ -8,7 +8,11 @@ export const useEditorStore = defineStore('editor', () => {
   // 供中间编辑器渲染的数组
   const components = reactive<ComponentData[]>(testComponents)
   // 当前编辑的是哪个元素，uuid
-  const currentElement: string | null = null
+  const currentElement = ref<ComponentData>()
+
+  const setCurrentElement = (id: string) => {
+    currentElement.value = components.find(item => item.id === id)
+  }
 
   const addComponent = (props: Partial<TextComponentProps>): void => {
     const newComp = {
@@ -19,7 +23,7 @@ export const useEditorStore = defineStore('editor', () => {
     components.push(newComp)
   }
 
-  return { components, currentElement, addComponent }
+  return { components, currentElement, addComponent, setCurrentElement }
 })
 
 const testComponents: ComponentData[] = [

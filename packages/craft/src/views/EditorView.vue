@@ -20,21 +20,30 @@
             id="canvas-area"
             class="preview-list"
           >
-            <component
-              :is="comp.name"
+            <EditWrapper
               v-for="comp in editorStore.components"
+              :id="comp.id"
               :key="comp.id"
-              v-bind="comp.props"
-            />
+              :active="editorStore.currentElement?.id === comp.id"
+              @set-active="editorStore.setCurrentElement"
+            >
+              <component
+                :is="comp.name"
+                v-bind="comp.props"
+              />
+            </EditWrapper>
           </div>
         </LayoutContent>
       </Layout>
       <layoutSider
         width="300"
-        style="background: purple"
+        style="background: #fff"
         class="settings-panel"
       >
         组件属性
+        <pre>
+          {{ editorStore.currentElement }}
+        </pre>
       </layoutSider>
     </Layout>
   </div>
@@ -45,6 +54,7 @@ import { Layout, LayoutContent, LayoutSider } from 'ant-design-vue'
 import { useEditorStore } from '@/stores/editor.ts'
 import LText from '@/components/LText.vue'
 import ComponentList from '@/components/ComponentList.vue'
+import EditWrapper from '@/components/EditWrapper.vue'
 import { defaultTextTemplates } from '@/defaultTemplates.ts'
 import type { TextComponentProps } from '@/defaultProps.ts'
 
