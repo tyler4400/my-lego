@@ -1,13 +1,12 @@
 <template>
   <div class="props-table">
     <div
-      v-for="(item, key) in finalProps"
-      :key="key"
+      v-for="(item, key) in finalProps" :key="key"
       class="prop-item"
     >
       <span v-if="item" class="label">{{ item?.label }}</span>
       <div class="prop-component">
-        <component :is="item.component" v-if="item" :value="item.value" v-bind="item.extraProps">
+        <component :is="item.component" v-if="item" :[item.valueKey!]="item.value" v-bind="item.extraProps">
           <template v-if="item.options">
             <component :is="item.subComponent" v-for="(option, subKey) in item.options" :key="subKey" :value="option.value">
               {{ option.label }}
@@ -33,6 +32,7 @@ const finalProps = computed<PropsToForms>(() => reduce(compProps, (result, val, 
   if (item) {
     // fixme 这里有bug，item.value = val会改变原对象mapPropsToForms
     item.value = item.transferVal?.(val) ?? val
+    item.valueKey = (item.valueKey ?? 'value')
     console.log('todo: 这里有bug，item.value = val会改变原对象mapPropsToForms', mapPropsToForms)
     result[newKey] = item
   }

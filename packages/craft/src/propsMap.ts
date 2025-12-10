@@ -9,7 +9,9 @@ export interface PropsToForm {
   value?: string
   extraProps?: Record<string, any> // 组件额外参数
   label?: string // 表单项名称
-  transferVal?: (val: string) => any // 有的value可能需要转换
+  transferVal?: (val?: string) => any // 有的value可能需要转换
+  valueKey?: string // 有的组件状态可能不叫 'value'， 例如CheckBox的状态是checked 所以新加此字段来指定value的名称. 默认value
+  eventName?: string // 组件修改value的时候发射事件的名称
 }
 
 export type PropsToForms = Partial<Record<keyof TextComponentProps, PropsToForm>>
@@ -25,7 +27,7 @@ export const mapPropsToForms: PropsToForms = {
   fontSize: {
     label: '字号',
     component: InputNumber,
-    transferVal: (v: string) => Number.parseInt(v),
+    transferVal: (v?: string) => v === undefined ? undefined : Number.parseInt(v),
   },
   lineHeight: {
     label: '行高',
@@ -35,7 +37,7 @@ export const mapPropsToForms: PropsToForms = {
       max: 3,
       step: 0.1,
     },
-    transferVal: (v: string) => Number.parseFloat(v),
+    transferVal: (v?: string) => v === undefined ? undefined : Number.parseFloat(v),
   },
   textAlign: {
     label: '对齐方式',
