@@ -5,7 +5,10 @@
       :key="key"
       class="prop-item"
     >
-      <component :is="item.component" v-if="item" :value="item.value" />
+      <span v-if="item" class="label">{{ item?.label }}</span>
+      <div class="prop-component">
+        <component :is="item.component" v-if="item" :value="item.value" v-bind="item.extraProps" />
+      </div>
     </div>
   </div>
 </template>
@@ -22,7 +25,8 @@ const finalProps = computed(() => reduce(compProps, (result, val, key) => {
   const newKey = key as keyof TextComponentProps
   const item = mapPropsToForms[newKey]
   if (item) {
-    item.value = val
+    item.value = val // fixme
+    console.log('todo: 这里有bug，item.value = val会改变原对象mapPropsToForms', mapPropsToForms)
     result[newKey] = item
   }
   return result
@@ -30,5 +34,15 @@ const finalProps = computed(() => reduce(compProps, (result, val, key) => {
 </script>
 
 <style scoped>
-
+.prop-item {
+  display: flex;
+  margin-bottom: 10px;
+  align-items: center;
+}
+.label {
+  width: 28%;
+}
+.prop-component {
+  width: 70%;
+}
 </style>
