@@ -41,6 +41,7 @@
         class="settings-panel"
       >
         组件属性
+        <PropsTable :compProps="editorStore.currentElement?.props" />
         <pre>
           {{ editorStore.currentElement }}
         </pre>
@@ -55,6 +56,7 @@ import { Layout, LayoutContent, LayoutSider } from 'ant-design-vue'
 import ComponentList from '@/components/ComponentList.vue'
 import EditWrapper from '@/components/EditWrapper.vue'
 import LText from '@/components/LText.vue'
+import PropsTable from '@/components/PropsTable.vue'
 import { defaultTextTemplates } from '@/defaultTemplates.ts'
 import { useEditorStore } from '@/stores/editor.ts'
 

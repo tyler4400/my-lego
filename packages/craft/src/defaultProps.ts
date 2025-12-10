@@ -25,7 +25,7 @@ export interface CommonComponentProps {
 
   // shadow and opacity
   boxShadow: string
-  opacity: number
+  opacity: string
 
   // position and x,y
   position: string
@@ -58,7 +58,7 @@ export const commonDefaultProps: CommonComponentProps = {
 
   // shadow and opacity
   boxShadow: '0 0 0 #000000',
-  opacity: 1,
+  opacity: '1',
 
   // position and x,y
   position: 'absolute',
