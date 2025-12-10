@@ -33,7 +33,7 @@ const testComponents: ComponentData[] = [
     id: uuidv4(),
     name: 'LText',
     props: {
-      text: 'hello3',
+      text: '一个链接',
       fontSize: '15px',
       actionType: 'url',
       url: 'https://www.imooc-lego.com/',

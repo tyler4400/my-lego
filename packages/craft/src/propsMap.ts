@@ -1,12 +1,15 @@
 import type { Component } from 'vue'
 import type { TextComponentProps } from '@/defaultProps.ts'
-import { Input, InputNumber, Slider } from 'ant-design-vue'
+import { Input, InputNumber, RadioButton, RadioGroup, Select, SelectOption, Slider } from 'ant-design-vue'
 
 export interface PropsToForm {
   component: Component
+  subComponent?: Component // 组件可能有子组件，例如Select - SelectOption。 后面重构的时候应该会被vnode替换掉
+  options?: { label: string, value: string }[] // 有的组件是选项
   value?: string
-  extraProps?: Record<string, any>
-  label?: string
+  extraProps?: Record<string, any> // 组件额外参数
+  label?: string // 表单项名称
+  transferVal?: (val: string) => any // 有的value可能需要转换
 }
 
 export type PropsToForms = Partial<Record<keyof TextComponentProps, PropsToForm>>
@@ -22,6 +25,7 @@ export const mapPropsToForms: PropsToForms = {
   fontSize: {
     label: '字号',
     component: InputNumber,
+    transferVal: (v: string) => Number.parseInt(v),
   },
   lineHeight: {
     label: '行高',
@@ -31,5 +35,49 @@ export const mapPropsToForms: PropsToForms = {
       max: 3,
       step: 0.1,
     },
+    transferVal: (v: string) => Number.parseFloat(v),
+  },
+  textAlign: {
+    label: '对齐方式',
+    component: RadioGroup,
+    subComponent: RadioButton,
+    extraProps: { buttonStyle: 'solid' },
+    options: [
+      {
+        label: '左',
+        value: 'left',
+      },
+      {
+        label: '中',
+        value: 'center',
+      },
+      {
+        label: '右',
+        value: 'right',
+      },
+    ],
+  },
+  fontFamily: {
+    label: '字体',
+    component: Select,
+    subComponent: SelectOption,
+    options: [
+      {
+        label: '默认',
+        value: '',
+      },
+      {
+        label: '微软雅黑',
+        value: 'Microsoft YaHei',
+      },
+      {
+        label: '宋体',
+        value: 'SimSun',
+      },
+      {
+        label: 'Arial',
+        value: 'Arial',
+      },
+    ],
   },
 }

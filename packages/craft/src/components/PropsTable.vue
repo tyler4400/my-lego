@@ -7,7 +7,13 @@
     >
       <span v-if="item" class="label">{{ item?.label }}</span>
       <div class="prop-component">
-        <component :is="item.component" v-if="item" :value="item.value" v-bind="item.extraProps" />
+        <component :is="item.component" v-if="item" :value="item.value" v-bind="item.extraProps">
+          <template v-if="item.options">
+            <component :is="item.subComponent" v-for="(option, subKey) in item.options" :key="subKey" :value="option.value">
+              {{ option.label }}
+            </component>
+          </template>
+        </component>
       </div>
     </div>
   </div>
@@ -21,11 +27,12 @@ import { computed } from 'vue'
 import { mapPropsToForms } from '@/propsMap.ts'
 
 const { compProps = {} } = defineProps<{ compProps?: Partial<TextComponentProps> }>()
-const finalProps = computed(() => reduce(compProps, (result, val, key) => {
+const finalProps = computed<PropsToForms>(() => reduce(compProps, (result, val, key) => {
   const newKey = key as keyof TextComponentProps
   const item = mapPropsToForms[newKey]
   if (item) {
-    item.value = val // fixme
+    // fixme 这里有bug，item.value = val会改变原对象mapPropsToForms
+    item.value = item.transferVal?.(val) ?? val
     console.log('todo: 这里有bug，item.value = val会改变原对象mapPropsToForms', mapPropsToForms)
     result[newKey] = item
   }
