@@ -35,6 +35,15 @@ export default antfu(
       'jsonc/sort-keys': 'off',
       'antfu/top-level-function': 'off',
       'no-console': 'off',
+      'style/max-len': ['error', {
+        code: 110, // 代码行最长 110
+        tabWidth: 2, // 和项目缩进对齐
+        comments: 130, // 注释稍微放宽一点
+        ignoreUrls: true, // 忽略很长的 URL
+        ignoreStrings: true, // 忽略长字符串字面量
+        ignoreTemplateLiterals: true,
+        ignoreRegExpLiterals: true,
+      }],
     },
   },
 )
