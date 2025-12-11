@@ -1,11 +1,11 @@
-import type { Component } from 'vue'
+import type { Component, VNode } from 'vue'
 import type { TextComponentProps } from '@/defaultProps.ts'
 import { InputNumber, RadioButton, RadioGroup, Select, SelectOption, Slider, Textarea } from 'ant-design-vue'
 
 export interface PropsToForm {
   component: Component
   subComponent?: Component // 组件可能有子组件，例如Select - SelectOption。 后面重构的时候应该会被vnode替换掉
-  options?: { label: string, value: string }[] // 有的组件是选项
+  options?: { label: string | VNode, value: string }[] // 有的组件是选项
   extraProps?: Record<string, any> // 组件额外参数
   label?: string // 表单项名称
   transferVal?: (val?: string) => any // 将value转换为组件的数据格式
@@ -17,6 +17,20 @@ export interface PropsToForm {
 }
 
 export type PropsToForms = Partial<Record<keyof TextComponentProps, PropsToForm>>
+
+const fontFamilyTemplates = [
+  { label: '默认', value: '' },
+  { label: '宋体', value: '"SimSun","STSong"' },
+  { label: '黑体', value: '"SimHei","STHeiti"' },
+  { label: '楷体', value: '"KaiTi","STKaiti"' },
+  { label: '仿宋', value: '"FangSong","STFangsong"' },
+]
+const fontFamilyOptions: PropsToForm['options'] = fontFamilyTemplates.map(item => ({
+  value: item.value,
+  label: (
+    <span style={{ fontFamily: item.value || undefined }}>{item.label}</span>
+  ),
+}))
 
 export const mapPropsToForms: () => PropsToForms = () => ({
   text: {
@@ -69,11 +83,6 @@ export const mapPropsToForms: () => PropsToForms = () => ({
     label: '字体',
     component: Select,
     subComponent: SelectOption,
-    options: [
-      { label: '宋体', value: '"SimSun","STSong"' },
-      { label: '黑体', value: '"SimHei","STHeiti"' },
-      { label: '楷体', value: '"KaiTi","STKaiti"' },
-      { label: '仿宋', value: '"FangSong","STFangsong"' },
-    ],
+    options: fontFamilyOptions,
   },
 })

@@ -15,7 +15,9 @@
               :is="item.subComponent" v-for="(option, subKey) in item.options"
               :key="subKey" :value="option.value"
             >
-              {{ option.label }}
+              <RenderVnode :node="option.label" />
+              <!--              RenderVnode也可以换成component.is，只不过如果option.label不能是纯字符串 -->
+              <!--              <component :is="option.label" /> -->
             </component>
           </template>
         </component>
@@ -25,17 +27,18 @@
 </template>
 
 <script setup lang="ts">
-import type { Component } from 'vue'
+import type { Component, VNode } from 'vue'
 import type { TextComponentProps } from '@/defaultProps.ts'
 import { reduce } from 'lodash-es'
 import { computed } from 'vue'
-import { mapPropsToForms } from '@/propsMap.ts'
+import { mapPropsToForms } from '@/propsMap.tsx'
+import RenderVnode from '@/utils/RenderVnode.ts'
 
 export interface FormProps {
   value?: string
   component: Component
   subComponent?: Component // 组件可能有子组件，例如Select - SelectOption。 后面重构的时候应该会被vnode替换掉
-  options?: { label: string, value: string }[] // 有的组件是选项
+  options?: { label: string | VNode, value: string }[] // 有的组件是选项
   extraProps?: Record<string, any> // 组件额外参数
   label?: string // 表单项名称
   transferVal?: (val?: string) => any // 将value转换为组件的数据格式

@@ -9,7 +9,7 @@ const testComponents: ComponentData[] = [
     id: uuidv4(),
     name: 'LText',
     props: {
-      text: 'hello',
+      text: '你好呀',
       fontSize: '20px',
       color: 'red',
       lineHeight: '1',
