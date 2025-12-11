@@ -41,7 +41,7 @@
         class="settings-panel"
       >
         组件属性
-        <PropsTable :compProps="editorStore.currentElement?.props" />
+        <PropsTable :compProps="editorStore.currentElement?.props" @change="handleChange" />
         <pre>
           {{ editorStore.currentElement }}
         </pre>
@@ -68,9 +68,13 @@ defineOptions({
 
 const editorStore = useEditorStore()
 
-function addComponent(item: Partial<TextComponentProps>) {
-  console.log('EditorView.vue.58.addComponent.item: ', item)
+const addComponent = (item: Partial<TextComponentProps>) => {
   editorStore.addComponent(item)
+}
+
+const handleChange = (key: string, value: any) => {
+  console.log('handleChange', key, value)
+  editorStore.updateComponent(key as keyof TextComponentProps, value)
 }
 </script>
 

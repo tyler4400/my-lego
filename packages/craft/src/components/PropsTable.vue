@@ -6,9 +6,15 @@
     >
       <span v-if="item" class="label">{{ item?.label }}</span>
       <div class="prop-component">
-        <component :is="item.component" v-if="item" :[item.valueKey!]="item.value" v-bind="item.extraProps">
+        <component
+          :is="item.component" v-bind="item.extraProps" v-if="item"
+          :[item.valueKey!]="item.value" v-on="item.events"
+        >
           <template v-if="item.options">
-            <component :is="item.subComponent" v-for="(option, subKey) in item.options" :key="subKey" :value="option.value">
+            <component
+              :is="item.subComponent" v-for="(option, subKey) in item.options"
+              :key="subKey" :value="option.value"
+            >
               {{ option.label }}
             </component>
           </template>
@@ -19,25 +25,54 @@
 </template>
 
 <script setup lang="ts">
+import type { Component } from 'vue'
 import type { TextComponentProps } from '@/defaultProps.ts'
-import type { PropsToForms } from '@/propsMap.ts'
 import { reduce } from 'lodash-es'
 import { computed } from 'vue'
 import { mapPropsToForms } from '@/propsMap.ts'
 
+export interface FormProps {
+  value?: string
+  component: Component
+  subComponent?: Component // 组件可能有子组件，例如Select - SelectOption。 后面重构的时候应该会被vnode替换掉
+  options?: { label: string, value: string }[] // 有的组件是选项
+  extraProps?: Record<string, any> // 组件额外参数
+  label?: string // 表单项名称
+  transferVal?: (val?: string) => any // 将value转换为组件的数据格式
+  parseVal?: (val?: any) => any // 将组件值转换为表单数据格式
+
+  /* 数据流 */
+  valueKey?: string // 有的组件状态可能不叫 'value'， 例如CheckBox的状态是checked 所以新加此字段来指定value的名称. 默认value
+  events?: Record<string, (e: any) => void>
+}
+
 const { compProps = {} } = defineProps<{ compProps?: Partial<TextComponentProps> }>()
-const finalProps = computed<PropsToForms>(() => reduce(compProps, (result, val, key) => {
+
+const emit = defineEmits<{ change: [key: string, value: any] }>()
+
+const propsToFormsMap = mapPropsToForms()
+
+const finalProps = computed<Record<string, FormProps>>(() => reduce(compProps, (result, val, key) => {
   const newKey = key as keyof TextComponentProps
-  const item = mapPropsToForms[newKey]
+  const item = propsToFormsMap[newKey]
   if (item) {
-    // fixme 这里有bug，item.value = val会改变原对象mapPropsToForms
-    item.value = item.transferVal?.(val) ?? val
-    item.valueKey = (item.valueKey ?? 'value')
-    console.log('todo: 这里有bug，item.value = val会改变原对象mapPropsToForms', mapPropsToForms)
-    result[newKey] = item
+    const { valueKey = 'value', eventName = 'change', parseVal, transferVal, ...other } = item
+
+    const newItem: FormProps = {
+      ...other,
+      value: transferVal?.(val) ?? val,
+      valueKey,
+      events: {
+        [eventName]: (e: any) => {
+          const newVal = parseVal?.(e) ?? e
+          emit('change', newKey, newVal)
+        },
+      },
+    }
+    result[newKey] = newItem
   }
   return result
-}, {} as PropsToForms))
+}, {} as Record<string, FormProps>))
 </script>
 
 <style scoped>

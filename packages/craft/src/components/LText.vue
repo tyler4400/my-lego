@@ -52,6 +52,6 @@ button.l-text-component {
 .l-text-component {
   box-sizing: border-box;
   white-space: pre-wrap;
-  position: relative !important;
+  position: relative !important; /* todo 待移除 */
 }
 </style>

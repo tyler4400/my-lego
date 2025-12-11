@@ -63,5 +63,11 @@ export const useEditorStore = defineStore('editor', () => {
     components.push(newComp)
   }
 
-  return { components, currentElement, addComponent, setCurrentElement }
+  const updateComponent = (key: keyof TextComponentProps, value: string) => {
+    if (currentElement.value) {
+      currentElement.value.props[key] = value
+    }
+  }
+
+  return { components, currentElement, addComponent, setCurrentElement, updateComponent }
 })
