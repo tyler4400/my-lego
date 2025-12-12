@@ -3,6 +3,11 @@ import type { TextComponentProps } from '@/defaultProps.ts'
 import { InputNumber, RadioButton, RadioGroup, Select, SelectOption, Slider, Textarea } from 'ant-design-vue'
 
 export interface PropsToForm {
+  /**
+   *  todo
+   *  针对于component和subComponent这样的写写法， map还是依赖于PropsTable组件中的结构
+   *  我的想法是只暴露一个component即可， 在mapPropsToForms中使用jsx拼接好想要的结构，在外部组件只需要渲染这一个vnode即可
+   */
   component: Component
   subComponent?: Component // 组件可能有子组件，例如Select - SelectOption。 后面重构的时候应该会被vnode替换掉
   options?: { label: string | VNode, value: string }[] // 有的组件是选项
