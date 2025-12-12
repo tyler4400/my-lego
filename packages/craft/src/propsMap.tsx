@@ -1,6 +1,7 @@
 import type { Component, VNode } from 'vue'
 import type { TextComponentProps } from '@/defaultProps.ts'
 import { InputNumber, RadioButton, RadioGroup, Select, SelectOption, Slider, Textarea } from 'ant-design-vue'
+import ColorPicker from '@/components/ColorPicker'
 
 export interface PropsToForm {
   /**
@@ -89,5 +90,13 @@ export const mapPropsToForms: () => PropsToForms = () => ({
     component: Select,
     subComponent: SelectOption,
     options: fontFamilyOptions,
+  },
+  color: {
+    label: '文字颜色',
+    component: ColorPicker,
+  },
+  backgroundColor: {
+    label: '背景颜色',
+    component: ColorPicker,
   },
 })
