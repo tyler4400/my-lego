@@ -1,7 +1,9 @@
 import type { Component, VNode } from 'vue'
 import type { TextComponentProps } from '@/defaultProps.ts'
+import { BoldOutlined, ItalicOutlined, UnderlineOutlined } from '@ant-design/icons-vue'
 import { InputNumber, RadioButton, RadioGroup, Select, SelectOption, Slider, Textarea } from 'ant-design-vue'
 import ColorPicker from '@/components/ColorPicker'
+import IconSwitch from '@/components/IconSwitch'
 
 export interface PropsToForm {
   /**
@@ -98,5 +100,35 @@ export const mapPropsToForms: () => PropsToForms = () => ({
   backgroundColor: {
     label: '背景颜色',
     component: ColorPicker,
+  },
+  fontWeight: {
+    label: '粗体',
+    component: IconSwitch,
+    valueKey: 'checked',
+    /**
+     * 不能这样写：extraProps: { tip: '加粗', icon: BoldOutlined },
+     * <BoldOutlined /> 会被编译为h(BoldOutlined, null, null)  // 一个 VNode 对象
+     * 而如果直接写icon: BoldOutlined， 就是直接对象或函数本身。
+     * 所以下面要么写<BoldOutlined />，tsx帮忙转成h(BoldOutlined)，或者直接写h(BoldOutlined)
+     */
+    extraProps: { tip: '加粗', icon: <BoldOutlined /> },
+    transferVal: (v?: string) => v === 'bold',
+    parseVal: (e: boolean) => e ? 'bold' : 'normal',
+  },
+  fontStyle: {
+    label: '斜体',
+    component: IconSwitch,
+    valueKey: 'checked',
+    extraProps: { tip: '斜体', icon: <ItalicOutlined /> },
+    transferVal: (v?: string) => v === 'italic',
+    parseVal: (e: boolean) => e ? 'italic' : 'normal',
+  },
+  textDecoration: {
+    label: '下划线',
+    component: IconSwitch,
+    valueKey: 'checked',
+    extraProps: { tip: '下划线', icon: <UnderlineOutlined /> },
+    transferVal: (v?: string) => v === 'underline',
+    parseVal: (e: boolean) => e ? 'underline' : 'normal',
   },
 })

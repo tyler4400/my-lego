@@ -11,10 +11,13 @@ const testComponents: ComponentData[] = [
     props: {
       text: '你好呀',
       fontSize: '20px',
-      color: 'red',
+      color: '#f5222d',
       lineHeight: '1',
       textAlign: 'left',
       fontFamily: '',
+      fontStyle: 'normal',
+      fontWeight: 'normal',
+      textDecoration: 'none',
     },
   },
   {
