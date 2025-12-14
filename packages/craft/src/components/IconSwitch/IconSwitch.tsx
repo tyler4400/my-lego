@@ -59,7 +59,6 @@ export default defineComponent({
   slots: Object as IconSwitchSlots,
 
   setup(props, { emit, slots, attrs }) {
-    console.log('IconSwitch.tsx.56.setup.slots: ', slots.default?.())
     // ❌ 下面解构会导致丢失响应式。只能在<script setup> 语法糖里解构 props才会被编译为带getter的访问，不会丢失响应式。
     // const { checked, tip } = props
 

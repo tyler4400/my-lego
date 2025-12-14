@@ -21,6 +21,8 @@ export default antfu(
       'antfu/top-level-function': 'off',
       // 允许使用 console（如需后面改成 warn 也可以）
       'no-console': 'off',
+      // if (typeof val !== 'number') return ''  //if 后面换行
+      'antfu/if-newline': 'off',
     },
   },
 )

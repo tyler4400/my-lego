@@ -44,6 +44,8 @@ export default antfu(
         ignoreTemplateLiterals: true,
         ignoreRegExpLiterals: true,
       }],
+      // if (typeof val !== 'number') return ''  //if 后面换行
+      'antfu/if-newline': 'off',
     },
   },
 )
