@@ -1,4 +1,4 @@
-import type { TextComponentProps } from '@/defaultProps.ts'
+import type { ImageComponentProps, TextComponentProps } from '@/defaultProps.ts'
 
 export interface EditorProps {
   // 供中间编辑器渲染的数组
@@ -9,7 +9,7 @@ export interface EditorProps {
 }
 export interface ComponentData {
   // 这个元素的 属性，属性请详见下面
-  props: Partial<TextComponentProps>
+  props: Partial<TextComponentProps | ImageComponentProps>
   // id，uuid v4 生成
   id: string
   // 业务组件库名称 c-text，c-image 等等

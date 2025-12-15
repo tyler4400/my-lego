@@ -129,3 +129,15 @@ export const textPropType = transformToComponentProps(textDefaultProps)
  * 用于从 props 中挑选出会体现在 style 上的字段
  */
 export const textStylePropsKeys = without(Object.keys(textDefaultProps), 'actionType', 'url', 'text')
+
+// 图片
+export const imageDefaultProps = {
+  src: 'test.url',
+  ...commonDefaultProps,
+}
+
+export interface ImageComponentProps extends CommonComponentProps {
+  src: string
+  naturalWidth?: number
+  naturalHeight?: number
+}

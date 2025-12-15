@@ -4,22 +4,58 @@
       v-for="(item, index) in list"
       :key="index"
       class="component-item"
-      @click="() => $emit('onItemClick', item)"
+      @click="() => handleTextClick(item)"
     >
       <LText v-bind="item" />
     </div>
   </div>
+  <StyleUploader @success="handleImageUploaded" />
 </template>
 
 <script setup lang="ts">
-import type { TextComponentProps } from '@/defaultProps.ts'
+import type { ImageComponentProps, TextComponentProps } from '@/defaultProps.ts'
+import type { ComponentData } from '@/types/editor.ts'
+import type { UploadResponse } from '@/types/upload.ts'
+import { message } from 'ant-design-vue'
+import { v4 as uuidv4 } from 'uuid'
 import LText from '@/components/LText.vue'
+import StyleUploader from '@/components/StyleUploader'
+import { imageDefaultProps } from '@/defaultProps.ts'
+import { getImageDimensions } from '@/utils/utils.ts'
 
 defineProps<{ list: Partial<TextComponentProps>[] }>()
 
-defineEmits<{
-  (e: 'onItemClick', item: Partial<TextComponentProps>): void
+const emit = defineEmits<{
+  (e: 'onItemClick', item: ComponentData): void
 }>()
+
+const maxWidth = 373
+
+const handleImageUploaded = async (resp: UploadResponse, _file: File) => {
+  const componentData: ComponentData = {
+    name: 'l-image',
+    id: uuidv4(),
+    props: {
+      ...imageDefaultProps,
+    },
+  }
+  message.success('上传成功')
+  ;(componentData.props as ImageComponentProps).src = resp.data.url
+  const { width } = await getImageDimensions(resp.data.url)
+  componentData.props.width = `${Math.min(width, maxWidth)}px`
+  emit('onItemClick', componentData)
+}
+
+const handleTextClick = (data: Partial<TextComponentProps>) => {
+  const componentData: ComponentData = {
+    name: 'LText',
+    id: uuidv4(),
+    props: {
+      ...data,
+    },
+  }
+  emit('onItemClick', componentData)
+}
 </script>
 
 <style scoped>
