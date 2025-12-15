@@ -32,6 +32,9 @@
                 v-bind="comp.props"
               />
             </EditWrapper>
+            <pre>
+              {{ editorStore.components }}
+            </pre>
           </div>
         </LayoutContent>
       </Layout>
@@ -52,6 +55,7 @@
 
 <script setup lang="ts">
 import type { TextComponentProps } from '@/defaultProps.ts'
+import type { ComponentData } from '@/types/editor.ts'
 import { Layout, LayoutContent, LayoutSider } from 'ant-design-vue'
 import ComponentList from '@/components/ComponentList.vue'
 import EditWrapper from '@/components/EditWrapper.vue'
@@ -68,7 +72,7 @@ defineOptions({
 
 const editorStore = useEditorStore()
 
-const addComponent = (item: Partial<TextComponentProps>) => {
+const addComponent = (item: ComponentData) => {
   editorStore.addComponent(item)
 }
 

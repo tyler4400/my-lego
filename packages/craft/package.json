@@ -21,6 +21,7 @@
     "@ant-design/icons-vue": "^7.0.1",
     "@my-lego/shared": "workspace:*",
     "ant-design-vue": "^4.2.6",
+    "axios": "^1.13.2",
     "lodash-es": "^4.17.21",
     "pinia": "^3.0.4",
     "uuid": "^13.0.0",

@@ -1,4 +1,4 @@
-import type { TextComponentProps } from '@/defaultProps.ts'
+import type { ImageComponentProps, TextComponentProps } from '@/defaultProps.ts'
 import type { ComponentData } from '@/types/editor.ts'
 import { defineStore } from 'pinia'
 import { v4 as uuidv4 } from 'uuid'
@@ -57,16 +57,11 @@ export const useEditorStore = defineStore('editor', () => {
     currentElement.value = components.find(item => item.id === id)
   }
 
-  const addComponent = (props: Partial<TextComponentProps>): void => {
-    const newComp = {
-      id: uuidv4(),
-      name: 'LText',
-      props,
-    }
-    components.push(newComp)
+  const addComponent = (data: ComponentData): void => {
+    if (data) components.push(data)
   }
 
-  const updateComponent = (key: keyof TextComponentProps, value: string) => {
+  const updateComponent = (key: keyof (TextComponentProps | ImageComponentProps), value: string) => {
     if (currentElement.value) {
       currentElement.value.props[key] = value
     }
