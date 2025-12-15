@@ -65,9 +65,7 @@ const fields = computed<FinalField[]>(() => {
       value,
       rawProps,
       onChange: (val: any) => {
-        const nextRaw = config.toProps
-          ? config.toProps(val, rawProps, newKey)
-          : val
+        const nextRaw = config.toProps?.(val, rawProps, newKey) ?? val
         emit('change', newKey, nextRaw)
       },
     })
