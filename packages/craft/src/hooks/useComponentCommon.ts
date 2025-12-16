@@ -7,7 +7,9 @@ function useComponentCommon(props: Readonly<Partial<TextComponentProps>>, picks:
 
   const handleClick = () => {
     if (props.actionType === 'url' && props.url) {
-      window.location.href = props.url
+      // window.location.href = props.url // todo
+      // eslint-disable-next-line no-alert
+      alert(`页面跳转：${props.url}`)
     }
   }
 

@@ -14,6 +14,10 @@ export function isNumber(value: unknown) {
   return typeof value === 'number'
 }
 
+export function isBoolean(value: unknown) {
+  return typeof value === 'boolean'
+}
+
 export function isArray(value: unknown) {
   return Array.isArray(value)
 }
