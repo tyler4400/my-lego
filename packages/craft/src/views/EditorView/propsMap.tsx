@@ -1,6 +1,7 @@
 import type { VNode } from 'vue'
 import type { TextComponentProps } from '@/defaultProps.ts'
 import { BoldOutlined, ItalicOutlined, UnderlineOutlined } from '@ant-design/icons-vue'
+import { isNumber, isString } from '@my-lego/shared'
 import { InputNumber, RadioButton, RadioGroup, Select, SelectOption, Slider, Textarea } from 'ant-design-vue'
 import ColorPicker from '@/components/ColorPicker'
 import IconSwitch from '@/components/IconSwitch'
@@ -68,11 +69,11 @@ export const mapPropsToForms: PropsToForms = {
       />
     ),
     toProps: (val) => {
-      if (typeof val !== 'number') return ''
+      if (!isNumber(val)) return ''
       return `${val}px`
     },
     fromProps: (raw) => {
-      if (typeof raw !== 'string') return undefined
+      if (!isString(raw)) return undefined
       const parsed = Number.parseInt(raw, 10)
       return Number.isNaN(parsed) ? undefined : parsed
     },
@@ -86,7 +87,7 @@ export const mapPropsToForms: PropsToForms = {
       return Number.isNaN(num) ? undefined : num
     },
     toProps: (val) => {
-      if (typeof val !== 'number') return ''
+      if (!isNumber(val)) return ''
       return val.toString()
     },
     render: ({ value, onChange }) => (
@@ -94,7 +95,7 @@ export const mapPropsToForms: PropsToForms = {
         min={0}
         max={3}
         step={0.1}
-        value={value as number | undefined}
+        value={value}
         onChange={val => onChange(val)}
       />
     ),

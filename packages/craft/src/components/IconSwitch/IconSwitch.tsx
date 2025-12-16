@@ -1,4 +1,5 @@
 import type { ExtractPublicPropTypes, PropType, SlotsType, VNodeChild } from 'vue'
+import { isBoolean } from '@my-lego/shared'
 import { Button, Tooltip } from 'ant-design-vue'
 import { defineComponent } from 'vue'
 
@@ -40,7 +41,7 @@ export interface IconSwitchEmits {
   (e: 'change', checked: boolean): void
 }
 const iconSwitchEmits = {
-  change: (checked: boolean) => typeof checked === 'boolean',
+  change: (checked: boolean) => isBoolean(checked),
 }
 
 /**
