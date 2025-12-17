@@ -21,6 +21,7 @@ const emit = defineEmits<{
 }>()
 
 const handleUploadSuccess = (resp: UploadResponse, file: UploadFile) => {
+  message.success('上传成功')
   emit('success', resp, file.raw)
 }
 

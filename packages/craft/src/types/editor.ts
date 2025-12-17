@@ -1,4 +1,5 @@
 import type { ImageComponentProps, TextComponentProps } from '@/defaultProps.ts'
+import type { componentMap } from '@/stores/editor.ts'
 
 export interface EditorProps {
   // 供中间编辑器渲染的数组
@@ -13,5 +14,5 @@ export interface ComponentData {
   // id，uuid v4 生成
   id: string
   // 业务组件库名称 c-text，c-image 等等
-  name: string
+  name: keyof typeof componentMap
 }

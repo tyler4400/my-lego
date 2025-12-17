@@ -28,7 +28,7 @@
               @setActive="editorStore.setCurrentElement"
             >
               <component
-                :is="comp.name"
+                :is="componentMap[comp.name]"
                 v-bind="comp.props"
               />
             </EditWrapper>
@@ -54,21 +54,14 @@
 </template>
 
 <script setup lang="ts">
-import type { TextComponentProps } from '@/defaultProps.ts'
+import type { ImageComponentProps, TextComponentProps } from '@/defaultProps.ts'
 import type { ComponentData } from '@/types/editor.ts'
 import { Layout, LayoutContent, LayoutSider } from 'ant-design-vue'
 import ComponentList from '@/components/ComponentList.vue'
 import EditWrapper from '@/components/EditWrapper.vue'
-import LText from '@/components/LText.vue'
 import PropsTable from '@/components/PropsTable.vue'
 import { defaultTextTemplates } from '@/defaultTemplates.ts'
-import { useEditorStore } from '@/stores/editor.ts'
-
-defineOptions({
-  components: {
-    LText,
-  },
-})
+import { componentMap, useEditorStore } from '@/stores/editor.ts'
 
 const editorStore = useEditorStore()
 
@@ -78,7 +71,7 @@ const addComponent = (item: ComponentData) => {
 
 const handleChange = (key: string, value: any) => {
   console.log('handleChange', key, value)
-  editorStore.updateComponent(key as keyof TextComponentProps, value)
+  editorStore.updateComponent(key as keyof (TextComponentProps | ImageComponentProps), value)
 }
 </script>
 

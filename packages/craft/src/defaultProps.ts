@@ -113,7 +113,7 @@ export function transformToComponentProps(props: TextComponentProps) {
   return mapValues(props, (item) => {
     return {
       // 根据默认值推断构造器类型（string 或 number）
-      type: item.constructor as StringConstructor | NumberConstructor,
+      type: item!.constructor as StringConstructor | NumberConstructor,
       default: item,
     }
   })
@@ -121,6 +121,7 @@ export function transformToComponentProps(props: TextComponentProps) {
 
 /**
  * 文本组件的运行时 props 类型定义（课程原始写法中使用）
+ * 本项目已经不使用这种运行时定义
  */
 export const textPropType = transformToComponentProps(textDefaultProps)
 
@@ -135,6 +136,8 @@ export const imageDefaultProps = {
   src: 'test.url',
   ...commonDefaultProps,
 }
+
+export const imageStylePropsKeys = without(Object.keys(imageDefaultProps), 'src', 'naturalWidth', 'naturalHeight')
 
 export interface ImageComponentProps extends CommonComponentProps {
   src: string

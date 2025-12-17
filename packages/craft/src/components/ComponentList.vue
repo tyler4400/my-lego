@@ -13,10 +13,9 @@
 </template>
 
 <script setup lang="ts">
-import type { ImageComponentProps, TextComponentProps } from '@/defaultProps.ts'
+import type { TextComponentProps } from '@/defaultProps.ts'
 import type { ComponentData } from '@/types/editor.ts'
 import type { UploadResponse } from '@/types/upload.ts'
-import { message } from 'ant-design-vue'
 import { v4 as uuidv4 } from 'uuid'
 import LText from '@/components/LText.vue'
 import StyleUploader from '@/components/StyleUploader'
@@ -33,14 +32,13 @@ const maxWidth = 373
 
 const handleImageUploaded = async (resp: UploadResponse, _file: File) => {
   const componentData: ComponentData = {
-    name: 'l-image',
+    name: 'LImage',
     id: uuidv4(),
     props: {
       ...imageDefaultProps,
+      src: resp.data.url,
     },
   }
-  message.success('上传成功')
-  ;(componentData.props as ImageComponentProps).src = resp.data.url
   const { width } = await getImageDimensions(resp.data.url)
   componentData.props.width = `${Math.min(width, maxWidth)}px`
   emit('onItemClick', componentData)
