@@ -2,7 +2,7 @@
   "name": "@my-lego/craft",
   "version": "1.0.0",
   "private": true,
-  "description": "lego低代码编辑器项目",
+  "description": "lego低代码编辑器项目 - 前端",
   "type": "module",
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
