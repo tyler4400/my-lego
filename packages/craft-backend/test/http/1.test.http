@@ -1,0 +1,8 @@
+### hello world
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/
+
+### 测试版本号
+POST {{host}}:{{port}}/{{prefix}}/v2
+
+### 期望报错 全局过滤器
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/error
