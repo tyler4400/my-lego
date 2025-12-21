@@ -1,5 +1,5 @@
 import { isFunction } from '@my-lego/shared'
-import { Inject, Injectable, Logger } from '@nestjs/common'
+import { Get, Inject, Injectable, Logger } from '@nestjs/common'
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston'
 
 @Injectable()
@@ -17,5 +17,10 @@ export class AppService {
     this.logger.verbose(`aa 是不是一个方法${aa}`)
 
     return `Hello World ～！ - ${aa}`
+  }
+
+  @Get('/error')
+  getError() {
+    throw new Error('An error occurred')
   }
 }

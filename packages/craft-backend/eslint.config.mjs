@@ -51,6 +51,8 @@ export default antfu(
       // 允许在 Nest 后端中直接使用全局 process（如 process.env）
       'node/prefer-global/process': 'off',
       'ts/strict-boolean-expressions': 'off',
+      'ts/no-unsafe-assignment': 'off',
+      'ts/no-unsafe-member-access': 'off',
     },
   },
 );
