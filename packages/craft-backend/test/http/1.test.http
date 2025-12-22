@@ -6,3 +6,35 @@ POST {{host}}:{{port}}/{{prefix}}/v2
 
 ### 期望报错 全局过滤器
 GET {{host}}:{{port}}/{{prefix}}/{{version}}/error
+
+### signin
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/auth/signin
+Content-Type: application/json
+
+{
+  "username": "admin_user",
+  "password": "123131313"
+}
+
+> {% client.global.set("access_token", response.body.data.access_token);
+
+  client.test("测试登录接口", function () {
+    client.assert(response.body.code === 200, "Response code is not '200'");
+    client.assert(response.body.data.access_token !== undefined, "获取access_token失败");
+  });
+%}
+
+
+### signup
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/auth/signup
+Content-Type: application/json
+
+{
+  "username": "admin_user",
+  "password": "123131313",
+  "no_need": "不需要这个，服务端剔除不报错"
+}
+
+### 受 JWT 保护的示例接口
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/auth/me
+Authorization: Bearer {{access_token}}
