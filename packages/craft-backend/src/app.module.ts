@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { AppController } from '@/app.controller'
 import { AppService } from '@/app.service'
+import { RedisModule } from '@/common/cache/redis.module'
 import { ConfigModule } from '@/common/config/config.module'
 import { LoggerModule } from '@/common/logger/logger.module'
 import { AuthModule } from '@/module/auth/auth.module'
@@ -10,6 +11,7 @@ import { AuthModule } from '@/module/auth/auth.module'
     ConfigModule,
     LoggerModule,
     AuthModule,
+    RedisModule,
   ],
   controllers: [AppController],
   providers: [AppService],

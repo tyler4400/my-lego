@@ -38,3 +38,12 @@ Content-Type: application/json
 ### 受 JWT 保护的示例接口
 GET {{host}}:{{port}}/{{prefix}}/{{version}}/auth/me
 Authorization: Bearer {{access_token}}
+
+### ping
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/ping
+
+### 测试redis-设置值
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/set-redis?value={{$random.address.cityName}}
+
+### 测试redis(返回上一步设置的值)
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/get-redis?key=nest-template
