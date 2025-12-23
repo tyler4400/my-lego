@@ -47,3 +47,23 @@ GET {{host}}:{{port}}/{{prefix}}/{{version}}/set-redis?value={{$random.address.c
 
 ### 测试redis(返回上一步设置的值)
 GET {{host}}:{{port}}/{{prefix}}/{{version}}/get-redis?key=nest-template
+
+### mongo-ping（阶段1：验证 Mongo 连接）
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/mongo-ping
+
+### mongo-seed（阶段1：写入测试 user/work，验证 schema/自增 id）
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/mongo-seed
+Content-Type: application/json
+
+{
+  "username": "tyler@3.copm"
+}
+
+> {% client.global.set("mongo_user_id", response.body.data.user._id);
+
+  client.test("测试 mongo-seed 接口", function () {
+    client.assert(response.body.code === 200, "Response code is not '200'");
+    client.assert(response.body.data.user.id !== undefined, "user 自增 id 生成失败");
+    client.assert(response.body.data.work.id !== undefined, "work 自增 id 生成失败");
+  });
+%}

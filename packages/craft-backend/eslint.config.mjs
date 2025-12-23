@@ -53,6 +53,7 @@ export default antfu(
       'ts/strict-boolean-expressions': 'off',
       'ts/no-unsafe-assignment': 'off',
       'ts/no-unsafe-member-access': 'off',
+      'ts/no-unsafe-call': 'off',
     },
   },
 );

@@ -4,12 +4,14 @@ import { AppService } from '@/app.service'
 import { RedisModule } from '@/common/cache/redis.module'
 import { ConfigModule } from '@/common/config/config.module'
 import { LoggerModule } from '@/common/logger/logger.module'
+import { MongoModule } from '@/database/mongo/mongo.module'
 import { AuthModule } from '@/module/auth/auth.module'
 
 @Module({
   imports: [
     ConfigModule,
     LoggerModule,
+    MongoModule,
     AuthModule,
     RedisModule,
   ],
