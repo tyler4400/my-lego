@@ -15,12 +15,7 @@ export class AuthController {
   @Post('signin')
   async signin(@Body('username') username: string) {
     const result = await this.authService.signin(username)
-
-    return {
-      code: 200,
-      data: result,
-      message: 'Sign in successfully!',
-    }
+    return result
   }
 
   /**
@@ -30,10 +25,6 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   getMe(@Req() req: Request) {
-    return {
-      code: 200,
-      data: req.user,
-      message: 'Protected route',
-    }
+    return req.user
   }
 }

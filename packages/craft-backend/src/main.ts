@@ -1,8 +1,8 @@
-import { ValidationPipe, VERSION_NEUTRAL, VersioningType } from '@nestjs/common'
+import { VERSION_NEUTRAL, VersioningType } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { HttpAdapterHost, NestFactory } from '@nestjs/core'
+import { NestFactory } from '@nestjs/core'
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston'
-import { AllExceptionFilter } from '@/common/all-exception/all-exception.filter'
+import { createGlobalValidationPipe } from '@/common/validation/validation.pipe'
 import { AppModule } from './app.module'
 
 async function bootstrap() {
@@ -12,27 +12,9 @@ async function bootstrap() {
   // 使用 Winston 作为 Nest Logger
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER))
 
-  // 启用全局异常过滤器
-  const errorFilterFlag = configService.get<string>('ERROR_FILTER', 'true')
-  if (errorFilterFlag === 'true') {
-    const httpAdapterHost = app.get(HttpAdapterHost)
-    app.useGlobalFilters(new AllExceptionFilter(httpAdapterHost))
-  }
-
   // 全局校验管道
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true, // 自动剔除 DTO 中未声明的多余字段。
-      // 遇到多余字段直接抛错（更严格、更安全）。
-      // forbidNonWhitelisted: true
-      // transform: 自动转换请求对象到 DTO 实例
-      transform: true,
-      transformOptions: {
-        // 允许类转换器隐式转换字段类型，如将字符串转换为数字等。
-        enableImplicitConversion: true,
-      },
-    }),
-  )
+  // 说明：Validation 失败会被转换为 BizException（userValidateFail），并进入 MetaResponse 体系
+  app.useGlobalPipes(createGlobalValidationPipe())
 
   // 全局前缀 + 版本
   const prefix = configService.get<string>('PREFIX', '/api')

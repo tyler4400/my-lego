@@ -19,21 +19,14 @@ Content-Type: application/json
 > {% client.global.set("access_token", response.body.data.access_token);
 
   client.test("测试登录接口", function () {
-    client.assert(response.body.code === 200, "Response code is not '200'");
+    client.assert(response.body.code === 0, "Response code is not '0'");
     client.assert(response.body.data.access_token !== undefined, "获取access_token失败");
+    client.assert(response.body.traceId !== undefined, "traceId 缺失");
+    client.assert(response.body.requestTime !== undefined, "requestTime 缺失");
+    client.assert(response.body.protocol === "default", "protocol 不正确");
   });
 %}
 
-
-### signup
-POST {{host}}:{{port}}/{{prefix}}/{{version}}/auth/signup
-Content-Type: application/json
-
-{
-  "username": "admin_user",
-  "password": "123131313",
-  "no_need": "不需要这个，服务端剔除不报错"
-}
 
 ### 受 JWT 保护的示例接口
 GET {{host}}:{{port}}/{{prefix}}/{{version}}/auth/me
@@ -62,8 +55,68 @@ Content-Type: application/json
 > {% client.global.set("mongo_user_id", response.body.data.user._id);
 
   client.test("测试 mongo-seed 接口", function () {
-    client.assert(response.body.code === 200, "Response code is not '200'");
+    client.assert(response.body.code === 0, "Response code is not '0'");
     client.assert(response.body.data.user.id !== undefined, "user 自增 id 生成失败");
     client.assert(response.body.data.work.id !== undefined, "work 自增 id 生成失败");
+  });
+%}
+
+### demo 场景 A：成功返回（MetaResponseInterceptor）
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/demo/success
+
+> {%
+  client.test("demo success", function () {
+    client.assert(response.body.code === 0, "code 应为 0");
+    client.assert(response.body.data.hello === "world", "data.hello 应为 world");
+    client.assert(response.body.traceId !== undefined, "traceId 缺失");
+    client.assert(response.body.requestTime !== undefined, "requestTime 缺失");
+    client.assert(response.body.protocol === "default", "protocol 不正确");
+  });
+%}
+
+### demo 场景 B：业务异常 BizException（MetaExceptionFilter Biz 分支）
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/demo/biz-exception
+
+> {%
+  client.test("demo biz exception", function () {
+    client.assert(response.body.code === 101002, "code 应为 createUserAlreadyExists 的 errno=101002");
+    client.assert(response.body.message !== undefined, "message 缺失");
+  });
+%}
+
+### demo 场景 C：DTO 校验失败（ValidationPipe -> BizException(userValidateFail)）
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/demo/validate
+Content-Type: application/json
+
+{
+  "email": "not-an-email",
+  "password": "123"
+}
+
+> {%
+  client.test("demo validate fail", function () {
+    client.assert(response.body.code === 101001, "code 应为 userValidateFail 的 errno=101001");
+    client.assert(response.body.data !== null, "data 不应为空");
+    client.assert(response.body.data.errors !== undefined, "data.errors 缺失");
+  });
+%}
+
+### demo 场景 D-1：系统异常 BadRequestException（MetaExceptionFilter HttpException 分支）
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/demo/bad-request
+
+> {%
+  client.test("demo bad request", function () {
+    client.assert(response.body.code === 400, "code 应为 httpStatus=400");
+    client.assert(response.body.message !== undefined, "message 缺失");
+  });
+%}
+
+### demo 场景 D-2：系统异常 UnauthorizedException（MetaExceptionFilter HttpException 分支）
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/demo/unauthorized
+
+> {%
+  client.test("demo unauthorized", function () {
+    client.assert(response.body.code === 401, "code 应为 httpStatus=401");
+    client.assert(response.body.message !== undefined, "message 缺失");
   });
 %}

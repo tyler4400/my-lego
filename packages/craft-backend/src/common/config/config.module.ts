@@ -10,7 +10,6 @@ const validationSchema = Joi.object({
   PREFIX: Joi.string().default('/api'),
   VERSION: Joi.string().optional(),
 
-  ERROR_FILTER: Joi.string().valid('true', 'false').default('true'),
   LOG_ON: Joi.string().valid('true', 'false').default('true'),
 
   JWT_SECRET: Joi.string().required(),

@@ -2,13 +2,31 @@ import type { Connection, Model } from 'mongoose'
 import type { UserDocument } from '@/database/mongo/schema/user.schema'
 import type { WorkDocument } from '@/database/mongo/schema/work.schema'
 import { randomUUID } from 'node:crypto'
-import { Body, Controller, Get, Inject, Logger, Post, Query, Version } from '@nestjs/common'
+import { BadRequestException, Body, Controller, Get, Inject, Logger, Post, Query, UnauthorizedException, Version } from '@nestjs/common'
 import { InjectConnection, InjectModel } from '@nestjs/mongoose'
+import { IsEmail, IsString, MinLength } from 'class-validator'
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston'
 import { AppService } from '@/app.service'
 import { RedisService } from '@/common/cache/redis.service'
+import { BizException } from '@/common/error/biz.exception'
 import { User } from '@/database/mongo/schema/user.schema'
 import { Work } from '@/database/mongo/schema/work.schema'
+
+/**
+ * DemoValidateDto：用于演示全局 ValidationPipe 的 DTO 校验失败场景。
+ *
+ * 注意：
+ * - 校验失败会在 ValidationPipe.exceptionFactory 阶段被转换为 BizException(userValidateFail)
+ * - 最终会由 MetaExceptionFilter 统一包装成 MetaResponse
+ */
+class DemoValidateDto {
+  @IsEmail({}, { message: 'email 格式不正确' })
+  email!: string
+
+  @IsString({ message: 'password 必须是字符串' })
+  @MinLength(6, { message: 'password 长度不能少于 6 位' })
+  password!: string
+}
 
 @Controller()
 export class AppController {
@@ -67,11 +85,7 @@ export class AppController {
     const readyState = this.mongoConnection.readyState
 
     if (readyState !== 1 || !this.mongoConnection.db) {
-      return {
-        code: 200,
-        data: { readyState, connected: false },
-        message: 'Mongo is not connected yet',
-      }
+      return { readyState, connected: false }
     }
 
     const pingResult = await this.mongoConnection.db.admin().ping()
@@ -79,13 +93,10 @@ export class AppController {
     const workCount = await this.workModel.countDocuments()
 
     return {
-      code: 200,
-      data: {
-        readyState,
-        pingResult,
-        counts: { userCount, workCount },
-      },
-      message: 'Mongo ping successfully',
+      readyState,
+      connected: true,
+      pingResult,
+      counts: { userCount, workCount },
     }
   }
 
@@ -122,13 +133,55 @@ export class AppController {
       content: {},
     })
 
-    return {
-      code: 200,
-      data: {
-        user: user.toJSON(),
-        work: work.toJSON(),
-      },
-      message: 'Mongo seed successfully',
-    }
+    return { user: user.toJSON(), work: work.toJSON() }
+  }
+
+  /**
+   * Demo 场景（用于学习与联调）：
+   * - A：成功返回（由 MetaResponseInterceptor 统一包装）
+   * - B：业务异常 BizException（由 MetaExceptionFilter 的 Biz 分支包装）
+   * - C：DTO 校验失败（ValidationPipe -> BizException(userValidateFail)）
+   * - D：系统异常（BadRequestException / UnauthorizedException，走 HttpException 分支）
+   */
+
+  /**
+   * 场景 A：成功返回（HTTP 200，body.code=0）
+   */
+  @Get('/demo/success')
+  demoSuccess() {
+    return { hello: 'world', from: 'demo' }
+  }
+
+  /**
+   * 场景 B：业务异常（默认 HTTP 200，但 body.code=errno）
+   */
+  @Get('/demo/biz-exception')
+  demoBizException() {
+    throw new BizException({ errorKey: 'createUserAlreadyExists' })
+  }
+
+  /**
+   * 场景 C：DTO 校验失败（HTTP 400，body.code=101001）
+   */
+  @Post('/demo/validate')
+  demoValidate(@Body() dto: DemoValidateDto) {
+    // 如果请求体不合法（如 email 非邮箱、password 太短），会在进入该方法前抛出 BizException
+    return { received: dto }
+  }
+
+  /**
+   * 场景 D-1：系统异常 BadRequestException（HTTP 400，body.code=400）
+   */
+  @Get('/demo/bad-request')
+  demoBadRequest() {
+    throw new BadRequestException('演示：参数不合法')
+  }
+
+  /**
+   * 场景 D-2：系统异常 UnauthorizedException（HTTP 401，body.code=401）
+   */
+  @Get('/demo/unauthorized')
+  demoUnauthorized() {
+    throw new UnauthorizedException('演示：未登录或 token 无效')
   }
 }
