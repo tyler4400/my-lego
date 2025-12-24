@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config'
 import { JwtModule } from '@nestjs/jwt'
 import { PassportModule } from '@nestjs/passport'
 import { AuthController } from './auth.controller'
-import { AuthService } from './auth.service'
 import { JwtStrategy } from './strategy/jwt.strategy'
 
 @Module({
@@ -11,9 +10,9 @@ import { JwtStrategy } from './strategy/jwt.strategy'
     PassportModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
+      // global: true, // JwtService 全局可用
       useFactory: (configService: ConfigService) => {
         return {
-          global: true, // JwtService 全局可用
           secret: configService.get<string>('JWT_SECRET'),
           signOptions: {
             expiresIn: '1d',
@@ -23,7 +22,7 @@ import { JwtStrategy } from './strategy/jwt.strategy'
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
-  exports: [AuthService],
+  providers: [JwtStrategy],
+  exports: [JwtModule],
 })
 export class AuthModule {}

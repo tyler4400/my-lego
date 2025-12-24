@@ -46,5 +46,3 @@ export const userErrorMessages = {
     message: 'gitee 授权出错',
   },
 } as const
-
-

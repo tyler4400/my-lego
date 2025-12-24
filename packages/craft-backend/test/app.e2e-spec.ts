@@ -21,6 +21,12 @@ describe('AppController (e2e)', () => {
     return request(app.getHttpServer())
       .get('/')
       .expect(200)
-      .expect('Hello World!')
+      .expect((res) => {
+        expect(res.body).toHaveProperty('code', 0)
+        expect(res.body).toHaveProperty('data')
+        expect(res.body).toHaveProperty('traceId')
+        expect(res.body).toHaveProperty('requestTime')
+        expect(res.body).toHaveProperty('protocol', 'default')
+      })
   })
 })

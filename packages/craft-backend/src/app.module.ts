@@ -7,6 +7,7 @@ import { LoggerModule } from '@/common/logger/logger.module'
 import { MetaModule } from '@/common/meta/meta.module'
 import { MongoModule } from '@/database/mongo/mongo.module'
 import { AuthModule } from '@/module/auth/auth.module'
+import { UserModule } from '@/module/user/user.module'
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AuthModule } from '@/module/auth/auth.module'
     LoggerModule,
     MongoModule,
     AuthModule,
+    UserModule,
     RedisModule,
   ],
   controllers: [AppController],

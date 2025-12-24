@@ -13,8 +13,13 @@
       "import": "./dist/index.js"
     }
   },
+  "dependencies": {
+    "bcryptjs": "^3.0.2"
+  },
   "scripts": {
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint src --ext .ts,.tsx,.js,.jsx,.vue",
+    "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx,.vue --fix"
   },
   "keywords": [],
   "author": "",

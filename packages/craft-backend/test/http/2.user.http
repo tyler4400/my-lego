@@ -1,0 +1,123 @@
+@email_username = tyler{{$timestamp}}@test.com
+@email_password = 12345678
+@phone_number = 13800000000
+
+### 1) 邮箱注册（严格邮箱）
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/user/createByEmail
+Content-Type: application/json
+
+{
+  "username": "{{email_username}}",
+  "password": "{{email_password}}"
+}
+
+> {%
+  client.test("邮箱注册", function () {
+    client.assert(response.body.code === 0, "code 应为 0");
+    client.assert(response.body.data.username !== undefined, "username 缺失");
+    client.assert(response.body.data.password === undefined, "password 不应返回");
+  });
+%}
+
+### 2) 邮箱登录（返回 access_token + userInfo）
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/user/loginByEmail
+Content-Type: application/json
+
+{
+  "username": "tyler1766558092@test.com",
+  "password": "{{email_password}}"
+}
+
+> {%
+  client.global.set("access_token", response.body.data.access_token);
+
+  client.test("邮箱登录", function () {
+    client.assert(response.body.code === 0, "code 应为 0");
+    client.assert(response.body.data.access_token !== undefined, "access_token 缺失");
+    client.assert(response.body.data.userInfo !== undefined, "userInfo 缺失");
+    client.assert(response.body.data.userInfo.password === undefined, "password 不应返回");
+  });
+%}
+
+### 3) 获取当前用户信息（JWT 保护）
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/user/me
+Authorization: Bearer {{access_token}}
+
+> {%
+  client.test("获取用户信息", function () {
+    client.assert(response.body.code === 0, "code 应为 0");
+    client.assert(response.body.data.username !== undefined, "username 缺失");
+    client.assert(response.body.data.password === undefined, "password 不应返回");
+  });
+%}
+
+### 4) 发送短信验证码（直接返回 verifyCode，便于调试）
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/user/sendVerifyCode
+Content-Type: application/json
+
+{
+  "phoneNumber": "{{phone_number}}"
+}
+
+> {%
+  client.global.set("phone_verify_code", response.body.data.verifyCode);
+
+  client.test("发送验证码", function () {
+    client.assert(response.body.code === 0, "code 应为 0");
+    client.assert(response.body.data.verifyCode !== undefined, "verifyCode 缺失");
+  });
+%}
+
+### 5) 发送验证码过于频繁（同手机号 60s 内重复发送）
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/user/sendVerifyCode
+Content-Type: application/json
+
+{
+  "phoneNumber": "{{phone_number}}"
+}
+
+> {%
+  client.test("验证码发送频率限制", function () {
+    client.assert(response.body.code === 101005, "code 应为 101005（sendVeriCodeFrequentlyFailInfo）");
+  });
+%}
+
+### 6) 手机号 + 验证码登录（校验成功后删除验证码 key）
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/user/loginByCellphone
+Content-Type: application/json
+
+{
+  "phoneNumber": "{{phone_number}}",
+  "verifyCode": "{{phone_verify_code}}"
+}
+
+> {%
+  client.global.set("phone_access_token", response.body.data.access_token);
+
+  client.test("手机号登录", function () {
+    client.assert(response.body.code === 0, "code 应为 0");
+    client.assert(response.body.data.access_token !== undefined, "access_token 缺失");
+    client.assert(response.body.data.userInfo !== undefined, "userInfo 缺失");
+  });
+%}
+
+### 7) 复用同一个验证码应失败（已删除 redis key）
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/user/loginByCellphone
+Content-Type: application/json
+
+{
+  "phoneNumber": "{{phone_number}}",
+  "verifyCode": "{{phone_verify_code}}"
+}
+
+> {%
+  client.test("验证码不可复用", function () {
+    client.assert(response.body.code === 101006, "code 应为 101006（loginVeriCodeIncorrectFailInfo）");
+  });
+%}
+
+### 8) auth 模块示例接口（JWT 保护）
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/auth/me
+Authorization: Bearer {{access_token}}
+
+
