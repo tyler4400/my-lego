@@ -36,6 +36,6 @@ export class MetaModule implements NestModule {
    * https://docs.nestjs.cn/overview/middlewares#%E5%BA%94%E7%94%A8%E4%B8%AD%E9%97%B4%E4%BB%B6
    */
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(MetaContextMiddleware).forRoutes('*')
+    consumer.apply(MetaContextMiddleware).forRoutes('*path') // 等同于旧版的 * ，直接写*会有warn
   }
 }

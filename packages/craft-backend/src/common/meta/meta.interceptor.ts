@@ -42,6 +42,7 @@ export class MetaResponseInterceptor implements NestInterceptor {
           requestTime: Date.now(),
           version: '',
           protocol: DEFAULT_PROTOCOL,
+          ip: req.ip,
         }
 
         return {
@@ -52,6 +53,7 @@ export class MetaResponseInterceptor implements NestInterceptor {
           traceId: meta.traceId,
           requestTime: meta.requestTime,
           protocol: meta.protocol,
+          ip: meta.ip,
         }
       }),
     )

@@ -65,6 +65,6 @@ export class UserController {
   @Get('/me')
   async me(@Req() req: Request) {
     // req.user 来自 JwtStrategy.validate() 的返回值
-    return this.userService.me(req.user as any)
+    return this.userService.me(req.user!)
   }
 }

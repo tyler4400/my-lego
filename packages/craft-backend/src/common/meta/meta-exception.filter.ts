@@ -52,6 +52,7 @@ export class MetaExceptionFilter implements ExceptionFilter {
       requestTime: Date.now(),
       version: this.configService.get<string>('VERSION', ''),
       protocol: DEFAULT_PROTOCOL,
+      ip: req.ip,
     }
 
     // 1) 业务异常：code=errno，message=业务 message，httpStatus 默认 200（可指定）
@@ -64,6 +65,7 @@ export class MetaExceptionFilter implements ExceptionFilter {
         traceId: meta.traceId,
         requestTime: meta.requestTime,
         protocol: meta.protocol,
+        ip: meta.ip,
       }
       httpAdapter.reply(res, body, exception.getStatus())
       return
@@ -85,6 +87,7 @@ export class MetaExceptionFilter implements ExceptionFilter {
           traceId: meta.traceId,
           requestTime: meta.requestTime,
           protocol: meta.protocol,
+          ip: meta.ip,
         }
         httpAdapter.reply(res, body, exception.getStatus())
         return
@@ -106,6 +109,7 @@ export class MetaExceptionFilter implements ExceptionFilter {
         traceId: meta.traceId,
         requestTime: meta.requestTime,
         protocol: meta.protocol,
+        ip: meta.ip,
       }
 
       httpAdapter.reply(res, body, httpStatus)
@@ -122,6 +126,7 @@ export class MetaExceptionFilter implements ExceptionFilter {
       traceId: meta.traceId,
       requestTime: meta.requestTime,
       protocol: meta.protocol,
+      ip: meta.ip,
     }
 
     // 记录完整异常（不返回给前端）

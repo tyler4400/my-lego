@@ -19,6 +19,7 @@ export interface MetaResponse<T> {
   traceId: string
   requestTime: number
   protocol: MetaProtocol
+  ip?: string
 }
 
 /**

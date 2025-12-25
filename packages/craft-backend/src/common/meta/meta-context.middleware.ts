@@ -32,6 +32,7 @@ export class MetaContextMiddleware {
       requestTime,
       version,
       protocol: DEFAULT_PROTOCOL,
+      ip: req.ip,
     }
 
     // 方便联调：把 traceId 回写到响应头
