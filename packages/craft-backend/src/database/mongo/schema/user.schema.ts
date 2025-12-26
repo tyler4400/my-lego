@@ -11,7 +11,7 @@ export type UserDocument = HydratedDocument<User>
  * - 自增 id 对齐：users_id_counter
  */
 export type UserType = 'email' | 'cellphone' | 'oauth'
-export type UserProvider = 'gitee'
+export type UserProvider = 'github' | 'gitee'
 export type UserRole = 'admin' | 'normal'
 
 @Schema({
@@ -44,6 +44,7 @@ export class User {
   @Prop({ type: String, default: 'email' })
   type!: UserType
 
+  // 用户通过oauth2第三方登录的第三方 例如 GitHub， gitee， wechat
   @Prop({ type: String })
   provider?: UserProvider
 

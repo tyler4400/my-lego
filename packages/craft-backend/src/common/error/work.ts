@@ -19,4 +19,4 @@ export const workErrorMessages = {
     errno: 102005,
     message: '频道操作失败',
   },
-};
+}

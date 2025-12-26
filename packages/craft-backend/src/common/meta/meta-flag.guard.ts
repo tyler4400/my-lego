@@ -27,7 +27,6 @@ export class MetaFlagGuard implements CanActivate {
     ])
 
     const req = context.switchToHttp().getRequest<Request>()
-    console.log('meta-flag.guard.ts.29.canActivate.req: ', req.ip)
     req.__skipMetaRes = skip === true
     return true
   }

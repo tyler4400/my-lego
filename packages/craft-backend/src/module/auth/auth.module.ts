@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtModule } from '@nestjs/jwt'
 import { PassportModule } from '@nestjs/passport'
-import { AuthController } from './auth.controller'
 import { JwtStrategy } from './strategy/jwt.strategy'
 
 @Module({
@@ -21,7 +20,12 @@ import { JwtStrategy } from './strategy/jwt.strategy'
       },
     }),
   ],
-  controllers: [AuthController],
+  /**
+   * 注意：
+   * - 之前的 `GET /auth/me` 属于联调示例接口，已迁移到 TestModule（/test/auth/me）
+   * - AuthModule 仍然负责注册 JwtStrategy/JwtModule，供业务模块签发与校验 JWT 使用
+   */
+  controllers: [],
   providers: [JwtStrategy],
   exports: [JwtModule],
 })

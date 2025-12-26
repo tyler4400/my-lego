@@ -34,7 +34,7 @@ export class UserService {
       email: username,
       password: passwordHash,
       type: 'email',
-    })
+    } satisfies User)
 
     // 双保险：由于 create 返回的 doc 可能包含 password（内存字段），这里再查一次拿“默认不含 password”版本
     const safeUser = await this.userModel.findById(created._id)
@@ -126,7 +126,7 @@ export class UserService {
       phoneNumber,
       nickName: `乐高${phoneNumber.slice(-4)}`,
       type: 'cellphone',
-    })
+    } satisfies User)
 
     const safeUser = await this.userModel.findById(newUser._id)
     if (!safeUser || !safeUser.id) {

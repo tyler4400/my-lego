@@ -13,6 +13,13 @@ const validationSchema = Joi.object({
   LOG_ON: Joi.string().valid('true', 'false').default('true'),
 
   JWT_SECRET: Joi.string().required(),
+
+  /**
+   * 测试模块开关：
+   * - true：启用 /test 下的测试专用端点
+   * - false：禁用（所有 /test 端点返回 404，避免在生产环境暴露）
+   */
+  TEST_MODULE_ON: Joi.string().valid('true', 'false').default('false'),
 })
 
 // 指定数组时， 如果一个变量在多个文件中被找到，则以第一个为准。

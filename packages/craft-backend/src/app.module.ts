@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common'
-import { AppController } from '@/app.controller'
-import { AppService } from '@/app.service'
 import { RedisModule } from '@/common/cache/redis.module'
 import { ConfigModule } from '@/common/config/config.module'
 import { LoggerModule } from '@/common/logger/logger.module'
 import { MetaModule } from '@/common/meta/meta.module'
 import { MongoModule } from '@/database/mongo/mongo.module'
 import { AuthModule } from '@/module/auth/auth.module'
+import { TestModule } from '@/module/test/test.module'
 import { UserModule } from '@/module/user/user.module'
 
 @Module({
@@ -18,8 +17,14 @@ import { UserModule } from '@/module/user/user.module'
     AuthModule,
     UserModule,
     RedisModule,
+    /**
+     * TestModule 始终注册，但通过 Guard 控制是否生效：
+     * - TEST_MODULE_ON=true 且非 production：开放 /test/* 测试端点
+     * - 否则：/test/* 返回 404
+     */
+    TestModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

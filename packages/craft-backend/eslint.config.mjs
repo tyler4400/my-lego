@@ -15,7 +15,7 @@ export default antfu(
     vue: false,
 
     // 忽略本包的构建产物和依赖目录
-    ignores: ['dist', 'node_modules'],
+    ignores: ['dist', 'node_modules', 'logs'],
   },
   {
     // 这里是对基础规则的一些补充和个性化设置

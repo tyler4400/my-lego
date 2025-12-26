@@ -15,4 +15,4 @@ export const utilsErrorMessages = {
     errno: 103004,
     message: '作品不存在',
   },
-};
+}

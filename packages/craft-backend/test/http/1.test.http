@@ -1,26 +1,26 @@
 ### hello world
-GET {{host}}:{{port}}/{{prefix}}/{{version}}/
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/test
 
 ### 测试版本号
-POST {{host}}:{{port}}/{{prefix}}/v2
+POST {{host}}:{{port}}/{{prefix}}/v2/test
 
 ### 期望报错 全局过滤器
-GET {{host}}:{{port}}/{{prefix}}/{{version}}/error
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/test/error
 
 ### ping
-GET {{host}}:{{port}}/{{prefix}}/{{version}}/ping
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/test/ping
 
 ### 测试redis-设置值
-GET {{host}}:{{port}}/{{prefix}}/{{version}}/set-redis?value={{$random.address.cityName}}
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/test/set-redis?value={{$random.address.cityName}}
 
 ### 测试redis(返回上一步设置的值)
-GET {{host}}:{{port}}/{{prefix}}/{{version}}/get-redis?key=nest-template
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/test/get-redis?key=nest-template
 
 ### mongo-ping（阶段1：验证 Mongo 连接）
-GET {{host}}:{{port}}/{{prefix}}/{{version}}/mongo-ping
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/test/mongo-ping
 
 ### mongo-seed（阶段1：写入测试 user/work，验证 schema/自增 id）
-POST {{host}}:{{port}}/{{prefix}}/{{version}}/mongo-seed
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/test/mongo-seed
 Content-Type: application/json
 
 {
@@ -37,7 +37,7 @@ Content-Type: application/json
 %}
 
 ### demo 场景 A：成功返回（MetaResponseInterceptor）
-GET {{host}}:{{port}}/{{prefix}}/{{version}}/demo/success
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/test/demo/success
 
 > {%
   client.test("demo success", function () {
@@ -50,7 +50,7 @@ GET {{host}}:{{port}}/{{prefix}}/{{version}}/demo/success
 %}
 
 ### demo 场景 B：业务异常 BizException（MetaExceptionFilter Biz 分支）
-GET {{host}}:{{port}}/{{prefix}}/{{version}}/demo/biz-exception
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/test/demo/biz-exception
 
 > {%
   client.test("demo biz exception", function () {
@@ -60,7 +60,7 @@ GET {{host}}:{{port}}/{{prefix}}/{{version}}/demo/biz-exception
 %}
 
 ### demo 场景 C：DTO 校验失败（ValidationPipe -> BizException(userValidateFail)）
-POST {{host}}:{{port}}/{{prefix}}/{{version}}/demo/validate
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/test/demo/validate
 Content-Type: application/json
 
 {
@@ -77,7 +77,7 @@ Content-Type: application/json
 %}
 
 ### demo 场景 D-1：系统异常 BadRequestException（MetaExceptionFilter HttpException 分支）
-GET {{host}}:{{port}}/{{prefix}}/{{version}}/demo/bad-request
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/test/demo/bad-request
 
 > {%
   client.test("demo bad request", function () {
@@ -87,7 +87,11 @@ GET {{host}}:{{port}}/{{prefix}}/{{version}}/demo/bad-request
 %}
 
 ### demo 场景 D-2：系统异常 UnauthorizedException（MetaExceptionFilter HttpException 分支）
-GET {{host}}:{{port}}/{{prefix}}/{{version}}/demo/unauthorized
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/test/demo/unauthorized
+
+### auth 模块示例接口（JWT 保护，已迁移到 /test/auth/me）
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/test/auth/me
+Authorization: Bearer {{access_token}}
 
 > {%
   client.test("demo unauthorized", function () {
