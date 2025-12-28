@@ -10,17 +10,13 @@ import { Work, WorkSchema } from '@/database/mongo/schema/work.schema'
   imports: [
     /**
      * 与 nest-template 保持一致：使用 forRootAsync + ConfigService 注入动态配置。
-     *
-     * 注意：
-     * - 如果你的 Mongo 用户不是在目标 DB 中创建的，可能需要在 uri 追加 `?authSource=admin`
-     *   这点在 `.env-example` 里也有提示。
      */
     MongooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         const uri = configService.getOrThrow<string>('MONGO_DB_LEGO_URL')
-        const user = configService.get<string>('MONGO_DB_LEGO_USERNAME')
-        const pass = configService.get<string>('MONGO_DB_LEGO_PASSWORD')
+        const user = configService.getOrThrow<string>('MONGO_DB_LEGO_USERNAME')
+        const pass = configService.getOrThrow<string>('MONGO_DB_LEGO_PASSWORD')
 
         return { uri, user, pass }
       },

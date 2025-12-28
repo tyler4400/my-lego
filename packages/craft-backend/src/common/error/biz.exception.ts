@@ -1,5 +1,5 @@
 import type { GlobalErrorKey } from '@/common/error/error.registry'
-import { HttpException } from '@nestjs/common'
+import { HttpException, HttpStatus } from '@nestjs/common'
 import { getErrorInfoByKey } from '@/common/error/error.registry'
 
 export interface BizExceptionOptions {
@@ -45,7 +45,7 @@ export class BizException extends HttpException {
 
   constructor(options: BizExceptionOptions) {
     const info = getErrorInfoByKey(options.errorKey)
-    super(info.message, options.httpStatus ?? 200)
+    super(info.message, options.httpStatus ?? HttpStatus.OK)
 
     this.errno = info.errno
     this.errorKey = options.errorKey
@@ -57,7 +57,7 @@ export class BizException extends HttpException {
    * 适用于临时错误或需要动态 message 的场景。
    */
   static custom(options: { errno: number, message: string, data?: unknown, httpStatus?: number }) {
-    const ex = new HttpException(options.message, options.httpStatus ?? 200) as HttpException & {
+    const ex = new HttpException(options.message, options.httpStatus ?? HttpStatus.OK) as HttpException & {
       errno?: number
       bizData?: unknown
       __isBizException?: boolean

@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common'
 import { MongoModule } from '@/database/mongo/mongo.module'
 import { AuthModule } from '@/module/auth/auth.module'
-import { UserController } from '@/module/user/user.controller'
-import { UserService } from '@/module/user/user.service'
+import { GithubOauthService } from '@/module/oauth/github-oauth.service'
+import { OauthStateService } from '@/module/oauth/oauth-state.service'
+import { OauthController } from '@/module/oauth/oauth.controller'
 
 @Module({
   imports: [
@@ -11,7 +12,7 @@ import { UserService } from '@/module/user/user.service'
     /* 拿 JwtService 签发 token（AuthModule exports JwtModule） */
     AuthModule,
   ],
-  controllers: [UserController],
-  providers: [UserService],
+  controllers: [OauthController],
+  providers: [OauthStateService, GithubOauthService],
 })
-export class UserModule {}
+export class OauthModule {}

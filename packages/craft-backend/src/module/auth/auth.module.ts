@@ -12,7 +12,7 @@ import { JwtStrategy } from './strategy/jwt.strategy'
       // global: true, // JwtService 全局可用
       useFactory: (configService: ConfigService) => {
         return {
-          secret: configService.get<string>('JWT_SECRET'),
+          secret: configService.getOrThrow<string>('JWT_SECRET'),
           signOptions: {
             expiresIn: '1d',
           },

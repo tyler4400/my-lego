@@ -5,6 +5,7 @@ import { LoggerModule } from '@/common/logger/logger.module'
 import { MetaModule } from '@/common/meta/meta.module'
 import { MongoModule } from '@/database/mongo/mongo.module'
 import { AuthModule } from '@/module/auth/auth.module'
+import { OauthModule } from '@/module/oauth/oauth.module'
 import { TestModule } from '@/module/test/test.module'
 import { UserModule } from '@/module/user/user.module'
 
@@ -23,6 +24,7 @@ import { UserModule } from '@/module/user/user.module'
      * - 否则：/test/* 返回 404
      */
     TestModule,
+    OauthModule,
   ],
   controllers: [],
   providers: [],

@@ -1,5 +1,6 @@
 import type { ValidationError } from 'class-validator'
 import { ValidationPipe } from '@nestjs/common'
+import { HttpStatus } from '@nestjs/common/enums/http-status.enum'
 import { BizException } from '@/common/error/biz.exception'
 
 /**
@@ -24,7 +25,7 @@ export const createGlobalValidationPipe = () => {
       const normalized = normalizeValidationErrors(errors)
       throw new BizException({
         errorKey: 'userValidateFail',
-        httpStatus: 400,
+        httpStatus: HttpStatus.BAD_REQUEST,
         data: { errors: normalized },
       })
     },

@@ -12,10 +12,10 @@ import { RedisService } from '@/common/cache/redis.service'
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         return new Redis({
-          host: configService.get<string>('REDIS_HOST', 'localhost'),
-          port: configService.get<number>('REDIS_PORT', 6379),
-          password: configService.get<string>('REDIS_PASSWORD'),
-          db: configService.get<number>('REDIS_DB', 0),
+          host: configService.getOrThrow<string>('REDIS_HOST', 'localhost'),
+          port: configService.getOrThrow<number>('REDIS_PORT', 6379),
+          password: configService.getOrThrow<string>('REDIS_PASSWORD'),
+          db: configService.getOrThrow<number>('REDIS_DB', 0),
           // retryDelayOnFailover: 100,
           // retryStrategyOnFailover: 5,
           maxRetriesPerRequest: 3,
