@@ -3,12 +3,12 @@ import { PublicUserDto } from '@/module/user/dto/public-user.dto'
 
 /**
  * 登录响应 DTO：
- * - access_token：JWT token
+ * - accessToken：JWT token
  * - userInfo：脱敏后的用户信息
  */
 export class LoginResponseDto {
   @Expose()
-  access_token!: string
+  accessToken!: string
 
   @Expose()
   @Type(() => PublicUserDto)

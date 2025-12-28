@@ -18,6 +18,9 @@ export type UserRole = 'admin' | 'normal'
   timestamps: true,
 })
 export class User {
+  /**
+   * 用户唯一且不会改变的，用户显示的名称是nickName
+   */
   @Prop({ type: String, unique: true, required: true })
   username!: string
 

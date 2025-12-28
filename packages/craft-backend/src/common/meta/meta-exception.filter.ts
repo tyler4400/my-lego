@@ -50,7 +50,7 @@ export class MetaExceptionFilter implements ExceptionFilter {
     const meta = req.metaContext ?? {
       traceId: randomUUID(),
       requestTime: Date.now(),
-      version: this.configService.get<string>('VERSION', ''),
+      version: this.configService.getOrThrow<string>('VERSION', ''),
       protocol: DEFAULT_PROTOCOL,
       ip: req.ip,
     }

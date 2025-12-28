@@ -3,46 +3,23 @@
  * MetaResponse.code 会复用这里的 errno（等价 egg 的 returnCode/errno）。
  */
 export const userErrorMessages = {
-  unknownValidateFail: {
-    errno: 100000,
-    message: '未知错误',
-  },
-  userValidateFail: {
-    errno: 101001,
-    message: '输入信息验证失败',
-  },
+  unknownValidateFail: { errno: 100000, message: '未知错误' },
+  userValidateFail: { errno: 101001, message: '输入信息验证失败' },
   // 创建用户，用户已经存在
-  createUserAlreadyExists: {
-    errno: 101002,
-    message: '该邮箱已经被注册，请直接登录',
-  },
+  createUserAlreadyExists: { errno: 101002, message: '该邮箱已经被注册，请直接登录' },
   // 用户不存在或者密码错误
-  loginCheckFailInfo: {
-    errno: 101003,
-    message: '该用户不存在或者密码错误',
-  },
-  loginValidateFail: {
-    errno: 101004,
-    message: '登录校验失败',
-  },
+  loginCheckFailInfo: { errno: 101003, message: '该用户不存在或者密码错误' },
+  loginValidateFail: { errno: 101004, message: '登录校验失败' },
   // 发送短信验证码过于频繁
-  sendVeriCodeFrequentlyFailInfo: {
-    errno: 101005,
-    message: '请勿频繁获取短信验证码',
-  },
+  sendVeriCodeFrequentlyFailInfo: { errno: 101005, message: '请勿频繁获取短信验证码' },
   // 登录时，验证码不正确
-  loginVeriCodeIncorrectFailInfo: {
-    errno: 101006,
-    message: '验证码不正确',
-  },
+  loginVeriCodeIncorrectFailInfo: { errno: 101006, message: '验证码不正确' },
   // 验证码发送失败
-  sendVeriCodeError: {
-    errno: 101007,
-    message: '验证码发送失败',
-  },
+  sendVeriCodeError: { errno: 101007, message: '验证码发送失败' },
   // gitee 授权出错
-  giteeOauthError: {
-    errno: 101008,
-    message: 'gitee 授权出错',
-  },
+  giteeOauthError: { errno: 101008, message: 'gitee 授权出错' },
+  // ===== GitHub OAuth =====
+  oauthBadRequest: { errno: 101009, message: 'OAuth 回调参数缺失或非法' },
+  oauthStateExpired: { errno: 101010, message: 'OAuth 登录已过期，请重试' },
+  githubOauthError: { errno: 101011, message: 'GitHub 授权出错' },
 } as const

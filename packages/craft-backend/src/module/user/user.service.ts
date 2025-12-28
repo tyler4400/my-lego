@@ -3,6 +3,7 @@ import type { UserDocument } from '@/database/mongo/schema/user.schema'
 import type { UserPayload } from '@/types/type'
 import { hashPassword, verifyPassword } from '@my-lego/shared'
 import { Injectable } from '@nestjs/common'
+import { HttpStatus } from '@nestjs/common/enums/http-status.enum'
 import { JwtService } from '@nestjs/jwt'
 import { InjectModel } from '@nestjs/mongoose'
 import { RedisService } from '@/common/cache/redis.service'
@@ -30,7 +31,7 @@ export class UserService {
 
     const passwordHash = await hashPassword(password)
     const created = await this.userModel.create({
-      username,
+      username, // 邮箱登录的时候，username就是邮箱
       email: username,
       password: passwordHash,
       type: 'email',
@@ -64,7 +65,7 @@ export class UserService {
       throw new BizException({ errorKey: 'unknownValidateFail' })
     }
 
-    const access_token = await this.jwtService.signAsync({
+    const accessToken = await this.jwtService.signAsync({
       id: userWithPassword.id,
       username: userWithPassword.username,
     })
@@ -74,7 +75,7 @@ export class UserService {
       throw new BizException({ errorKey: 'unknownValidateFail' })
     }
 
-    return { access_token, userInfo: safeUser }
+    return { accessToken, userInfo: safeUser }
   }
 
   /**
@@ -114,11 +115,11 @@ export class UserService {
     if (existedUser) {
       if (!existedUser.id) throw new BizException({ errorKey: 'unknownValidateFail' })
 
-      const access_token = await this.jwtService.signAsync({
+      const accessToken = await this.jwtService.signAsync({
         id: existedUser.id,
         username: existedUser.username,
       })
-      return { access_token, userInfo: existedUser }
+      return { accessToken, userInfo: existedUser }
     }
 
     const newUser = await this.userModel.create({
@@ -133,8 +134,8 @@ export class UserService {
       throw new BizException({ errorKey: 'unknownValidateFail' })
     }
 
-    const access_token = await this.jwtService.signAsync({ id: safeUser.id, username: safeUser.username })
-    return { access_token, userInfo: safeUser }
+    const accessToken = await this.jwtService.signAsync({ id: safeUser.id, username: safeUser.username })
+    return { accessToken, userInfo: safeUser }
   }
 
   /**
@@ -144,13 +145,13 @@ export class UserService {
     const user = await this.userModel.findOne({ id: payload.id })
     if (!user) {
       // token 存在但用户不存在：按登录失效处理
-      throw new BizException({ errorKey: 'loginValidateFail', httpStatus: 401 })
+      throw new BizException({ errorKey: 'loginValidateFail', httpStatus: HttpStatus.UNAUTHORIZED })
     }
 
     return user
   }
 
   private getPhoneVerifyCodeKey(phoneNumber: string) {
-    return `phoneVeriCode-${phoneNumber}`
+    return `user.phoneVerify.${phoneNumber}`
   }
 }

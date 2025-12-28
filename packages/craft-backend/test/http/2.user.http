@@ -116,8 +116,5 @@ Content-Type: application/json
   });
 %}
 
-### 8) auth 模块示例接口（JWT 保护）
-GET {{host}}:{{port}}/{{prefix}}/{{version}}/test/auth/me
-Authorization: Bearer {{access_token}}
 
 
