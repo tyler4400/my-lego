@@ -1,8 +1,20 @@
 {
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
-  "sourceRoot": "src",
+  "sourceRoot": "..",
+  "entryFile": "craft-backend/src/main",
   "compilerOptions": {
-    "deleteOutDir": true
+    "deleteOutDir": true,
+    "watchAssets": true,
+    "assets": [
+      {
+        "include": "craft-backend/views/**/*",
+        "outDir": "dist"
+      },
+      {
+        "include": "craft-backend/public/**/*",
+        "outDir": "dist"
+      }
+    ]
   }
 }

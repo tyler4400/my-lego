@@ -1,4 +1,5 @@
 import type { Response } from 'express'
+import { createSafeJson } from '@my-lego/shared'
 import { Controller, Get, HttpStatus, Query, Res } from '@nestjs/common'
 import { BizException } from '@/common/error/biz.exception'
 import { SkipMetaRes } from '@/common/meta/meta.decorator'
@@ -47,9 +48,12 @@ export class OauthController {
 
     const data = await this.githubOauthService.loginByGithub(code, state)
 
-    res.json({
-      data,
-      statePayload,
-    })
+    const message = { type: 'oauth.github', payload: data }
+
+    // 注意：originJson 是带引号的 JSON 字符串；payloadJson 是 JSON 对象字面量
+    const originJson = createSafeJson(statePayload.frontOrigin)
+    const payloadJson = createSafeJson(message)
+
+    res.render('oauth-login-success', { originJson, payloadJson })
   }
 }

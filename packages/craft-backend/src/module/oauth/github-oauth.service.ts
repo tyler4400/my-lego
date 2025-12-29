@@ -66,7 +66,7 @@ export class GithubOauthService {
     const accessToken = await this.jwtService.signAsync({ id: user.id, username: user.username })
     return {
       accessToken,
-      githubUser,
+      userInfo: user.toJSON(),
     }
   }
 
@@ -210,7 +210,7 @@ export class GithubOauthService {
       type: 'oauth',
       provider: 'github',
       oauthID: githubUser.id,
-      nickName: githubUser.login,
+      nickName: githubUser.name || githubUser.login,
       picture: githubUser.avatar_url,
       email: githubUser.email,
     })

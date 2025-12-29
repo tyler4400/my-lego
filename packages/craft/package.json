@@ -20,6 +20,7 @@
   "dependencies": {
     "@ant-design/icons-vue": "^7.0.1",
     "@my-lego/shared": "workspace:*",
+    "@vueuse/core": "^14.1.0",
     "ant-design-vue": "^4.2.6",
     "axios": "^1.13.2",
     "lodash-es": "^4.17.21",
