@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>授权成功，跳转登录中...</title>
+</head>
+<body>
+<h1 id="h1">授权成功</h1>
+<h2 id="h2">3秒后本页面自动关闭</h2>
+<script>
+  /**
+   * 在 Handlebars（.hbs）里有两种输出：
+    （双花括号）：会做 HTML 转义（escape），把一些字符变安全文本
+   例如会把 " 变成 &quot;，把 < 变成 &lt;
+   适合输出到 HTML 文本里（比如 <div>{\{title\}}</div>）
+    （三花括号）：不做 HTML 转义，原样输出（raw / unescaped）
+   适合这种要把内容塞进 <script> 里当 JS 代码的一部分
+   风险是：如果内容里含有恶意 HTML/脚本，会造成 XSS，所以必须确保你输出的内容是你自己安全生成的（比如后端 JSON.stringify 后再做必要替换）
+   */
+  (function () {
+    try {
+      var targetOrigin = {{{ originJson }}}; // 这里提示的Expression expected， 是误报，可以忽略
+      var message = {{{ payloadJson }}};
+      console.log('/targetOrigin: ', targetOrigin);
+      console.log('/message: ', message);
+
+      if (!window.opener) {
+        document.getElementById('h1').innerHTML = '无法找到原页面，请关闭本页面后重试。';
+        document.getElementById('h2').innerHTML = '';
+        document.title = '登录失败';
+        return;
+      }
+
+      window.opener.postMessage(message, targetOrigin);
+
+      setTimeout(() => {
+        window.close()
+      }, 3000)
+    } catch (e) {
+      document.getElementById('h1').innerHTML = '登录回传失败，请关闭后重试。';
+      document.getElementById('h2').innerHTML = '';
+      document.title = '登录失败';
+    }
+  })();
+</script>
+</body>
+</html>

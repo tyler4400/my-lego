@@ -32,6 +32,8 @@ export class MetaExceptionFilter implements ExceptionFilter {
   ) {}
 
   catch(exception: unknown, host: ArgumentsHost) {
+    this.logger.error('[Exception]', exception)
+
     const { httpAdapter } = this.httpAdapterHost
     const ctx = host.switchToHttp()
     const req = ctx.getRequest<Request>()
@@ -130,7 +132,6 @@ export class MetaExceptionFilter implements ExceptionFilter {
     }
 
     // 记录完整异常（不返回给前端）
-    this.logger.error('[Unhandled Exception]', exception)
     httpAdapter.reply(res, body, HttpStatus.INTERNAL_SERVER_ERROR)
   }
 }

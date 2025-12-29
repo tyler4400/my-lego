@@ -1,3 +1,5 @@
+import type { NestExpressApplication } from '@nestjs/platform-express'
+import path from 'node:path'
 import { VERSION_NEUTRAL, VersioningType } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
@@ -6,7 +8,7 @@ import { createGlobalValidationPipe } from '@/common/validation/validation.pipe'
 import { AppModule } from './app.module'
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule)
+  const app = await NestFactory.create<NestExpressApplication>(AppModule)
   const configService = app.get(ConfigService)
 
   // 使用 Winston 作为 Nest Logger
@@ -32,7 +34,7 @@ async function bootstrap() {
     defaultVersion: versions.length === 0 ? VERSION_NEUTRAL : versions,
   })
 
-  // 4. CORS 开关
+  // CORS 开关
   const corsFlag = configService.get<string>('CORS', 'true')
   if (corsFlag === 'true') {
     app.enableCors({
@@ -41,6 +43,11 @@ async function bootstrap() {
       credentials: true,
     })
   }
+
+  // 使用模板渲染 https://docs.nestjs.cn/techniques/mvc
+  app.useStaticAssets(path.join(__dirname, '..', 'public'))
+  app.setBaseViewsDir(path.join(__dirname, '..', 'views'))
+  app.setViewEngine('hbs')
 
   const port = configService.get<number>('PORT', 3000)
 
