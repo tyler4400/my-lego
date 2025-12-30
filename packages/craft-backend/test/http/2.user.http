@@ -19,7 +19,7 @@ Content-Type: application/json
   });
 %}
 
-### 2) 邮箱登录（返回 access_token + userInfo）
+### 2) 邮箱登录（返回 accessToken + userInfo）
 POST {{host}}:{{port}}/{{prefix}}/{{version}}/user/loginByEmail
 Content-Type: application/json
 
@@ -29,11 +29,11 @@ Content-Type: application/json
 }
 
 > {%
-  client.global.set("access_token", response.body.data.access_token);
+  client.global.set("accessToken", response.body.data.accessToken);
 
   client.test("邮箱登录", function () {
     client.assert(response.body.code === 0, "code 应为 0");
-    client.assert(response.body.data.access_token !== undefined, "access_token 缺失");
+    client.assert(response.body.data.accessToken !== undefined, "accessToken 缺失");
     client.assert(response.body.data.userInfo !== undefined, "userInfo 缺失");
     client.assert(response.body.data.userInfo.password === undefined, "password 不应返回");
   });
@@ -41,7 +41,7 @@ Content-Type: application/json
 
 ### 3) 获取当前用户信息（JWT 保护）
 GET {{host}}:{{port}}/{{prefix}}/{{version}}/user/me
-Authorization: Bearer {{access_token}}
+Authorization: Bearer {{accessToken}}
 
 > {%
   client.test("获取用户信息", function () {
@@ -92,11 +92,11 @@ Content-Type: application/json
 }
 
 > {%
-  client.global.set("phone_access_token", response.body.data.access_token);
+  client.global.set("phone_accessToken", response.body.data.accessToken);
 
   client.test("手机号登录", function () {
     client.assert(response.body.code === 0, "code 应为 0");
-    client.assert(response.body.data.access_token !== undefined, "access_token 缺失");
+    client.assert(response.body.data.accessToken !== undefined, "accessToken 缺失");
     client.assert(response.body.data.userInfo !== undefined, "userInfo 缺失");
   });
 %}

@@ -1,0 +1,16 @@
+### 创建作品, 需要登录
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/work/create
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "title": "{{$random.book.title}}",
+  "desc": "{{$random.superhero.descriptor}}",
+  "coverImg": "{{$random.internet.url}}",
+  "content": {
+    "components": [{"aaa":  123}],
+    "props": {"bbb":  "sas"}
+  }
+}
+
+<> 2025-12-31T153522.201.json

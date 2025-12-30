@@ -1,11 +1,11 @@
 import { isArray, isString } from '@my-lego/shared'
 import { HttpStatus, Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { JwtService } from '@nestjs/jwt'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { BizException } from '@/common/error/biz.exception'
 import { User, UserDocument } from '@/database/mongo/schema/user.schema'
+import { AuthTokenService } from '@/module/auth/auth-token.service'
 import { GithubEmailItem, GithubUser } from '@/module/oauth/types'
 
 @Injectable()
@@ -19,7 +19,7 @@ export class GithubOauthService {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly jwtService: JwtService,
+    private readonly authTokenService: AuthTokenService,
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
   ) {
     // 为什么用 getOrThrow：配置缺失时启动即失败，避免线上运行中才爆雷
@@ -63,10 +63,11 @@ export class GithubOauthService {
 
     const user = await this.findOrCreateOrBindUser(githubUser)
 
-    const accessToken = await this.jwtService.signAsync({ id: user.id, username: user.username })
+    const accessToken = await this.authTokenService.signAccessToken(user)
+
     return {
       accessToken,
-      userInfo: user.toJSON(),
+      userInfo: user,
     }
   }
 

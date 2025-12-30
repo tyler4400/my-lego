@@ -1,10 +1,12 @@
 import type { Response } from 'express'
 import { createSafeJson } from '@my-lego/shared'
 import { Controller, Get, HttpStatus, Query, Res } from '@nestjs/common'
+import { plainToInstance } from 'class-transformer'
 import { BizException } from '@/common/error/biz.exception'
 import { SkipMetaRes } from '@/common/meta/meta.decorator'
 import { GithubOauthService } from '@/module/oauth/github-oauth.service'
 import { OauthStateService } from '@/module/oauth/oauth-state.service'
+import { LoginResponseDto } from '@/module/user/dto/login-response.dto'
 
 @Controller('oauth')
 export class OauthController {
@@ -46,7 +48,13 @@ export class OauthController {
 
     const statePayload = await this.oauthStateService.consumeState(state)
 
-    const data = await this.githubOauthService.loginByGithub(code, state)
+    const loginRes = await this.githubOauthService.loginByGithub(code, state)
+
+    // 手动执行与 SerializeInterceptor 同款的转换逻辑
+    const data = plainToInstance(LoginResponseDto, loginRes, {
+      excludeExtraneousValues: true,
+      enableImplicitConversion: true,
+    })
 
     const message = { type: 'oauth.github', payload: data }
 

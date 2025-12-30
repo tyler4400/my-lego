@@ -352,7 +352,7 @@ export class GithubOauthService {
       throw new BizException({ errorKey: 'unknownValidateFail' })
     }
 
-    const access_token = await this.jwtService.signAsync({ id: user.id, username: user.username })
+    const access_token = await this.jwtService.signAsync({ _id: user._id, username: user.username })
 
     return { access_token, userInfo: user }
   }
@@ -883,7 +883,7 @@ export class GithubOauthService {
       throw new BizException({ errorKey: 'unknownValidateFail' })
     }
 
-    const access_token = await this.jwtService.signAsync({ id: user.id, username: user.username })
+    const access_token = await this.jwtService.signAsync({ _id: user._id, username: user.username })
 
     return { access_token, userInfo: user }
   }

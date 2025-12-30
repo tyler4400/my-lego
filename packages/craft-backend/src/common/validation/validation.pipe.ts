@@ -11,10 +11,11 @@ import { BizException } from '@/common/error/biz.exception'
  * - 从源头保证 MetaResponse.code = 101001（而不是依赖 Filter 做映射）
  */
 export const createGlobalValidationPipe = () => {
+  // 配置选项 https://docs.nestjs.cn/techniques/validation#%E4%BD%BF%E7%94%A8%E5%86%85%E7%BD%AE%E7%9A%84-validationpipe
   return new ValidationPipe({
     whitelist: true, // 自动剔除 DTO 中未声明的多余字段
-    // 遇到多余字段直接抛错（更严格、更安全）。
-    // forbidNonWhitelisted: true
+    // 出现问题时验证器会在控制台打印额外的警告信息
+    enableDebugMessages: true,
     // transform: 自动转换请求对象到 DTO 实例
     transform: true,
     transformOptions: {

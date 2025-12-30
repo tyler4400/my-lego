@@ -8,7 +8,7 @@ import { UserService } from '@/module/user/user.service'
   imports: [
     // 需要注入 User/Work 对应的 Mongoose Model，因此引入 MongoModule。
     MongoModule,
-    /* 拿 JwtService 签发 token（AuthModule exports JwtModule） */
+    /* 通过 AuthTokenService 统一签发 token（AuthModule exports AuthTokenService） */
     AuthModule,
   ],
   controllers: [UserController],

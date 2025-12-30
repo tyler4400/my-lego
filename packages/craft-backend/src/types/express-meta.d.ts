@@ -6,7 +6,7 @@ declare global {
     /**
      * Passport 会把 request.user 声明为 Express.User。
      * 这里把 Express.User 扩展成我们的 JWT payload 结构，
-     * 这样 req.user 就具备 id/username，可直接传给 UserService.me(payload: UserPayload)。
+     * 这样 req.user 就可直接传给 UserService.me(payload: UserPayload)。
      */
     interface User extends UserPayload {}
 

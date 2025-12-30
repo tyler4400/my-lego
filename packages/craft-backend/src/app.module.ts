@@ -8,6 +8,7 @@ import { AuthModule } from '@/module/auth/auth.module'
 import { OauthModule } from '@/module/oauth/oauth.module'
 import { TestModule } from '@/module/test/test.module'
 import { UserModule } from '@/module/user/user.module'
+import { WorkModule } from '@/module/work/work.module'
 
 @Module({
   imports: [
@@ -16,7 +17,6 @@ import { UserModule } from '@/module/user/user.module'
     LoggerModule,
     MongoModule,
     AuthModule,
-    UserModule,
     RedisModule,
     /**
      * TestModule 始终注册，但通过 Guard 控制是否生效：
@@ -24,7 +24,11 @@ import { UserModule } from '@/module/user/user.module'
      * - 否则：/test/* 返回 404
      */
     TestModule,
+
+    /* biz modules */
     OauthModule,
+    UserModule,
+    WorkModule,
   ],
   controllers: [],
   providers: [],

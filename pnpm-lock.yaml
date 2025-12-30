@@ -147,6 +147,9 @@ importers:
       mongoose-sequence:
         specifier: ^6.0.1
         version: 6.0.1(mongoose@8.20.4)
+      nanoid:
+        specifier: ^5.1.6
+        version: 5.1.6
       nest-winston:
         specifier: ^1.10.2
         version: 1.10.2(@nestjs/common@11.1.9(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(winston@3.19.0)

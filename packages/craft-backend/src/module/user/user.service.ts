@@ -4,17 +4,17 @@ import type { UserPayload } from '@/types/type'
 import { hashPassword, verifyPassword } from '@my-lego/shared'
 import { Injectable } from '@nestjs/common'
 import { HttpStatus } from '@nestjs/common/enums/http-status.enum'
-import { JwtService } from '@nestjs/jwt'
 import { InjectModel } from '@nestjs/mongoose'
 import { RedisService } from '@/common/cache/redis.service'
 import { BizException } from '@/common/error/biz.exception'
 import { User } from '@/database/mongo/schema/user.schema'
+import { AuthTokenService } from '@/module/auth/auth-token.service'
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
-    private readonly jwtService: JwtService,
+    private readonly authTokenService: AuthTokenService,
     private readonly redisService: RedisService,
   ) {}
 
@@ -60,15 +60,7 @@ export class UserService {
       throw new BizException({ errorKey: 'loginCheckFailInfo' })
     }
 
-    if (!userWithPassword.id) {
-      // 约定：JWT payload 必须是 { id, username }，这里缺 id 视为异常
-      throw new BizException({ errorKey: 'unknownValidateFail' })
-    }
-
-    const accessToken = await this.jwtService.signAsync({
-      id: userWithPassword.id,
-      username: userWithPassword.username,
-    })
+    const accessToken = await this.authTokenService.signAccessToken(userWithPassword)
 
     const safeUser = await this.userModel.findById(userWithPassword._id)
     if (!safeUser) {
@@ -113,12 +105,7 @@ export class UserService {
 
     const existedUser = await this.userModel.findOne({ username: phoneNumber })
     if (existedUser) {
-      if (!existedUser.id) throw new BizException({ errorKey: 'unknownValidateFail' })
-
-      const accessToken = await this.jwtService.signAsync({
-        id: existedUser.id,
-        username: existedUser.username,
-      })
+      const accessToken = await this.authTokenService.signAccessToken(existedUser)
       return { accessToken, userInfo: existedUser }
     }
 
@@ -130,11 +117,11 @@ export class UserService {
     } satisfies User)
 
     const safeUser = await this.userModel.findById(newUser._id)
-    if (!safeUser || !safeUser.id) {
+    if (!safeUser) {
       throw new BizException({ errorKey: 'unknownValidateFail' })
     }
 
-    const accessToken = await this.jwtService.signAsync({ id: safeUser.id, username: safeUser.username })
+    const accessToken = await this.authTokenService.signAccessToken(safeUser)
     return { accessToken, userInfo: safeUser }
   }
 
@@ -142,7 +129,7 @@ export class UserService {
    * 获取当前用户信息（JWT 保护）
    */
   async me(payload: UserPayload) {
-    const user = await this.userModel.findOne({ id: payload.id })
+    const user = await this.userModel.findById(payload._id)
     if (!user) {
       // token 存在但用户不存在：按登录失效处理
       throw new BizException({ errorKey: 'loginValidateFail', httpStatus: HttpStatus.UNAUTHORIZED })

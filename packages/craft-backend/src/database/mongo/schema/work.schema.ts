@@ -12,6 +12,13 @@ export interface WorkChannel {
   id: string
 }
 
+export enum WorkStatusEnum {
+  Deleted = 0, // 删除
+  Initial = 1, // 未发布
+  Published = 2, // 已发布
+  Declined = 3, // 强制下线
+}
+
 /**
  * 与旧 egg 项目保持一致的 Work 结构。
  * - 自增 id 对齐：works_id_counter
@@ -19,38 +26,42 @@ export interface WorkChannel {
  */
 @Schema({ timestamps: true })
 export class Work {
+  /**
+   * unique: true 本质上就是创建一个“唯一索引”（unique index），数据库层面仍然是 index，只是带唯一约束。
+   * index: true 是普通索引（non-unique）。
+   */
   @Prop({ type: String, unique: true })
-  uuid!: string
+  uuid!: string // 短链接uuid， h5 的URL中使用，隐藏真正id
 
   @Prop({ type: String, required: true })
-  title!: string
+  title!: string // 标题
 
   @Prop({ type: String, default: '' })
-  desc!: string
+  desc!: string // 副标题，描述
 
   @Prop({ type: String })
   coverImg?: string
 
   @Prop({ type: mongoose.Schema.Types.Mixed })
-  content?: Record<string, any>
+  content?: Record<string, any> // 内容数据
 
-  @Prop({ type: Boolean })
+  @Prop({ type: Boolean, default: false })
   isTemplate?: boolean
 
-  @Prop({ type: Boolean })
-  isPublic?: boolean
+  @Prop({ type: Boolean, default: false })
+  isPublic?: boolean // 是否公开到首页， 模版用
 
-  @Prop({ type: Boolean })
+  @Prop({ type: Boolean, default: false })
   isHot?: boolean
 
   @Prop({ type: String, required: true })
-  author!: string
+  author!: string // 作者 username
 
   @Prop({ type: Number, default: 0 })
-  copiedCount!: number
+  copiedCount!: number // 被复制次数
 
-  @Prop({ type: Number, default: 1 })
-  status?: 0 | 1 | 2
+  @Prop({ type: Number, default: WorkStatusEnum.Initial })
+  status?: WorkStatusEnum
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
   user?: mongoose.Types.ObjectId
