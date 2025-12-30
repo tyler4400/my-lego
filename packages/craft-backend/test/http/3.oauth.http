@@ -1,0 +1,57 @@
+### OAuth(GitHub) - 1) authorize：应 302 跳转到 GitHub authorize（并包含 state）
+# @no-redirect
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/oauth/github/authorize
+
+> {%
+  client.test("authorize should redirect to github oauth authorize url", function () {
+    client.assert(response.status === 302, "status 应为 302（redirect）");
+
+    const location = response.headers.valueOf("Location");
+    client.assert(location !== undefined && location !== null && String(location).length > 0, "Location header 缺失");
+
+    const locationStr = String(location);
+    client.assert(locationStr.includes("github.com/login/oauth/authorize"), "Location 应指向 github authorize");
+    client.assert(/[?&]state=/.test(locationStr), "Location 应包含 state 参数");
+  });
+%}
+
+### OAuth(GitHub) - 2) callback：缺参应返回 400（SkipMetaRes 下通常返回纯字符串 message）
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/oauth/github/callback
+
+> {%
+  client.test("callback without query params should be 400", function () {
+    client.assert(response.status === 400, "status 应为 400（oauthBadRequest）");
+    // SkipMetaRes：异常不会走 MetaResponse 包装，这里通常是纯字符串
+    client.assert(response.body === "OAuth 回调参数缺失或非法", "body 应为 BizException.message（oauthBadRequest）");
+  });
+%}
+
+### OAuth(GitHub) - 3) callback：随机 state（未在 Redis 中）应返回 400（oauthStateExpired）
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/oauth/github/callback?code=dummy&state=dummy
+
+> {%
+  client.test("callback with non-existent state should be 400 oauthStateExpired", function () {
+    client.assert(response.status === 400, "status 应为 400（oauthStateExpired）");
+    client.assert(response.body === "OAuth 登录已过期，请重试", "body 应为 BizException.message（oauthStateExpired）");
+  });
+%}
+
+### OAuth(GitHub) - 4) callback：真实联调（手动）
+#
+# 说明：
+# - OAuth 完整链路需要浏览器完成 GitHub 授权，HTTP Client 无法自动获取 code。
+# - 你可以在浏览器里打开 authorize，然后在 GitHub 同意授权后，从回调 URL 上复制 code/state。
+#
+# 步骤建议：
+# 1) 浏览器访问：{{host}}:{{port}}/{{prefix}}/{{version}}/oauth/github/authorize
+# 2) 授权后浏览器会跳到后端 callback，并返回 HTML 页面（会 postMessage 给 opener）
+# 3) 如需用 HTTP Client 验证 callback 返回 HTML，可把回调 URL 中的 code/state 贴到下面请求里
+#
+# 预期：
+# - status=200
+# - Content-Type 为 text/html
+# - body 包含 postMessage 相关脚本（由 oauth-login-success.hbs 渲染）
+#
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/oauth/github/callback?code={{github_oauth_code}}&state={{github_oauth_state}}
+
+
