@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { getConnectionToken, MongooseModule } from '@nestjs/mongoose'
 import AutoIncrementFactory from 'mongoose-sequence'
+import { MongoIndexSyncService } from '@/database/mongo/mongo-index-sync.service'
 import { User, UserSchema } from '@/database/mongo/schema/user.schema'
 import { Work, WorkSchema } from '@/database/mongo/schema/work.schema'
 
@@ -49,6 +50,7 @@ import { Work, WorkSchema } from '@/database/mongo/schema/work.schema'
       },
     ]),
   ],
+  providers: [MongoIndexSyncService],
   exports: [MongooseModule],
 })
 export class MongoModule {}
