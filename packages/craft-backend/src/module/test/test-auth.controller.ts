@@ -1,6 +1,6 @@
 import type { Request } from 'express'
 import { Controller, Get, Req, UseGuards } from '@nestjs/common'
-import { JwtAuthGuard } from '@/guard/jwt-auth.guard'
+import { JwtAuthGuard } from '@/module/auth/guard/jwt-auth.guard'
 import { TestEnabledGuard } from '@/module/test/guards/test-enabled.guard'
 
 /**
@@ -18,4 +18,3 @@ export class TestAuthController {
     return req.user
   }
 }
-

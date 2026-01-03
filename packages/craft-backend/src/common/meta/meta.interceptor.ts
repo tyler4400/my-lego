@@ -25,7 +25,6 @@ export class MetaResponseInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<MetaResponse<unknown>> {
     const req = context.switchToHttp().getRequest<Request>()
     if (req.__skipMetaRes === true) {
-      // eslint-disable-next-line ts/no-unsafe-return
       return next.handle() as any
     }
 
