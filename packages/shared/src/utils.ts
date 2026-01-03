@@ -18,6 +18,10 @@ export function isBoolean(value: unknown) {
   return typeof value === 'boolean'
 }
 
+export function isUndefined(value: unknown) {
+  return typeof value === 'undefined'
+}
+
 export function isArray(value: unknown) {
   return Array.isArray(value)
 }

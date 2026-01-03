@@ -14,3 +14,64 @@ Authorization: Bearer {{accessToken}}
 }
 
 <> 2025-12-31T153522.201.json
+
+### 我的作品列表
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/work/myList?page=1&pageSize=10&sortBy=createdAt&sortOrder=desc
+Authorization: Bearer {{accessToken}}
+
+### 我的作品列表：模糊搜 title
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/work/myList?page=1&pageSize=10&title=dream&status=1
+Authorization: Bearer {{accessToken}}
+
+### 作品详情（必须登录；非作者必须 isPublic=true）
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/work/detail?id=6
+Authorization: Bearer {{accessToken}}
+
+### 编辑作品
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/work/update
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "id": 6,
+  "title": "new title",
+  "desc": "new desc",
+  "coverImg": "https://example.com/cover.png",
+  "content": {
+    "components": [
+      {
+        "LText": 123
+      }
+    ],
+    "props": {
+      "color": "red"
+    }
+  }
+}
+
+### 发布作品
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/work/publish
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "id": 9
+}
+
+### 发布为模版
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/work/publishTemplate
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "id": 9
+}
+
+### 删除作品（软删除）
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/work/delete
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "id": 9
+}

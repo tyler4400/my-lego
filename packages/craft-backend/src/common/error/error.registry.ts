@@ -1,6 +1,7 @@
+import { commonErrorMessages } from '@/common/error/common.error'
 import { userErrorMessages } from '@/common/error/user.error'
-import { utilsErrorMessages } from '@/common/error/utils'
-import { workErrorMessages } from '@/common/error/work'
+import { utilsErrorMessages } from '@/common/error/utils.error'
+import { workErrorMessages } from '@/common/error/work.error'
 
 /**
  * 全局错误码表（未来可扩展 work/utils 等）。
@@ -13,6 +14,7 @@ import { workErrorMessages } from '@/common/error/work'
  * C:具体错误编号，自增即可，一个项目999种错误应该够用
  */
 export const globalErrorMessages = {
+  ...commonErrorMessages,
   ...userErrorMessages,
   ...utilsErrorMessages,
   ...workErrorMessages,

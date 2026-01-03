@@ -4,4 +4,7 @@ export const workErrorMessages = {
   workNoPublicFail: { errno: 102003, message: '该作品未公开，不能进行操作' },
   channelValidateFail: { errno: 102004, message: '频道输入信息验证失败' },
   channelOperateFail: { errno: 102005, message: '频道操作失败' },
+  workNotExistError: { errno: 102006, message: '作品不存在' },
+  workStatusTransferFail: { errno: 102007, message: '作品状态不允许该操作' },
+  workAlreadyTemplateFail: { errno: 102008, message: '该作品已发布为模版，不能重复发布' },
 }

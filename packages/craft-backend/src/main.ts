@@ -4,7 +4,7 @@ import { VERSION_NEUTRAL, VersioningType } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston'
-import { createGlobalValidationPipe } from '@/common/validation/validation.pipe'
+import { createGlobalValidationPipe } from '@/pipe/validation.pipe'
 import { AppModule } from './app.module'
 
 async function bootstrap() {
