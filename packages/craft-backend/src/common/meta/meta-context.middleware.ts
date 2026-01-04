@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express'
 import { randomUUID } from 'node:crypto'
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { DEFAULT_PROTOCOL } from '@/common/meta/meta.constants'
 
@@ -17,6 +17,8 @@ import { DEFAULT_PROTOCOL } from '@/common/meta/meta.constants'
  */
 @Injectable()
 export class MetaContextMiddleware {
+  private readonly logger = new Logger(MetaContextMiddleware.name)
+
   constructor(private readonly configService: ConfigService) {}
 
   use(req: Request, res: Response, next: NextFunction) {
@@ -37,6 +39,8 @@ export class MetaContextMiddleware {
 
     // 方便联调：把 traceId 回写到响应头
     res.setHeader('x-trace-id', traceId)
+
+    this.logger.log(`[Request url]：${req.baseUrl}`)
     next()
   }
 }
