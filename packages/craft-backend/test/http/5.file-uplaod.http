@@ -1,0 +1,44 @@
+#设置boundary：在Content-Type头中指定boundary值，用于分隔不同的form-data部分。
+#文件部分：使用<符号后跟文件路径来引用本地文件，文件路径相对于HTTP文件的位置。
+#Content-Disposition：必须包含filename参数来指定文件名。
+#多字段支持：可以在同一个请求中包含多个字段，包括普通文本字段和文件字段。
+#文件引用语法：
+#   < ./path/to/file - 传统语法 表示相对于HTTP文件所在目录的相对路径
+### 文件上传示例1
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/upload/img
+Authorization: Bearer {{accessToken}}
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="element-name"
+Content-Type: text/plain
+
+Name
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="data.json"
+Content-Type: application/json
+
+< ./http-client.env.json
+--WebAppBoundary--
+
+# WebStorm也支持使用-F或--form参数的简化语法, WebStorm会自动处理boundary和Content-Disposition头
+#文件引用语法：
+#   < ./path/to/file - 传统语法 表示相对于HTTP文件所在目录的相对路径
+#   fieldname=@./path/to/file;type=mime/type - 简化语法
+## 文件上传示例2
+#POST {{host}}:{{port}}/{{prefix}}/{{version}}/upload/hello
+#Content-Type: multipart/form-data
+
+#file=@./files/jwt.png;type=image/png;filename=awd
+
+### 上传图片
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/upload/img
+Authorization: Bearer {{accessToken}}
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="jwt.png"
+Content-Type: image/png
+
+< ../../../../docs/03-jwt签名和校验流程.png
+--WebAppBoundary--

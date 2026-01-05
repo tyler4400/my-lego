@@ -1,2 +1,1 @@
-hello static！33
-22
+hello static！

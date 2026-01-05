@@ -4,7 +4,7 @@ import { VERSION_NEUTRAL, VersioningType } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston'
-import { StaticOriginAllowMiddleware } from '@/common/static-assets/static-origin-allow.middleware'
+import { StaticOriginAllowMiddleware } from '@/common/static/static-origin-allow.middleware'
 import { createGlobalValidationPipe } from '@/pipe/validation.pipe'
 import { AppModule } from './app.module'
 

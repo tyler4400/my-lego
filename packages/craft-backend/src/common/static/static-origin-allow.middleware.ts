@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express'
 import { Injectable, Logger, NestMiddleware } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { getOriginFromReferer, normalizeOrigin, parseStaticAllowedOrigins } from './static-assets.utils'
+import { normalizeOrigin, parseStaticAllowedOrigins } from './static-assets.utils'
 
 /**
  * StaticOriginAllowMiddleware：为 `/static/*` 静态资源提供“尽力而为”的来源（Origin）限制。
@@ -21,7 +21,7 @@ export class StaticOriginAllowMiddleware implements NestMiddleware {
 
   use(req: Request, res: Response, next: NextFunction) {
     // 只允许读取类请求，避免静态目录被误用于上传/写入（上传功能后续再实现）
-    if (req.method !== 'GET' && req.method !== 'HEAD') {
+    if (req.method !== 'GET') {
       res.status(405).send('Method Not Allowed')
       return
     }
@@ -36,21 +36,18 @@ export class StaticOriginAllowMiddleware implements NestMiddleware {
       return
     }
 
-    const originHeader = req.headers.origin
-    const origin = typeof originHeader === 'string' ? normalizeOrigin(originHeader) : null
-    const refererHeader = typeof req.headers.referer === 'string' ? req.headers.referer : undefined
-    const inferredOrigin = origin ?? getOriginFromReferer(refererHeader)
+    const origin = normalizeOrigin(req.headers.origin) ?? normalizeOrigin(req.headers.referer)
 
     // 无法获取来源：放行（避免误伤直接打开资源、部分浏览器策略等）
-    if (!inferredOrigin) {
+    if (!origin) {
       this.logger.log(`无法获取来源，放行。req.originalUrl：${req.originalUrl}`)
       next()
       return
     }
 
-    const isAllowed = allowedOrigins.includes(inferredOrigin)
+    const isAllowed = allowedOrigins.includes(origin)
     if (isAllowed) {
-      this.logger.log(`允许${inferredOrigin}访问，放行。req.originalUrl：${req.originalUrl}`)
+      this.logger.log(`允许${origin}访问，放行。req.originalUrl：${req.originalUrl}`)
       next()
       return
     }

@@ -3,7 +3,8 @@ import { RedisModule } from '@/common/cache/redis.module'
 import { ConfigModule } from '@/common/config/config.module'
 import { LoggerModule } from '@/common/logger/logger.module'
 import { MetaModule } from '@/common/meta/meta.module'
-import { StaticAssetsModule } from '@/common/static-assets/static-assets.module'
+import { StaticAssetsModule } from '@/common/static/static-assets.module'
+import { UploadModule } from '@/common/upload/upload.module'
 import { MongoModule } from '@/database/mongo/mongo.module'
 import { AuthModule } from '@/module/auth/auth.module'
 import { OauthModule } from '@/module/oauth/oauth.module'
@@ -26,6 +27,7 @@ import { WorkModule } from '@/module/work/work.module'
      * - 否则：/test/* 返回 404
      */
     TestModule,
+    UploadModule,
 
     /* biz modules */
     OauthModule,
