@@ -1,5 +1,5 @@
 ### hello world
-GET {{host}}:{{port}}/{{prefix}}/{{version}}/test
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/test?name=tyler
 
 ### 测试版本号
 POST {{host}}:{{port}}/{{prefix}}/v2/test
@@ -103,3 +103,7 @@ Authorization: Bearer {{access_token}}
 ### 8) auth 模块示例接口（JWT 保护）
 GET {{host}}:{{port}}/{{prefix}}/{{version}}/test/auth/me
 Authorization: Bearer {{access_token}}
+
+### 9) 静态资源访问 hello static
+GET {{host}}:{{port}}/static/test.txt
+#origin: http://efwaefw:51733

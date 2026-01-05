@@ -4,6 +4,7 @@ import { VERSION_NEUTRAL, VersioningType } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston'
+import { StaticOriginAllowMiddleware } from '@/common/static-assets/static-origin-allow.middleware'
 import { createGlobalValidationPipe } from '@/pipe/validation.pipe'
 import { AppModule } from './app.module'
 
@@ -44,8 +45,21 @@ async function bootstrap() {
     })
   }
 
+  /**
+   * 静态资源来源限制（非常重要）：
+   *
+   * 为什么不放在 StaticAssetsModule.configure(consumer.apply...) 里？
+   * - @nestjs/serve-static 会在 onModuleInit() 阶段直接对 Express app 注册：
+   *   app.use('/static', express.static(...))
+   * - 如果我们用 consumer.apply() 绑定 Nest Middleware，有概率会排在静态中间件之后，
+   *   请求被 express.static 直接处理掉，导致中间件完全不执行（你遇到的“没日志、没拦截”现象）。
+   * - 因此这里用 app.use('/static', ...) 把校验挂到 Express 层，并且在 app.listen 之前注册，
+   *   以保证“所有 /static 请求一定先过校验”。
+   */
+  const staticOriginAllowMiddleware = app.get(StaticOriginAllowMiddleware)
+  app.use('/static', (req, res, next) => staticOriginAllowMiddleware.use(req, res, next))
+
   // 使用模板渲染 https://docs.nestjs.cn/techniques/mvc
-  app.useStaticAssets(path.join(__dirname, '..', 'public'))
   app.setBaseViewsDir(path.join(__dirname, '..', 'views'))
   app.setViewEngine('hbs')
 

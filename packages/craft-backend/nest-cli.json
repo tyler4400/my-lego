@@ -12,7 +12,7 @@
         "outDir": "dist"
       },
       {
-        "include": "craft-backend/public/**/*",
+        "include": "craft-backend/static/**/*",
         "outDir": "dist"
       }
     ]

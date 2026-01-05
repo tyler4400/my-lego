@@ -24,6 +24,17 @@ const validationSchema = Joi.object({
   FRONTEND_ORIGIN: Joi.string().required(),
 
   /**
+   * 静态资源允许的来源（Origin）白名单：
+   * - 为空/未配置：不做任何 Origin 限制（完全放开）
+   * - 配置后：仅允许白名单内的 Origin 访问 /static/* 资源（尽力而为：优先使用 Origin，其次尝试从 Referer 推导）
+   *
+   * 推荐配置形式：
+   * - JSON 数组：["http://localhost:5173","https://your-frontend.com"]
+   * - 或逗号分隔字符串：http://localhost:5173,https://your-frontend.com
+   */
+  STATIC_ALLOWED_ORIGINS: Joi.string().optional().allow(''),
+
+  /**
    * Mongo 索引同步开关：
    * - true：启动时执行 Model.syncIndexes()（会删除 DB 中“Schema 未声明”的索引）
    * - false：不执行索引同步
