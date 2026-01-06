@@ -1,3 +1,4 @@
+import { tryCatch } from '@my-lego/shared'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import Redis from 'ioredis'
 import { REDIS_CLIENT } from '@/common/cache/redis.constants'
@@ -26,16 +27,15 @@ export class RedisService {
    * @param ttl Time to live in seconds
    */
   async set(key: string, value: string, ttl?: number): Promise<string> {
-    try {
-      if (ttl) {
-        return await this.redis.setex(key, ttl, value)
-      }
-      return await this.redis.set(key, value)
-    }
-    catch (error) {
+    const promise = ttl ? this.redis.setex(key, ttl, value) : this.redis.set(key, value)
+
+    const [val, error] = await tryCatch(promise)
+    if (error) {
       this.logger.error(`Error setting key ${key}:`, error)
       throw error
     }
+
+    return val
   }
 
   /**
@@ -43,13 +43,12 @@ export class RedisService {
    * @param key Redis key
    */
   async get(key: string): Promise<string | null> {
-    try {
-      return await this.redis.get(key)
-    }
-    catch (error) {
+    const [val, error] = await tryCatch(this.redis.get(key))
+    if (error) {
       this.logger.error(`Error getting key ${key}:`, error)
       throw error
     }
+    return val
   }
 
   /**
@@ -57,13 +56,12 @@ export class RedisService {
    * @param key Redis key
    */
   async del(key: string): Promise<number> {
-    try {
-      return await this.redis.del(key)
-    }
-    catch (error) {
+    const [val, error] = await tryCatch(this.redis.del(key))
+    if (error) {
       this.logger.error(`Error deleting key ${key}:`, error)
       throw error
     }
+    return val
   }
 
   /**
@@ -71,13 +69,12 @@ export class RedisService {
    * @param key Redis key
    */
   async exists(key: string): Promise<number> {
-    try {
-      return await this.redis.exists(key)
-    }
-    catch (error) {
+    const [val, error] = await tryCatch(this.redis.exists(key))
+    if (error) {
       this.logger.error(`Error checking existence of key ${key}:`, error)
       throw error
     }
+    return val
   }
 
   /**
@@ -85,13 +82,12 @@ export class RedisService {
    * @param key Redis key
    */
   async ttl(key: string): Promise<number> {
-    try {
-      return await this.redis.ttl(key)
-    }
-    catch (error) {
+    const [val, error] = await tryCatch(this.redis.ttl(key))
+    if (error) {
       this.logger.error(`Error getting TTL of key ${key}:`, error)
       throw error
     }
+    return val
   }
 
   /**
@@ -101,13 +97,12 @@ export class RedisService {
    * @param value Field value
    */
   async hset(key: string, field: string, value: string): Promise<number> {
-    try {
-      return await this.redis.hset(key, field, value)
-    }
-    catch (error) {
+    const [val, error] = await tryCatch(this.redis.hset(key, field, value))
+    if (error) {
       this.logger.error(`Error setting hash field ${field} in key ${key}:`, error)
       throw error
     }
+    return val
   }
 
   /**
@@ -116,13 +111,13 @@ export class RedisService {
    * @param field Hash field
    */
   async hget(key: string, field: string): Promise<string | null> {
-    try {
-      return await this.redis.hget(key, field)
-    }
-    catch (error) {
+    const [val, error] = await tryCatch(this.redis.hget(key, field))
+    if (error) {
       this.logger.error(`Error getting hash field ${field} from key ${key}:`, error)
       throw error
     }
+
+    return val
   }
 
   /**
@@ -130,13 +125,13 @@ export class RedisService {
    * @param key Redis key
    */
   async hgetall(key: string): Promise<Record<string, string>> {
-    try {
-      return await this.redis.hgetall(key)
-    }
-    catch (error) {
+    const [val, error] = await tryCatch(this.redis.hgetall(key))
+    if (error) {
       this.logger.error(`Error getting all hash fields from key ${key}:`, error)
       throw error
     }
+
+    return val
   }
 
   /**
@@ -145,13 +140,13 @@ export class RedisService {
    * @param seconds Expiration time in seconds
    */
   async expire(key: string, seconds: number): Promise<number> {
-    try {
-      return await this.redis.expire(key, seconds)
-    }
-    catch (error) {
+    const [val, error] = await tryCatch(this.redis.expire(key, seconds))
+    if (error) {
       this.logger.error(`Error setting expiration for key ${key}:`, error)
       throw error
     }
+
+    return val
   }
 
   /**
@@ -160,13 +155,13 @@ export class RedisService {
    * @param members Set members
    */
   async sadd(key: string, ...members: string[]): Promise<number> {
-    try {
-      return await this.redis.sadd(key, ...members)
-    }
-    catch (error) {
+    const [val, error] = await tryCatch(this.redis.sadd(key, ...members))
+    if (error) {
       this.logger.error(`Error adding members to set ${key}:`, error)
       throw error
     }
+
+    return val
   }
 
   /**
@@ -174,13 +169,13 @@ export class RedisService {
    * @param key Redis key
    */
   async smembers(key: string): Promise<string[]> {
-    try {
-      return await this.redis.smembers(key)
-    }
-    catch (error) {
+    const [val, error] = await tryCatch(this.redis.smembers(key))
+    if (error) {
       this.logger.error(`Error getting members from set ${key}:`, error)
       throw error
     }
+
+    return val
   }
 
   /**
@@ -189,13 +184,13 @@ export class RedisService {
    * @param elements Elements to push
    */
   async lpush(key: string, ...elements: string[]): Promise<number> {
-    try {
-      return await this.redis.lpush(key, ...elements)
-    }
-    catch (error) {
+    const [val, error] = await tryCatch(this.redis.lpush(key, ...elements))
+    if (error) {
       this.logger.error(`Error pushing to list ${key}:`, error)
       throw error
     }
+
+    return val
   }
 
   /**
@@ -205,13 +200,13 @@ export class RedisService {
    * @param stop Stop index
    */
   async lrange(key: string, start: number, stop: number): Promise<string[]> {
-    try {
-      return await this.redis.lrange(key, start, stop)
-    }
-    catch (error) {
+    const [val, error] = await tryCatch(this.redis.lrange(key, start, stop))
+    if (error) {
       this.logger.error(`Error getting range from list ${key}:`, error)
       throw error
     }
+
+    return val
   }
 
   /**
@@ -232,13 +227,14 @@ export class RedisService {
     const value = await this.get(key)
     if (!value) return null
 
-    try {
-      return JSON.parse(value) as T
-    }
-    catch (error) {
+    // 用 Promise 包一层，确保 JSON.parse 的同步异常也能被 tryCatch 捕获
+    const [obj, error] = await tryCatch(Promise.resolve().then(() => JSON.parse(value) as T))
+    if (error) {
       this.logger.error(`Error parsing JSON for key ${key}:`, error)
       return null
     }
+
+    return obj
   }
 
   /**
@@ -252,19 +248,19 @@ export class RedisService {
    * Health check - ping Redis
    */
   async ping(): Promise<string> {
-    try {
-      const pong = await this.redis.ping()
-      if (pong === 'PONG') {
-        this.logger.log('Redis connected successfully')
-        return pong
-      }
-      else {
-        throw new Error(pong)
-      }
+    const [pong, pingError] = await tryCatch(this.redis.ping())
+    if (pingError) {
+      this.logger.error('Redis ping failed:', pingError)
+      throw pingError
     }
-    catch (error) {
-      this.logger.error('Redis ping failed:', error)
-      throw error
+
+    if (pong === 'PONG') {
+      this.logger.log('Redis connected successfully')
+      return pong
     }
+
+    const unexpectedError = new Error(pong)
+    this.logger.error('Redis ping failed:', unexpectedError)
+    throw unexpectedError
   }
 }
