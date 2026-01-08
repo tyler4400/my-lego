@@ -21,8 +21,7 @@ import { StaticOriginAllowMiddleware } from './static-origin-allow.middleware'
         {
           /**
            * rootPath：静态文件的物理根目录（绝对路径）。
-           * - 开发：通常使用 `packages/craft-backend/static`
-           * - 生产：通常使用 `packages/craft-backend/dist/craft-backend/static`（由 nest-cli assets 拷贝）
+           * - packages/craft-backend/dist/craft-backend/static（由 nest-cli assets 拷贝）
            */
           rootPath: resolveStaticRootPath(),
 

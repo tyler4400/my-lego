@@ -1,3 +1,4 @@
+import path from 'node:path'
 import { Module } from '@nestjs/common'
 import { ConfigModule as NestConfigModule } from '@nestjs/config'
 import * as Joi from 'joi'
@@ -33,6 +34,28 @@ const validationSchema = Joi.object({
    * - 或逗号分隔字符串：http://localhost:5173,https://your-frontend.com
    */
   STATIC_ALLOWED_ORIGINS: Joi.string().optional().allow(''),
+
+  /**
+   * 运行时数据根目录（强制配置，必须是绝对路径）：
+   * - 上传原图、缩略图等“运行时生成的数据”都会写到 `${RUNTIME_DATA_ROOT_PATH}/upload/*`
+   * - 该目录必须在 dist 之外，避免 build / deleteOutDir 导致数据丢失
+   *
+   * 示例：
+   * - macOS/Linux（开发）：/Users/xxx/projects/lego/my-lego/packages/craft-backend/.data
+   * - 生产（裸机）：/var/lib/my-lego
+   * - Docker：/data（再用 volume 映射到宿主机）
+   */
+  RUNTIME_DATA_ROOT_PATH: Joi.string()
+    .required()
+    .custom((val, helpers) => {
+      const trimmed = String(val).trim()
+      if (!path.isAbsolute(trimmed)) return helpers.error('any.invalid')
+      return trimmed
+    }, 'RUNTIME_DATA_ROOT_PATH absolute path validation')
+    .messages({
+      'any.invalid': 'RUNTIME_DATA_ROOT_PATH 必须是非空的绝对路径（例如 /var/lib/my-lego）',
+      'any.required': '缺少必填环境变量 RUNTIME_DATA_ROOT_PATH',
+    }),
 
   /**
    * Mongo 索引同步开关：

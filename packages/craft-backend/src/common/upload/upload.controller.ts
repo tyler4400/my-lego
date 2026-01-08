@@ -38,7 +38,7 @@ export class UploadController {
   @Post('img')
   @MetaRes({ message: '上传图片成功' })
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(FileInterceptor('file', {
+  @UseInterceptors(FileInterceptor('img', {
     storage: multer.diskStorage({
       destination: (_req, _file, callback) => {
         const dayKey = getUploadDayKey()

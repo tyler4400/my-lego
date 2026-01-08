@@ -20,8 +20,20 @@ export class StaticOriginAllowMiddleware implements NestMiddleware {
   constructor(private readonly configService: ConfigService) {}
 
   use(req: Request, res: Response, next: NextFunction) {
-    // 只允许读取类请求，避免静态目录被误用于上传/写入（上传功能后续再实现）
-    if (req.method !== 'GET') {
+    /**
+     * 只允许读取类请求，避免静态目录被误用于上传/写入
+     *
+     * HTTP协议中的HEAD请求方法主要用于获取资源的元数据信息，而不实际下载资源内容。
+     * HEAD方法与GET方法完全相同，唯一的区别是服务器在响应中不能返回消息体，只返回HTTP头信息。
+     * HEAD请求的常见用途包括：
+     *
+     * - 探测资源是否存在
+     * - 获取资源的大小（Content-Length）
+     * - 获取资源的最后修改时间（Last-Modified）
+     * - 检查资源的MIME类型（Content-Type）
+     * - 验证缓存是否仍然有效
+     */
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
       res.status(405).send('Method Not Allowed')
       return
     }
