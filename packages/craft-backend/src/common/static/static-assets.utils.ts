@@ -56,11 +56,31 @@ export const parseStaticAllowedOrigins = (rawValue?: string): string[] => {
 }
 
 /**
- * 兼容开发/生产环境的静态资源物理目录定位：
- * __dirname： .../packages/craft-backend/dist/craft-backend/src/common/static
- * static:     .../packages/craft-backend/dist/craft-backend/static
- * 所以向上3层 + static
+ * 发布静态资源（随代码发布）的物理根目录：
+ * - 该目录来自 nest-cli assets 拷贝：craft-backend/static/** /* => dist/craft-backend/static/** /*
+ *
+ * 注意：
+ * - 这里依赖 __dirname（运行在 dist 时能正确指向 dist 下的 static）
+ * - 该目录属于“构建产物”，不要往这里写运行时数据
  */
-export const resolveStaticRootPath = (): string => {
+export const resolvePackagedStaticRootPath = (): string => {
   return path.join(__dirname, '..', '..', '..', 'static')
+}
+
+/**
+ * 运行时上传数据的物理根目录（持久化，强制由环境变量配置）：
+ * - `${RUNTIME_DATA_ROOT_PATH}/upload`
+ *
+ * 说明：
+ * - 运行时数据必须脱离 dist，避免 build/重启导致丢失
+ * - 这里读取 process.env 即可（ConfigModule 已在启动时完成校验）
+ */
+export const resolveRuntimeUploadRootPath = (): string => {
+  const raw = process.env.RUNTIME_DATA_ROOT_PATH
+  if (!isString(raw) || raw.trim().length === 0) {
+    // 双保险：即使未来有人绕过 ConfigModule 校验，这里也能尽早失败
+    throw new Error('RUNTIME_DATA_ROOT_PATH is required')
+  }
+
+  return path.resolve(raw.trim(), 'upload')
 }

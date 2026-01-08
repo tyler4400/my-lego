@@ -4,7 +4,7 @@ import { AnyFilesInterceptor, FileInterceptor } from '@nestjs/platform-express'
 import { Express } from 'express'
 import multer from 'multer'
 import { MetaRes } from '@/common/meta/meta.decorator'
-import { resolveStaticRootPath } from '@/common/static/static-assets.utils'
+import { resolveRuntimeUploadRootPath } from '@/common/static/static-assets.utils'
 import { getExtFromMimeType, IMG_BASE_DIRS, UploadService } from '@/common/upload/upload.service'
 import { JwtAuthGuard } from '@/module/auth/guard/jwt-auth.guard'
 import { ensureDirSync } from '@/utils/fs'
@@ -38,12 +38,13 @@ export class UploadController {
   @Post('img')
   @MetaRes({ message: '上传图片成功' })
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(FileInterceptor('file', {
+  @UseInterceptors(FileInterceptor('img', {
     storage: multer.diskStorage({
       destination: (_req, _file, callback) => {
         const dayKey = getUploadDayKey()
-        const staticRoot = resolveStaticRootPath()
-        const destAbs = path.join(staticRoot, ...IMG_BASE_DIRS, dayKey)
+        const runtimeUploadRoot = resolveRuntimeUploadRootPath()
+        // 原图最终落盘：${RUNTIME_DATA_ROOT_PATH}/upload/img/<dayKey>/*
+        const destAbs = path.join(runtimeUploadRoot, ...IMG_BASE_DIRS, dayKey)
 
         // multer 不会自动创建多级目录，这里手动创建
         ensureDirSync(destAbs)
@@ -51,8 +52,7 @@ export class UploadController {
       },
       filename: (_req, file, callback) => {
         const ext = getExtFromMimeType(file.mimetype)
-        // 使用随机名避免重名；不要使用 originalname，避免奇怪字符/路径等安全问题
-        const filename = `${Date.now()}${ext}`
+        const filename = `${String(Math.random()).slice(2)}${ext}`
         callback(null, filename)
       },
     }),

@@ -37,7 +37,7 @@ Authorization: Bearer {{accessToken}}
 Content-Type: multipart/form-data; boundary=WebAppBoundary
 
 --WebAppBoundary
-Content-Disposition: form-data; name="file"; filename="jwt.png"
+Content-Disposition: form-data; name="img"; filename="jwt.png"
 Content-Type: image/png
 
 < ../../../../docs/03-jwt签名和校验流程.png

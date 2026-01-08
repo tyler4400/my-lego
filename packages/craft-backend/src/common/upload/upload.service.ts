@@ -5,7 +5,7 @@ import { tryCatch } from '@my-lego/shared'
 import { HttpStatus, Logger } from '@nestjs/common'
 import sharp from 'sharp'
 import { BizException } from '@/common/error/biz.exception'
-import { resolveStaticRootPath } from '@/common/static/static-assets.utils'
+import { resolveRuntimeUploadRootPath } from '@/common/static/static-assets.utils'
 import { ensureDirSync, fileExists, getSha256FromFile, safeUnlink } from '@/utils/fs'
 
 /**
@@ -23,18 +23,19 @@ export const getExtFromMimeType = (mimeType?: string): string => {
 }
 
 /**
- * 把磁盘绝对路径转成可访问的 /static URL。
- * - 例：{staticRoot}/uploads/images/...  => /static/uploads/images/...
+ * 把磁盘绝对路径转成可访问的 `/static/upload` URL。
+ * - 运行时文件根目录：`${RUNTIME_DATA_ROOT_PATH}/upload`
+ * - 例：{runtimeUploadRoot}/img/...  => /static/upload/img/...
  */
 const toStaticUrl = (staticRootAbsPath: string, fileAbsPath: string): string => {
   const rel = path.relative(staticRootAbsPath, fileAbsPath)
   // URL 统一用 POSIX 分隔符，避免 Windows 反斜杠
   const urlPath = rel.split(path.sep).join('/')
-  return `/static/${urlPath}`
+  return `/static/upload/${urlPath}`
 }
 
 // 原图存储目录
-export const IMG_BASE_DIRS = ['upload', 'img'] as const
+export const IMG_BASE_DIRS = ['img'] as const
 // 缩略图存储目录
 const THUMB_DIRS = ['thumb'] as const
 
@@ -57,12 +58,11 @@ export class UploadService {
     // 2) 计算 hash（用于缩略图命名；同图重复上传可复用同一缩略图）
     const sha256 = await getSha256FromFile(file.path)
 
-    // 3) 生成缩略图到：static/thumb/<h0h1>/<h2h3>/<sha256>_w320.webp
-    // 使用 hash 分桶，避免单目录文件过多；同时移除 dayKey，实现全局去重。
-    const staticRoot = resolveStaticRootPath()
+    // 3) 生成缩略图到：${RUNTIME_DATA_ROOT_PATH}/upload/thumb/<h0h1>/<h2h3>/<sha256>_w320.webp
+    const runtimeUploadRoot = resolveRuntimeUploadRootPath()
     const shard1 = sha256.slice(0, 2)
     const shard2 = sha256.slice(2, 4)
-    const thumbDirAbs = path.join(staticRoot, ...THUMB_DIRS, shard1, shard2)
+    const thumbDirAbs = path.join(runtimeUploadRoot, ...THUMB_DIRS, shard1, shard2)
     ensureDirSync(thumbDirAbs)
 
     const thumbnailFilename = `${sha256.slice(4)}_w320.webp`
@@ -100,8 +100,8 @@ export class UploadService {
     }
 
     // 4) 返回两个 URL（同步返回）,需要前端自己拼接origin
-    const originalUrl = toStaticUrl(staticRoot, file.path)
-    const thumbnailUrl = toStaticUrl(staticRoot, thumbnailAbsPath)
+    const originalUrl = toStaticUrl(runtimeUploadRoot, file.path)
+    const thumbnailUrl = toStaticUrl(runtimeUploadRoot, thumbnailAbsPath)
     return { originalUrl, thumbnailUrl }
   }
 }
