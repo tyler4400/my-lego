@@ -1,10 +1,8 @@
+import type { ComponentData } from '@/components'
 import type { ImageComponentProps, TextComponentProps } from '@/defaultProps.ts'
-import type { ComponentData } from '@/types/editor.ts'
 import { defineStore } from 'pinia'
 import { v4 as uuidv4 } from 'uuid'
 import { reactive, ref } from 'vue'
-import LImage from '@/components/LImage.vue'
-import LText from '@/components/LText.vue'
 
 const testComponents: ComponentData[] = [
   {
@@ -71,8 +69,3 @@ export const useEditorStore = defineStore('editor', () => {
 
   return { components, currentElement, addComponent, setCurrentElement, updateComponent }
 })
-
-export const componentMap = {
-  LText,
-  LImage,
-} as const

@@ -7,12 +7,26 @@
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   },
+  "exports": {
+    "./ssr": {
+      "require": "./dist-ssr/index.cjs",
+      "types": "./dist-ssr/types/index.d.cts"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "ssr": [
+        "dist-ssr/types/index.d.cts"
+      ]
+    }
+  },
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "test:unit": "vitest",
     "build-only": "vite build",
+    "build:ssr": "vite build -c vite.ssr.config.ts",
     "type-check": "vue-tsc --build",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx,.vue",
     "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx,.vue --fix"
@@ -42,6 +56,7 @@
     "npm-run-all2": "^8.0.4",
     "typescript": "~5.9.0",
     "vite": "^7.2.4",
+    "vite-plugin-dts": "^4.5.4",
     "vite-plugin-vue-devtools": "^8.0.5",
     "vitest": "^4.0.14",
     "vue-tsc": "^3.1.5"
