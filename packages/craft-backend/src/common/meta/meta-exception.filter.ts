@@ -123,7 +123,7 @@ export class MetaExceptionFilter implements ExceptionFilter {
     const body: MetaResponse<null> = {
       code: unknownInfo.errno,
       data: null,
-      message: unknownInfo.message,
+      message: (exception as any).message || unknownInfo.message,
       version: meta.version,
       traceId: meta.traceId,
       requestTime: meta.requestTime,

@@ -13,8 +13,8 @@
 </template>
 
 <script setup lang="ts">
+import type { ComponentData } from '@/components'
 import type { TextComponentProps } from '@/defaultProps.ts'
-import type { ComponentData } from '@/types/editor.ts'
 import type { UploadResponse } from '@/types/upload.ts'
 import { v4 as uuidv4 } from 'uuid'
 import LText from '@/components/LText.vue'

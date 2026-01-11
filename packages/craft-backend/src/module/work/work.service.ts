@@ -1,4 +1,5 @@
 import type { UserPayload } from '@/types/type'
+import { renderWorkToHTML } from '@my-lego/craft/ssr'
 import { isBoolean, isUndefined } from '@my-lego/shared'
 import { HttpStatus, Injectable, Logger } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
@@ -221,5 +222,18 @@ export class WorkService {
     )
 
     return { success: true }
+  }
+
+  async getPageData(id: number, uuid: string) {
+    const work = await this.workModel.findOne({ id, uuid, status: WorkStatusEnum.Published }).lean()
+    if (!work || !work.content) {
+      throw new BizException({ errorKey: 'workNotExistError' })
+    }
+
+    // SSR， 拿到work数据之后使用craft项目的前端组件来渲染出HTML内容。要使用vue的createSSRApp
+    console.log('work.service.ts.238.data.content: ', work.content)
+
+    const html = await renderWorkToHTML(work.content)
+    return { html, title: work.title, desc: work.desc }
   }
 }

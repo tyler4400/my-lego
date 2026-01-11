@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
 import { ServeStaticModule } from '@nestjs/serve-static'
 import { ensureDirSync } from '@/utils/fs'
-import { resolveRuntimeUploadRootPath } from './static-assets.utils'
+import { resolvePackagedStaticRootPath, resolveRuntimeUploadRootPath } from './static-assets.utils'
 import { StaticOriginAllowMiddleware } from './static-origin-allow.middleware'
 
 /**
@@ -121,7 +121,7 @@ import { StaticOriginAllowMiddleware } from './static-origin-allow.middleware'
              * rootPath：静态文件的物理根目录（绝对路径）。
              * - packages/craft-backend/dist/craft-backend/static（由 nest-cli assets 拷贝）
              */
-            rootPath: runtimeUploadRoot,
+            rootPath: resolvePackagedStaticRootPath(),
             serveRoot: '/static',
             renderPath: '/__static_render_disabled_random45683452679__',
             useGlobalPrefix: false,

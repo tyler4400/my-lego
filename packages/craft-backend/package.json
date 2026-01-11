@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@my-lego/shared": "workspace:^",
+    "@my-lego/craft": "workspace:^",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",

@@ -54,14 +54,15 @@
 </template>
 
 <script setup lang="ts">
+import type { ComponentData } from '@/components'
 import type { ImageComponentProps, TextComponentProps } from '@/defaultProps.ts'
-import type { ComponentData } from '@/types/editor.ts'
 import { Layout, LayoutContent, LayoutSider } from 'ant-design-vue'
+import { componentMap } from '@/components'
 import ComponentList from '@/components/ComponentList.vue'
 import EditWrapper from '@/components/EditWrapper.vue'
 import PropsTable from '@/components/PropsTable.vue'
 import { defaultTextTemplates } from '@/defaultTemplates.ts'
-import { componentMap, useEditorStore } from '@/stores/editor.ts'
+import { useEditorStore } from '@/stores/editor.ts'
 
 const editorStore = useEditorStore()
 
