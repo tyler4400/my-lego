@@ -75,3 +75,7 @@ Authorization: Bearer {{accessToken}}
 {
   "id": 9
 }
+
+### 获取h5页面
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/work/pages/6/fTPl2sQP
+

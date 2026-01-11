@@ -27,6 +27,7 @@
     "test:unit": "vitest",
     "build-only": "vite build",
     "build:ssr": "vite build -c vite.ssr.config.ts",
+    "build:h5": "vite build -c vite.h5.config.ts",
     "type-check": "vue-tsc --build",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx,.vue",
     "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx,.vue --fix"

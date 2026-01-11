@@ -33,7 +33,7 @@ export default defineConfig({
       entry: fileURLToPath(new URL('./src/ssr/index.ts', import.meta.url)),
       name: 'craft-ssr', // name 是暴露的全局变量，当 formats 包括 'umd' 或 'iife' 时必须使用
       formats: ['cjs'],
-      fileName: 'index.cjs',
+      fileName: () => 'index.cjs',
     },
     rollupOptions: {
       external: ['vue'],

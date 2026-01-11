@@ -1,5 +1,5 @@
-import type { Request } from 'express'
-import { Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common'
+import type { Request, Response } from 'express'
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Query, Req, Res, UseGuards } from '@nestjs/common'
 import { MetaRes } from '@/common/meta/meta.decorator'
 import { Serialize } from '@/decorator/Serialize.decorator'
 import { JwtAuthGuard } from '@/module/auth/guard/jwt-auth.guard'
@@ -10,10 +10,14 @@ import { WorkIdDto } from '@/module/work/dto/work-id.dto'
 import { WorkListResponseDto } from '@/module/work/dto/work-list-response.dto'
 import { WorkUpdateDto } from '@/module/work/dto/work-update.dto'
 import { WorkService } from '@/module/work/work.service'
+import { WorkToH5Service } from '@/module/work/workToH5.service'
 
 @Controller('work')
 export class WorkController {
-  constructor(private readonly workService: WorkService) {}
+  constructor(
+    private readonly workService: WorkService,
+    private readonly workToH5Service: WorkToH5Service,
+  ) {}
 
   /**
    * 创建作品（未发布）
@@ -116,5 +120,21 @@ export class WorkController {
   @MetaRes({ message: '删除成功' })
   async delete(@Req() req: Request, @Body() dto: WorkIdDto) {
     return this.workService.softDelete(dto.id, req.user!)
+  }
+
+  /**
+   * 在移动端渲染成品
+   * - 作品状态必须是已发布
+   */
+  @Get('pages/:id/:uuid')
+  async renderH5Page(
+    // 虽然全局 ValidationPipe 开启了 transform: true + enableImplicitConversion: true 有了自动隐式类型转换
+    // 但这种“隐式转换”不等价于强校验：比如 id=abc 可能会被转成 NaN 然后继续往下跑
+    @Param('id', ParseIntPipe) id: number,
+    @Param('uuid') uuid: string,
+    @Res() res: Response,
+  ) {
+    const pageData = await this.workToH5Service.getPageData(id, uuid)
+    res.render('h5page', pageData)
   }
 }
