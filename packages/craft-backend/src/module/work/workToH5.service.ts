@@ -30,6 +30,21 @@ export class WorkToH5Service {
 
   constructor(@InjectModel(Work.name) private readonly workModel: Model<WorkDocument>) {}
 
+  private propsToStyles(props: WorkContent['props'] = {}) {
+    const keys = Object.keys(props)
+    const styleArr = keys.map((key) => {
+      const formatKey = key.replace(/[A-Z]/g, c => `-${c.toLocaleLowerCase()}`)
+      // fontSize -> font-size
+      const value = props[key]
+      return `${formatKey}: ${value}`
+    })
+    return styleArr.join(';')
+  }
+
+  private px2vw() {
+    // todo 暂时不做。 对应课程 13-22 px 转换成 vw
+  }
+
   /**
    * 从 Vite manifest 解析 hydration 所需的 JS/CSS。
    * - 只在进程内读取一次（缓存），避免每次请求都读文件
@@ -81,8 +96,13 @@ export class WorkToH5Service {
       throw new BizException({ errorKey: 'workNotExistError' })
     }
 
+    const workContent = work.content as WorkContent
+
+    const props = workContent.props ?? {}
+    const bodyStyle = this.propsToStyles(props)
+
     // SSR， 拿到work数据之后使用craft项目的前端组件来渲染出HTML内容。要使用vue的createSSRApp
-    const { html } = await renderWorkToHTML(work.content as WorkContent)
+    const { html } = await renderWorkToHTML(workContent)
 
     // Hydration：注入 client-entry.js + CSS（manifest 解析）
     const { scriptSrc, cssHrefs } = await this.getH5ClientAssets()
@@ -90,12 +110,12 @@ export class WorkToH5Service {
     this.logger.log(`work ${id} render success`)
     return {
       html,
-      bodyStyle: '', // 预留
+      bodyStyle,
       title: work.title,
       desc: work.desc,
 
       // 给 client-entry.ts 使用
-      payloadJson: createSafeJson(work.content),
+      payloadJson: createSafeJson(workContent),
 
       // 给 hbs 注入 <link>/<script>
       scriptSrc,
