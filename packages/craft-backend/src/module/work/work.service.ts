@@ -31,7 +31,7 @@ export class WorkService {
   /**
    * 把 JWT 中的 _id string 转成 mongoose ObjectId，并做合法性校验。
    */
-  private getUserObjectId(userPayload: UserPayload) {
+  getUserObjectId(userPayload: UserPayload) {
     if (!Types.ObjectId.isValid(userPayload._id)) {
       throw new BizException({ errorKey: 'loginValidateFail', httpStatus: HttpStatus.UNAUTHORIZED })
     }
@@ -41,7 +41,7 @@ export class WorkService {
   /**
    * 统一“作品不存在”（排除软删除）
    */
-  private async findWorkByIdOrThrow(id: number) {
+  async findWorkByIdOrThrow(id: number) {
     const work = await this.workModel.findOne({ id, status: { $ne: WorkStatusEnum.Deleted } }).lean()
     if (!work) {
       throw new BizException({ errorKey: 'workNotExistError' })
@@ -52,7 +52,7 @@ export class WorkService {
   /**
    * 校验作者权限（必须作者本人）
    */
-  private assertIsAuthorOrThrow(work: any, userObjectId: Types.ObjectId) {
+  assertIsAuthorOrThrow(work: any, userObjectId: Types.ObjectId) {
     const ownerId = work?.user ? String(work.user) : ''
     if (ownerId !== String(userObjectId)) {
       throw new BizException({ errorKey: 'workNoPermissonFail' })

@@ -3,6 +3,9 @@ import { Body, Controller, Get, Param, ParseIntPipe, Post, Query, Req, Res, UseG
 import { MetaRes } from '@/common/meta/meta.decorator'
 import { Serialize } from '@/decorator/Serialize.decorator'
 import { JwtAuthGuard } from '@/module/auth/guard/jwt-auth.guard'
+import { ChannelDeleteDto } from '@/module/work/dto/channel-delete.dto'
+import { ChannelUpdateDto } from '@/module/work/dto/channel-update.dto'
+import { CreateChannelDto } from '@/module/work/dto/create-Channel.dto'
 import { CreateDto } from '@/module/work/dto/create-dto'
 import { MyListQueryDto } from '@/module/work/dto/my-list-query.dto'
 import { WorkDetailDto } from '@/module/work/dto/work-detail.dto'
@@ -10,6 +13,7 @@ import { WorkIdDto } from '@/module/work/dto/work-id.dto'
 import { WorkListResponseDto } from '@/module/work/dto/work-list-response.dto'
 import { WorkUpdateDto } from '@/module/work/dto/work-update.dto'
 import { WorkService } from '@/module/work/work.service'
+import { WorkChannelService } from '@/module/work/workChannel.service'
 import { WorkToH5Service } from '@/module/work/workToH5.service'
 
 @Controller('work')
@@ -17,6 +21,8 @@ export class WorkController {
   constructor(
     private readonly workService: WorkService,
     private readonly workToH5Service: WorkToH5Service,
+    private readonly workChannelService: WorkChannelService,
+
   ) {}
 
   /**
@@ -117,9 +123,60 @@ export class WorkController {
    */
   @Post('delete')
   @UseGuards(JwtAuthGuard)
-  @MetaRes({ message: '删除成功' })
+  @MetaRes({ message: '删除作品成功' })
   async delete(@Req() req: Request, @Body() dto: WorkIdDto) {
     return this.workService.softDelete(dto.id, req.user!)
+  }
+
+  /**
+   * 创建渠道
+   * - 必须登录
+   * - 必须作者本人
+   * - 渠道名称不能重复
+   * - 传参为work的id，和渠道name，返回的是渠道id和name
+   */
+  @Post('channel/create')
+  @UseGuards(JwtAuthGuard)
+  @MetaRes({ message: '创建渠道成功' })
+  async createChannel(@Body() dto: CreateChannelDto, @Req() req: Request) {
+    return this.workChannelService.createChannel(dto, req.user!)
+  }
+
+  /**
+   * 获取某个作品的渠道列表 （已弃用， 直接使用获取作品详情接口）
+   * - 必须登录
+   * - 若不是作者本人：必须 isPublic=true
+   */
+  // @Get('channel/list')
+  // @UseGuards(JwtAuthGuard)
+  // @MetaRes({ message: '创建渠道成功' })
+  // async getChannelList(@Query('workId', ParseIntPipe) workId: number, @Req() req: Request) {
+  //   return this.workChannelService.getChannelList(workId, req.user!)
+  // }
+
+  /**
+   * 修改渠道名称
+   * - 必须登录
+   * - 必须作者本人
+   * - 渠道名称不能重复
+   */
+  @Post('channel/update')
+  @UseGuards(JwtAuthGuard)
+  @MetaRes({ message: '更新渠道成功' })
+  async updateChannelName(@Body() dto: ChannelUpdateDto, @Req() req: Request) {
+    return this.workChannelService.updateChannelName(dto, req.user!)
+  }
+
+  /**
+   * 删除渠道
+   * - 必须登录
+   * - 必须作者本人
+   */
+  @Post('channel/delete')
+  @UseGuards(JwtAuthGuard)
+  @MetaRes({ message: '删除渠道成功' })
+  async deleteChannel(@Body() dto: ChannelDeleteDto, @Req() req: Request) {
+    return this.workChannelService.deleteChannel(dto, req.user!)
   }
 
   /**

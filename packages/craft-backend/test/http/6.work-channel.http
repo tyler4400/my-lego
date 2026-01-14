@@ -1,0 +1,32 @@
+### 创建渠道
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/work/channel/create
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "name": "{{$random.address.cityName}}",
+  "id": 6
+}
+
+
+### 更新渠道名称
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/work/channel/update
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "channelId": "4_QhQi",
+  "name": "微信2",
+  "id": 6
+}
+
+
+### 删除渠道
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/work/channel/delete
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "channelId": "4_QhQi",
+  "id": 6
+}
