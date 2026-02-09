@@ -73,7 +73,7 @@ export class Work {
   isHot?: boolean
 
   @Prop({ type: String, required: true })
-  author!: string // 作者 username
+  author!: string // 作者 username // 可能会是脏数据， 是user字段连接到user表的
 
   @Prop({ type: Number, default: 0 })
   copiedCount!: number // 被复制次数

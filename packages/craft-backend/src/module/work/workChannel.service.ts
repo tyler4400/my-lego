@@ -9,7 +9,6 @@ import { ChannelDeleteDto } from '@/module/work/dto/channel-delete.dto'
 import { ChannelUpdateDto } from '@/module/work/dto/channel-update.dto'
 import { CreateChannelDto } from '@/module/work/dto/create-Channel.dto'
 import { WorkService } from '@/module/work/work.service'
-import { UserPayload } from '@/types/type'
 
 @Injectable()
 export class WorkChannelService {
@@ -27,18 +26,15 @@ export class WorkChannelService {
     }
   }
 
-  async createChannel(dto: CreateChannelDto, user: UserPayload) {
+  async createChannel(dto: CreateChannelDto) {
     const { id, name } = dto
-    const userObjectId = this.workService.getUserObjectId(user)
     const existing = await this.workService.findWorkByIdOrThrow(id)
-    this.workService.assertIsAuthorOrThrow(existing, userObjectId)
     this.assertNoDuplicateChannelNameOrThrow(existing, name)
 
     const newChannel = { name, id: nanoid(6) }
     const update = await this.workModel.findOneAndUpdate(
       {
         id,
-        user: userObjectId,
         status: { $ne: WorkStatusEnum.Deleted },
         $or: [
           { channels: { $exists: false } },
@@ -53,19 +49,15 @@ export class WorkChannelService {
     return newChannel
   }
 
-  async updateChannelName(dto: ChannelUpdateDto, userPayload: UserPayload) {
-    const userObjectId = this.workService.getUserObjectId(userPayload)
-
+  async updateChannelName(dto: ChannelUpdateDto) {
     const { id, name, channelId } = dto
 
     const existing = await this.workService.findWorkByIdOrThrow(id)
-    this.workService.assertIsAuthorOrThrow(existing, userObjectId)
     this.assertNoDuplicateChannelNameOrThrow(existing, name)
 
     const update = await this.workModel.findOneAndUpdate(
       {
         id,
-        'user': userObjectId,
         'status': { $ne: WorkStatusEnum.Deleted },
         'channels.id': channelId,
         '$or': [
@@ -81,18 +73,15 @@ export class WorkChannelService {
     return { success: true }
   }
 
-  async deleteChannel(dto: ChannelDeleteDto, userPayload: UserPayload) {
-    const userObjectId = this.workService.getUserObjectId(userPayload)
-
+  async deleteChannel(dto: ChannelDeleteDto) {
     const { id, channelId } = dto
 
-    const existing = await this.workService.findWorkByIdOrThrow(id)
-    this.workService.assertIsAuthorOrThrow(existing, userObjectId)
+    // 保持既有行为：不存在/已软删除时抛 workNotExistError
+    await this.workService.findWorkByIdOrThrow(id)
 
     const update = await this.workModel.findOneAndUpdate(
       {
         id,
-        'user': userObjectId,
         'status': { $ne: WorkStatusEnum.Deleted },
         'channels.id': channelId,
       },

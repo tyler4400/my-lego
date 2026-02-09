@@ -33,7 +33,7 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-  "id": 6,
+  "id": 4,
   "title": "new title",
   "desc": "new desc",
   "coverImg": "https://example.com/cover.png",

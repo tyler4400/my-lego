@@ -8,4 +8,11 @@ export interface UserPayload {
    */
   _id: string
   username: string
+
+  /**
+   * 用户角色：
+   * - 目前只有 admin/normal（见 UserSchema）
+   * - 旧 token 可能不带 role，业务侧需把缺省视为 normal
+   */
+  role?: import('@/database/mongo/schema/user.schema').UserRole
 }

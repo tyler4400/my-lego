@@ -3,6 +3,9 @@ import { Body, Controller, Get, Param, ParseIntPipe, Post, Query, Req, Res, UseG
 import { MetaRes } from '@/common/meta/meta.decorator'
 import { Serialize } from '@/decorator/Serialize.decorator'
 import { JwtAuthGuard } from '@/module/auth/guard/jwt-auth.guard'
+import { WorkAction } from '@/module/work/casl/work-ability.types'
+import { WorkPolicy } from '@/module/work/casl/work-policy.decorator'
+import { WorkPolicyGuard } from '@/module/work/casl/work-policy.guard'
 import { ChannelDeleteDto } from '@/module/work/dto/channel-delete.dto'
 import { ChannelUpdateDto } from '@/module/work/dto/channel-update.dto'
 import { CreateChannelDto } from '@/module/work/dto/create-Channel.dto'
@@ -60,11 +63,12 @@ export class WorkController {
    * - 返回：work 字段 + user(username/nickName/picture) + content/status/channels/uuid
    */
   @Get('detail')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, WorkPolicyGuard)
+  @WorkPolicy(WorkAction.Read, 'query', 'id', 'workNoPublicFail')
   @MetaRes({ message: '获取作品详情成功' })
   @Serialize(WorkDetailDto)
-  async detail(@Req() req: Request, @Query() dto: WorkIdDto) {
-    return this.workService.getWorkDetail(dto.id, req.user!)
+  async detail(@Query() dto: WorkIdDto) {
+    return this.workService.getWorkDetail(dto.id)
   }
 
   /**
@@ -75,11 +79,12 @@ export class WorkController {
    * - 已发布作品允许继续编辑
    */
   @Post('update')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, WorkPolicyGuard)
+  @WorkPolicy(WorkAction.Update)
   @MetaRes({ message: '编辑作品成功' })
   @Serialize(WorkDetailDto)
-  async update(@Req() req: Request, @Body() dto: WorkUpdateDto) {
-    return this.workService.updateMyWork(dto, req.user!)
+  async update(@Body() dto: WorkUpdateDto) {
+    return this.workService.updateMyWork(dto)
   }
 
   /**
@@ -91,11 +96,12 @@ export class WorkController {
    * - 不允许重复发布或非法流转
    */
   @Post('publish')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, WorkPolicyGuard)
+  @WorkPolicy(WorkAction.Publish)
   @MetaRes({ message: '发布成功' })
   @Serialize(WorkDetailDto)
-  async publishWork(@Req() req: Request, @Body() dto: WorkIdDto) {
-    return this.workService.publishMyWork(dto.id, req.user!)
+  async publishWork(@Body() dto: WorkIdDto) {
+    return this.workService.publishMyWork(dto.id)
   }
 
   /**
@@ -107,11 +113,12 @@ export class WorkController {
    * - 模版要求 status 必须是 Published
    */
   @Post('publishTemplate')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, WorkPolicyGuard)
+  @WorkPolicy(WorkAction.PublishTemplate)
   @MetaRes({ message: '发布为模版成功' })
   @Serialize(WorkDetailDto)
-  async publishTemplate(@Req() req: Request, @Body() dto: WorkIdDto) {
-    return this.workService.publishTemplate(dto.id, req.user!)
+  async publishTemplate(@Body() dto: WorkIdDto) {
+    return this.workService.publishTemplate(dto.id)
   }
 
   /**
@@ -122,10 +129,11 @@ export class WorkController {
    * - 返回 { success: true }
    */
   @Post('delete')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, WorkPolicyGuard)
+  @WorkPolicy(WorkAction.Delete)
   @MetaRes({ message: '删除作品成功' })
-  async delete(@Req() req: Request, @Body() dto: WorkIdDto) {
-    return this.workService.softDelete(dto.id, req.user!)
+  async delete(@Body() dto: WorkIdDto) {
+    return this.workService.softDelete(dto.id)
   }
 
   /**
@@ -136,10 +144,11 @@ export class WorkController {
    * - 传参为work的id，和渠道name，返回的是渠道id和name
    */
   @Post('channel/create')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, WorkPolicyGuard)
+  @WorkPolicy(WorkAction.ManageChannels)
   @MetaRes({ message: '创建渠道成功' })
-  async createChannel(@Body() dto: CreateChannelDto, @Req() req: Request) {
-    return this.workChannelService.createChannel(dto, req.user!)
+  async createChannel(@Body() dto: CreateChannelDto) {
+    return this.workChannelService.createChannel(dto)
   }
 
   /**
@@ -161,10 +170,11 @@ export class WorkController {
    * - 渠道名称不能重复
    */
   @Post('channel/update')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, WorkPolicyGuard)
+  @WorkPolicy(WorkAction.ManageChannels)
   @MetaRes({ message: '更新渠道成功' })
-  async updateChannelName(@Body() dto: ChannelUpdateDto, @Req() req: Request) {
-    return this.workChannelService.updateChannelName(dto, req.user!)
+  async updateChannelName(@Body() dto: ChannelUpdateDto) {
+    return this.workChannelService.updateChannelName(dto)
   }
 
   /**
@@ -173,10 +183,11 @@ export class WorkController {
    * - 必须作者本人
    */
   @Post('channel/delete')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, WorkPolicyGuard)
+  @WorkPolicy(WorkAction.ManageChannels)
   @MetaRes({ message: '删除渠道成功' })
-  async deleteChannel(@Body() dto: ChannelDeleteDto, @Req() req: Request) {
-    return this.workChannelService.deleteChannel(dto, req.user!)
+  async deleteChannel(@Body() dto: ChannelDeleteDto) {
+    return this.workChannelService.deleteChannel(dto)
   }
 
   /**

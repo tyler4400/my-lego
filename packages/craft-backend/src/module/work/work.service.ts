@@ -50,15 +50,8 @@ export class WorkService {
   }
 
   /**
-   * 校验作者权限（必须作者本人）
+   * 创建作品（未发布）
    */
-  assertIsAuthorOrThrow(work: any, userObjectId: Types.ObjectId) {
-    const ownerId = work?.user ? String(work.user) : ''
-    if (ownerId !== String(userObjectId)) {
-      throw new BizException({ errorKey: 'workNoPermissonFail' })
-    }
-  }
-
   async createWork(work: CreateWorkInput, userPayload: UserPayload) {
     const userObjectId = this.getUserObjectId(userPayload)
     return this.workModel.create({
@@ -98,9 +91,7 @@ export class WorkService {
     return { list, total }
   }
 
-  async getWorkDetail(id: number, userPayload: UserPayload) {
-    const userObjectId = this.getUserObjectId(userPayload)
-
+  async getWorkDetail(id: number) {
     const work = await this.workModel
       .findOne({ id, status: { $ne: WorkStatusEnum.Deleted } })
       .populate({ path: 'user', select: 'username nickName picture' }) // Select必有_id
@@ -109,20 +100,10 @@ export class WorkService {
     this.logger.debug(work)
     if (!work) throw new BizException(({ errorKey: 'workNotExistError' }))
 
-    const isAuthor = String(work.user?._id ?? work.user) === String(userObjectId)
-    if (!isAuthor) {
-      if (!work.isPublic) throw new BizException(({ errorKey: 'workNoPublicFail' }))
-    }
-
     return work
   }
 
-  async updateMyWork(dto: WorkUpdateDto, userPayload: UserPayload) {
-    const userObjectId = this.getUserObjectId(userPayload)
-
-    const existing = await this.findWorkByIdOrThrow(dto.id)
-    this.assertIsAuthorOrThrow(existing, userObjectId)
-
+  async updateMyWork(dto: WorkUpdateDto) {
     const updated = await this.workModel
       .findOneAndUpdate(
         { id: dto.id, status: { $ne: WorkStatusEnum.Deleted } },
@@ -145,11 +126,8 @@ export class WorkService {
   /**
    * 发布作品：仅允许 Initial -> Published
    */
-  async publishMyWork(id: number, userPayload: UserPayload) {
-    const userObjectId = this.getUserObjectId(userPayload)
-
+  async publishMyWork(id: number) {
     const existing = await this.findWorkByIdOrThrow(id)
-    this.assertIsAuthorOrThrow(existing, userObjectId)
 
     if (existing.status !== WorkStatusEnum.Initial) {
       throw new BizException({ errorKey: 'workStatusTransferFail' })
@@ -176,11 +154,8 @@ export class WorkService {
   /**
    * 发布为模版：要求 status 已是 Published；不可重复；同时 isTemplate/isPublic 置 true
    */
-  async publishTemplate(id: number, userPayload: UserPayload) {
-    const userObjectId = this.getUserObjectId(userPayload)
-
+  async publishTemplate(id: number) {
     const existing = await this.findWorkByIdOrThrow(id)
-    this.assertIsAuthorOrThrow(existing, userObjectId)
 
     if (existing.status !== WorkStatusEnum.Published) {
       throw new BizException({ errorKey: 'workStatusTransferFail' })
@@ -209,11 +184,9 @@ export class WorkService {
   /**
    * 软删除：status=Deleted，返回 { success: true }
    */
-  async softDelete(id: number, userPayload: UserPayload) {
-    const userObjectId = this.getUserObjectId(userPayload)
-
-    const existing = await this.findWorkByIdOrThrow(id)
-    this.assertIsAuthorOrThrow(existing, userObjectId)
+  async softDelete(id: number) {
+    // 保持既有行为：不存在/已软删除时抛 workNotExistError
+    await this.findWorkByIdOrThrow(id)
 
     await this.workModel.updateOne(
       { id, status: { $ne: WorkStatusEnum.Deleted } },

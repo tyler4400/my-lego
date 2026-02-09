@@ -117,4 +117,23 @@ Content-Type: application/json
 %}
 
 
+### 管理员账号登录
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/user/loginByEmail
+Content-Type: application/json
 
+{
+  "username": "tyler@4345.copm",
+  "password": "{{email_password}}"
+}
+
+
+> {%
+  client.global.set("accessToken", response.body.data.accessToken);
+
+  client.test("管理员登录", function () {
+    client.assert(response.body.code === 0, "code 应为 0");
+    client.assert(response.body.data.accessToken !== undefined, "accessToken 缺失");
+    client.assert(response.body.data.userInfo !== undefined, "userInfo 缺失");
+    client.assert(response.body.data.userInfo.password === undefined, "password 不应返回");
+  });
+%}

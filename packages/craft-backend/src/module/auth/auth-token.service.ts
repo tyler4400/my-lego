@@ -15,10 +15,11 @@ export class AuthTokenService {
    * 从用户对象中提取 JWT payload（当前约定：{ _id, username }）。
    * 注意：这里统一把 _id 转为 string（mongoose ObjectId -> string），便于跨进程/跨语言传输。
    */
-  private buildUserPayload(user: { _id: unknown, username: string }): UserPayload {
+  private buildUserPayload(user: { _id: unknown, username: string, role?: UserPayload['role'] }): UserPayload {
     return {
       _id: String(user._id),
       username: user.username,
+      role: user.role ?? 'normal',
     }
   }
 
@@ -26,7 +27,7 @@ export class AuthTokenService {
    * 统一签发 access token。
    * 后续若要调整 token 的签发策略（比如不同角色不同 expiresIn），在这里改即可。
    */
-  async signAccessToken(user: { _id: unknown, username: string }) {
+  async signAccessToken(user: { _id: unknown, username: string, role?: UserPayload['role'] }) {
     const payload = this.buildUserPayload(user)
     return this.jwtService.signAsync(payload)
   }
