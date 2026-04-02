@@ -5,7 +5,7 @@
       :key="field.key"
       class="prop-item"
     >
-      <span class="label">{{ field.label }}</span>
+      <span v-if="field.label" class="label">{{ field.label }}</span>
       <div class="prop-component">
         <!--  用 <RenderVnode> 时：node 可以是 string 或 VNode，如果是 string 就直接当纯文本渲染。 -->
         <!--  <RenderVnode :node="field.node" /> -->
@@ -22,13 +22,13 @@
 
 <script setup lang="ts">
 import type { VNode } from 'vue'
-import type { TextComponentProps } from '@/defaultProps.ts'
+import type { AllComponentProps } from '@/defaultProps.ts'
 import { computed } from 'vue'
 import { mapPropsToForms } from '@/views/EditorView/propsMap.tsx'
 
-const { compProps = {} } = defineProps<{ compProps?: Partial<TextComponentProps> }>()
+const { compProps = {} } = defineProps<{ compProps?: Partial<AllComponentProps> }>()
 
-const emit = defineEmits<{ change: [key: keyof TextComponentProps, value: any] }>()
+const emit = defineEmits<{ change: [key: keyof AllComponentProps, value: any] }>()
 
 /**
  * 待做的逻级优化： 解耦EditorView 和 PropsTable
@@ -43,17 +43,17 @@ const emit = defineEmits<{ change: [key: keyof TextComponentProps, value: any] }
  */
 
 interface FinalField {
-  key: keyof TextComponentProps
-  label: string
+  key: keyof AllComponentProps
+  label?: string
   node: VNode
 }
 
 const fields = computed<FinalField[]>(() => {
   const result: FinalField[] = []
-  const rawProps = compProps as Partial<TextComponentProps>
+  const rawProps = compProps as Partial<AllComponentProps>
 
   Object.keys(rawProps).forEach((key) => {
-    const newKey = key as keyof TextComponentProps
+    const newKey = key as keyof AllComponentProps
     const config = mapPropsToForms[newKey]
     if (!config) return
 

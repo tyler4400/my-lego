@@ -144,3 +144,5 @@ export interface ImageComponentProps extends CommonComponentProps {
   naturalWidth?: number
   naturalHeight?: number
 }
+
+export type AllComponentProps = TextComponentProps & ImageComponentProps

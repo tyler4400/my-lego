@@ -14,6 +14,6 @@ export interface ComponentData {
   id: string
   // 这个元素的 属性，属性请详见下面
   props: Partial<TextComponentProps | ImageComponentProps>
-  // 业务组件库名称 c-text，c-image 等等
-  name: string
+  // 业务组件库名称 LText，LImage 等等
+  name: ComponentKey
 }

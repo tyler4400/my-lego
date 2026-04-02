@@ -32,10 +32,10 @@
                 v-bind="comp.props"
               />
             </EditWrapper>
-            <pre>
-              {{ editorStore.components }}
-            </pre>
           </div>
+          <pre>
+              {{ editorStore.components }}
+          </pre>
         </LayoutContent>
       </Layout>
       <LayoutSider
@@ -94,7 +94,8 @@ const handleChange = (key: string, value: any) => {
   background: #fff;
   overflow-x: hidden;
   overflow-y: auto;
-  position: fixed;
+  /*position: fixed; 临时替换为relative*/
+  position: relative;
   margin: 50px 0 0;
   max-height: 80vh;
 }

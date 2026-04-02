@@ -1,20 +1,21 @@
 import type { VNode } from 'vue'
-import type { TextComponentProps } from '@/defaultProps.ts'
+import type { AllComponentProps } from '@/defaultProps.ts'
 import { BoldOutlined, ItalicOutlined, UnderlineOutlined } from '@ant-design/icons-vue'
 import { isNumber, isString } from '@my-lego/shared'
 import { InputNumber, RadioButton, RadioGroup, Select, SelectOption, Slider, Textarea } from 'ant-design-vue'
 import ColorPicker from '@/components/ColorPicker'
 import IconSwitch from '@/components/IconSwitch'
+import ImageProcesser from '@/components/ImageProcesser'
 
 export interface FieldRenderContext<TValue = any> {
   /** 当前字段 key，比如 'fontSize' */
-  key: keyof TextComponentProps
+  key: keyof AllComponentProps
   /** 传给 render 的“内部值”，是否做转换由 fromProps 决定 */
   value: TValue
   /** 通知外部值变更，是否做转换由 toProps 决定 */
   onChange: (val: TValue) => void
   /** 当前组件的原始 props（用于某些字段间联动时可选使用） */
-  rawProps: Partial<TextComponentProps>
+  rawProps: Partial<AllComponentProps>
 }
 
 /**
@@ -24,13 +25,13 @@ export interface FieldRenderContext<TValue = any> {
  *  - fromProps / toProps：可选的“原始 props ↔ 内部值”转换函数
  */
 export interface FieldConfig<TValue = any> {
-  label: string
+  label?: string
   render: (ctx: FieldRenderContext<TValue>) => VNode
-  fromProps?: (raw: any, rawProps: Partial<TextComponentProps>, key: keyof TextComponentProps) => TValue
-  toProps?: (val: TValue, rawProps: Partial<TextComponentProps>, key: keyof TextComponentProps) => any
+  fromProps?: (raw: any, rawProps: Partial<AllComponentProps>, key: keyof AllComponentProps) => TValue
+  toProps?: (val: TValue, rawProps: Partial<AllComponentProps>, key: keyof AllComponentProps) => any
 }
 
-export type PropsToForms = Partial<Record<keyof TextComponentProps, FieldConfig<any>>>
+export type PropsToForms = Partial<Record<keyof AllComponentProps, FieldConfig>>
 
 const fontFamilyTemplates = [
   { label: '默认', value: '' },
@@ -189,6 +190,17 @@ export const mapPropsToForms: PropsToForms = {
         tip="下划线"
         icon={<UnderlineOutlined />}
         onChange={checked => onChange(checked ? 'underline' : 'normal')}
+      />
+    ),
+  },
+  src: {
+    // label: '图片',
+    render: ({ value, onChange }) => (
+      <ImageProcesser
+        value={value}
+        showDelete
+        ratio={0}
+        onChange={url => onChange(url)}
       />
     ),
   },
