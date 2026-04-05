@@ -38,6 +38,7 @@
     "@vueuse/core": "^14.1.0",
     "ant-design-vue": "^4.2.6",
     "axios": "^1.13.2",
+    "cropperjs": "^2.1.0",
     "lodash-es": "^4.17.21",
     "pinia": "^3.0.4",
     "uuid": "^13.0.0",

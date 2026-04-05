@@ -16,3 +16,12 @@ export const getImageDimensions = (url: string | File) => {
     })
   })
 }
+
+/**
+ * 等待下一帧完成
+ */
+export const waitForNextFrame = async () => {
+  await new Promise<void>((resolve) => {
+    requestAnimationFrame(() => resolve())
+  })
+}
