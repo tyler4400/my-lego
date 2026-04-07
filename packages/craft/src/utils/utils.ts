@@ -25,3 +25,25 @@ export const waitForNextFrame = async () => {
     requestAnimationFrame(() => resolve())
   })
 }
+
+/**
+ * 在最大宽高限制内，按原图比例计算最终显示尺寸。
+ */
+export const getContainedSize = (
+  width: number,
+  height: number,
+  maxWidth: number,
+  maxHeight: number,
+) => {
+  if (!width || !height || !maxWidth || !maxHeight) {
+    return {
+      width: maxWidth,
+      height: maxHeight,
+    }
+  }
+  const scale = Math.min(maxWidth / width, maxHeight / height, 1)
+  return {
+    width: Math.round(width * scale),
+    height: Math.round(height * scale),
+  }
+}
