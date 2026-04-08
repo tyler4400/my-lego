@@ -31,8 +31,10 @@ forceRender
     title="裁剪图片"
     forceRender
     :width="800"
+    :confirmLoading="cropUploadLoading"
+    :cancelButtonProps="{ disabled: cropUploadLoading }"
     :afterClose="destroyCropper"
-    @ok="closeCropperModal"
+    @ok="handleConfirmCrop"
     @cancel="closeCropperModal"
   >
     <div ref="cropperContainerRef" class="image-cropper" />
@@ -43,10 +45,11 @@ forceRender
 import type { UploadResponse } from '@/types/upload.ts'
 import { DeleteOutlined, ScissorOutlined } from '@ant-design/icons-vue'
 import { tryCatch } from '@my-lego/shared'
-import { Button, Modal } from 'ant-design-vue'
+import { Button, message, Modal } from 'ant-design-vue'
 import { computed, nextTick, ref, useTemplateRef } from 'vue'
 import StyleUploader from '@/components/StyleUploader'
 import useCropper from '@/hooks/useCropper.ts'
+import { action, uploadFileRequest } from '@/utils/uploadFileRequest.ts'
 import { waitForNextFrame } from '@/utils/utils.ts'
 
 export interface ImageProcesserProps {
@@ -65,6 +68,14 @@ export interface ImageProcesserEmits {
 
 const backgroundUrl = computed(() => `url(${value})`)
 
+/**
+ * 这里保存“本次组件生命周期里的原图地址”。
+ * 后续多次裁剪都从它开始，而不是从当前展示图开始。
+ *
+ * 暂时不实现这个功能
+ */
+// let originalImageUrl = ''
+
 const handleFileUploaded = (res: UploadResponse, file: File): void => {
   emit('change', res.data.url, file)
   emit('uploaded', res, file)
@@ -77,8 +88,9 @@ const handleDelete = () => {
 /* 裁剪图片 */
 const cropperContainerRef = useTemplateRef('cropperContainerRef')
 const showCropperModal = ref(false)
+const cropUploadLoading = ref(false)
 
-const { destroyCropper, initCropper } = useCropper(cropperContainerRef, {
+const { destroyCropper, initCropper, getCroppedBlob } = useCropper(cropperContainerRef, {
   maxCanvasHeight: 700,
   fallbackMaxCanvasWidth: 800,
 })
@@ -95,8 +107,48 @@ const openCropperModal = async () => {
   const [, error] = await tryCatch(initCropper(value))
   if (error) console.error('初始化cropper失败:', error)
 }
+
 const closeCropperModal = () => {
   showCropperModal.value = false
+}
+
+/**
+ * 这里的逻辑是
+ * 完成裁剪后，拿到canvas -> blob -> file 然后调用一遍现有上传接口
+ */
+const handleConfirmCrop = async () => {
+  if (!value) return
+
+  cropUploadLoading.value = true
+
+  const [croppedBlob, err] = await tryCatch(getCroppedBlob({
+    mimeType: 'image/webp',
+    quality: 1,
+  }))
+  if (err) {
+    message.error(err.message)
+    cropUploadLoading.value = false
+    return
+  }
+
+  // 后端限制，filename只能是XXX.png或XXX.jpg
+  const croppedFile = new File([croppedBlob], 'cropped.png', {
+    type: croppedBlob.type,
+    lastModified: Date.now(),
+  })
+
+  const [res, uploadErr] = await tryCatch(uploadFileRequest<UploadResponse>({
+    action,
+    name: 'upload',
+    file: croppedFile,
+  }))
+  cropUploadLoading.value = false
+  if (uploadErr) {
+    message.error(uploadErr.message)
+    return
+  }
+  handleFileUploaded(res, croppedFile)
+  closeCropperModal()
 }
 </script>
 

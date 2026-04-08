@@ -1,7 +1,7 @@
 import type { Ref } from 'vue'
 import Cropper from 'cropperjs'
 import { onUnmounted, ref, watchEffect } from 'vue'
-import { getContainedSize } from '@/utils/utils.ts'
+import { canvasToBlob, getContainedSize } from '@/utils/utils.ts'
 
 export interface UseCropperOptions {
   maxCanvasHeight?: number
@@ -11,6 +11,14 @@ interface CropperCanvasSize {
   width: number
   height: number
 }
+
+export interface CropperBlobExportOptions {
+  mimeType?: string
+  quality?: number
+  width?: number
+  height?: number
+}
+
 const DEFAULT_MAX_CANVAS_HEIGHT = 500
 const DEFAULT_FALLBACK_MAX_CANVAS_WIDTH = 680
 
@@ -38,7 +46,7 @@ const useCropper = (cropperContainerRef: Ref<HTMLElement | null>, options: UseCr
     // decoding 属性用于告诉浏览器如何解析图像数据。具体来说，在渲染其他的内容更新前，是否应该等待图像解码完成。
     image.decoding = 'async' // 异步解码图像，允许在解码完成前渲染其他内容
     // 如果后面要导出 canvas，且图片来源支持 CORS，可以打开这一行
-    // image.crossOrigin = 'anonymous'
+    image.crossOrigin = 'anonymous'
     await new Promise<void>((resolve, reject) => {
       image.onload = () => resolve()
       image.onerror = () => reject(new Error('图片加载失败'))
@@ -78,6 +86,7 @@ const useCropper = (cropperContainerRef: Ref<HTMLElement | null>, options: UseCr
     const cropperImage = cropper.value.getCropperImage()
     await cropperImage?.$ready()
     cropperImage?.$center('contain')
+    // cropperImage?.translatable = true
 
     return cropper.value
   }
@@ -103,9 +112,31 @@ const useCropper = (cropperContainerRef: Ref<HTMLElement | null>, options: UseCr
     container.style.setProperty(CSS_VAR_CROPPER_CANVAS_HEIGHT, `${cropperCanvasSize.value.height}px`)
   })
 
+  const getCroppedBlob = async ({
+    mimeType,
+    quality,
+    width,
+    height,
+  }: CropperBlobExportOptions) => {
+    if (!cropper.value) {
+      throw new Error('cropper 未初始化')
+    }
+
+    const selection = cropper.value.getCropperSelection()
+
+    if (!selection) {
+      throw new Error('未获取到裁剪区域')
+    }
+
+    const canvas = await selection.$toCanvas({ width, height })
+
+    return canvasToBlob(canvas, mimeType, quality)
+  }
+
   return {
     initCropper,
     destroyCropper,
+    getCroppedBlob,
     cropper,
   }
 }

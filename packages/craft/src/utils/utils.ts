@@ -47,3 +47,15 @@ export const getContainedSize = (
     height: Math.round(height * scale),
   }
 }
+
+export const canvasToBlob = (canvas: HTMLCanvasElement, mimeType?: string, quality?: number) => {
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        reject(new Error('canvasToBlob失败'))
+        return
+      }
+      resolve(blob)
+    }, mimeType, quality)
+  })
+}

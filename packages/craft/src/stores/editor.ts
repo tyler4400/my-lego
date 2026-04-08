@@ -95,6 +95,31 @@ const testComponents: ComponentData[] = [
       right: '0',
     },
   },
+  {
+    name: 'LImage',
+    id: uuidv4(),
+    props: {
+      src: 'http://typescript-vue.oss-cn-beijing.aliyuncs.com/vue-marker/69d4d224b558154f039349b2.jpg',
+      actionType: '',
+      url: '',
+      height: '',
+      width: '258px',
+      paddingLeft: '0px',
+      paddingRight: '0px',
+      paddingTop: '0px',
+      paddingBottom: '0px',
+      borderStyle: 'none',
+      borderColor: '#000',
+      borderWidth: '0',
+      borderRadius: '0',
+      boxShadow: '0 0 0 #000000',
+      opacity: '1',
+      position: 'absolute',
+      left: '0',
+      top: '0',
+      right: '0',
+    },
+  },
 ]
 
 export const useEditorStore = defineStore('editor', () => {

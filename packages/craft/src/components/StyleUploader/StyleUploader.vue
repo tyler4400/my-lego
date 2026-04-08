@@ -1,7 +1,7 @@
 <template>
   <Uploader
     class="styled-uploader"
-    action="http://123.57.138.48/api/upload/"
+    :action="action"
     :showUploadList="false"
     :beforeUpload="commonUploadCheck"
     @success="data => handleUploadSuccess(data.resp, data.file)"
@@ -15,6 +15,7 @@ import type { UploadResponse } from '@/types/upload.ts'
 import { message } from 'ant-design-vue'
 import { commonUploadCheck } from '@/components/StyleUploader/helper.ts'
 import Uploader from '@/components/Uploader'
+import { action } from '@/utils/uploadFileRequest.ts'
 
 const emit = defineEmits<{
   (e: 'success', resp: UploadResponse, file: File): void

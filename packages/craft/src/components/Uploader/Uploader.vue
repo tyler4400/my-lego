@@ -60,15 +60,14 @@
 </template>
 
 <script setup lang="ts">
-import type { AxiosProgressEvent } from 'axios'
 import type { UploaderEmits, UploaderProps, UploadFile } from '@/components/Uploader/types.ts'
 import { DeleteOutlined, FileOutlined, LoadingOutlined, UploadOutlined } from '@ant-design/icons-vue'
 import { isFunction } from '@my-lego/shared'
 import { Button } from 'ant-design-vue'
-import axios from 'axios'
 import { last } from 'lodash-es'
 import { v4 as uuidv4 } from 'uuid'
 import { computed, reactive, ref, useTemplateRef } from 'vue'
+import { uploadFileRequest } from '@/utils/uploadFileRequest.ts'
 
 const {
   action,
@@ -100,48 +99,40 @@ const lastFileData = computed(() => {
   if (lastFile) {
     return {
       loaded: lastFile.status === 'success',
-      data: lastFile.resp,
+      data: lastFile.resp ?? lastFile.response,
     }
   }
   return false
 })
 
-const postFile = (file: UploadFile) => {
-  const formData = new FormData()
-  formData.append(file.name, file.raw)
-  if (data) {
-    Object.keys(data).forEach((key) => {
-      formData.append(key, data[key])
-    })
-  }
-
-  axios.post(action, formData, {
-    headers: { ...headers, 'Content-Type': 'multipart/form-data' },
-    withCredentials,
-    onUploadProgress: (event: AxiosProgressEvent) => {
-      if (event.total) {
-        const percentage = Math.round((event.loaded / event.total) * 100)
-        if (percentage < 100) {
-          updateFileList(file, { percent: percentage, status: 'loading' })
-          // onProgress?.(percentage, file)
-        }
-      }
+const postFile = async (file: UploadFile) => {
+  try {
+    const response = await uploadFileRequest({
+      action,
+      file: file.raw,
+      name: 'upload',
+      data,
+      headers,
+      withCredentials,
+      onUploadProgress: (percentage) => {
+        if (percentage >= 100) return
+        updateFileList(file, { percent: percentage, status: 'loading' })
+      },
     },
-  }).then((response) => {
-    updateFileList(file, { status: 'success', response: response.data, percent: 100 })
-    emit('success', { resp: response.data, file, list: uploadedFiles })
-    // onSuccess?.(response.data, file)
-    // onChange?.(file)
-  }).catch((err) => {
+    )
+
+    updateFileList(file, { status: 'success', response, percent: 100 })
+    emit('success', { resp: response, file, list: uploadedFiles })
+  }
+  catch (err) {
     updateFileList(file, { status: 'error', error: err })
     emit('error', { err, file, list: uploadedFiles })
-    // onError?.(error, file)
-    // onChange?.(file)
-  }).finally(() => {
+  }
+  finally {
     if (fileInputEl.value) {
       fileInputEl.value.value = ''
     }
-  })
+  }
 }
 
 const addFileToList = (uploadedFile: File) => {
