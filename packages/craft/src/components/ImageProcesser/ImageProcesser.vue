@@ -147,7 +147,7 @@ const handleConfirmCrop = async () => {
     message.error(uploadErr.message)
     return
   }
-  handleFileUploaded(res, croppedFile)
+  handleFileUploaded(res, croppedFile) // todo 裁剪图片之后图片的宽度可能发生改变，也要改变store中的宽度值
   closeCropperModal()
 }
 </script>

@@ -1,4 +1,4 @@
-import type { ComponentData } from '@/components'
+import type { ComponentData, EditableCompField } from '@/components'
 import type { ImageComponentProps, TextComponentProps } from '@/defaultProps.ts'
 import { defineStore } from 'pinia'
 import { v4 as uuidv4 } from 'uuid'
@@ -8,6 +8,7 @@ const testComponents: ComponentData[] = [
   {
     id: uuidv4(),
     name: 'LText',
+    layerName: '元素1',
     props: {
       text: '你好呀',
       fontSize: '20px',
@@ -18,11 +19,13 @@ const testComponents: ComponentData[] = [
       fontStyle: 'normal',
       fontWeight: 'normal',
       textDecoration: 'none',
+      position: 'relative',
     },
   },
   {
     id: uuidv4(),
     name: 'LText',
+    layerName: '元素2',
     props: {
       text: 'hello2',
       fontSize: '10px',
@@ -30,11 +33,13 @@ const testComponents: ComponentData[] = [
       lineHeight: '2',
       textAlign: 'left',
       fontFamily: '',
+      position: 'relative',
     },
   },
   {
     id: uuidv4(),
     name: 'LText',
+    layerName: '元素3',
     props: {
       text: '一个链接',
       fontSize: '15px',
@@ -43,11 +48,13 @@ const testComponents: ComponentData[] = [
       lineHeight: '3',
       textAlign: 'left',
       fontFamily: '',
+      position: 'relative',
     },
   },
   {
     name: 'LImage',
     id: uuidv4(),
+    layerName: '元素4',
     props: {
       src: 'http://typescript-vue.oss-cn-beijing.aliyuncs.com/vue-marker/69cf21f8b558154f039349b0.jpg',
       actionType: '',
@@ -64,7 +71,8 @@ const testComponents: ComponentData[] = [
       borderRadius: '0',
       boxShadow: '0 0 0 #000000',
       opacity: '1',
-      position: 'absolute',
+      position: 'relative',
+      // position: 'absolute',
       left: '0',
       top: '0',
       right: '0',
@@ -73,6 +81,7 @@ const testComponents: ComponentData[] = [
   {
     name: 'LImage',
     id: uuidv4(),
+    layerName: '元素5',
     props: {
       src: 'http://typescript-vue.oss-cn-beijing.aliyuncs.com/vue-marker/69cf69d4b558154f039349b1.png',
       actionType: '',
@@ -89,7 +98,8 @@ const testComponents: ComponentData[] = [
       borderRadius: '0',
       boxShadow: '0 0 0 #000000',
       opacity: '1',
-      position: 'absolute',
+      position: 'relative',
+      // position: 'absolute',
       left: '0',
       top: '0',
       right: '0',
@@ -97,6 +107,7 @@ const testComponents: ComponentData[] = [
   },
   {
     name: 'LImage',
+    layerName: '元素6',
     id: uuidv4(),
     props: {
       src: 'http://typescript-vue.oss-cn-beijing.aliyuncs.com/vue-marker/69d4d224b558154f039349b2.jpg',
@@ -114,7 +125,8 @@ const testComponents: ComponentData[] = [
       borderRadius: '0',
       boxShadow: '0 0 0 #000000',
       opacity: '1',
-      position: 'absolute',
+      position: 'relative',
+      // position: 'absolute',
       left: '0',
       top: '0',
       right: '0',
@@ -133,14 +145,33 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   const addComponent = (data: ComponentData): void => {
-    if (data) components.push(data)
+    if (data) {
+      components.push({
+        layerName: data.name,
+        ...data,
+      })
+    }
   }
 
-  const updateComponent = (key: keyof (TextComponentProps | ImageComponentProps), value: string) => {
+  const updateCompProp = (key: keyof (TextComponentProps | ImageComponentProps), value: string) => {
     if (currentElement.value) {
       currentElement.value.props[key] = value
     }
   }
 
-  return { components, currentElement, addComponent, setCurrentElement, updateComponent }
+  const updateCompData = <T extends EditableCompField>(id: string, key: T, value: ComponentData[T]) => {
+    const element = components.find(item => item.id === id)
+    if (!element) return
+
+    element[key] = value
+  }
+
+  return {
+    components,
+    currentElement,
+    addComponent,
+    setCurrentElement,
+    updateCompProp,
+    updateCompData,
+  }
 })

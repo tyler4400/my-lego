@@ -61,7 +61,7 @@ export const commonDefaultProps: CommonComponentProps = {
   opacity: '1',
 
   // position and x,y
-  position: 'absolute',
+  position: 'relative',
   left: '0',
   top: '0',
   right: '0',

@@ -2,7 +2,7 @@
   <div
     class="edit-wrapper"
     :class="{ active }"
-    @click="() => onItemClick(id)"
+    @click="() => handleClick(id)"
   >
     <slot />
   </div>
@@ -24,7 +24,7 @@ const emit = defineEmits<{
   (e: 'setActive', id: string): void
 }>()
 
-function onItemClick(id: string) {
+function handleClick(id: string) {
   emit('setActive', id)
 }
 </script>

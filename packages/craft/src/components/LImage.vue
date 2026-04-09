@@ -27,6 +27,8 @@ const { stylesProps, handleClick } = useComponentCommon(
 <style scoped>
 .l-image-component {
   max-width: 100%;
+  /*
   position: relative !important;
+  */
 }
 </style>

@@ -43,8 +43,29 @@
         style="background: #fff"
         class="settings-panel"
       >
-        组件属性
-        <PropsTable :compProps="editorStore.currentElement?.props" @change="handleChange" />
+        <Tabs v-model:activeKey="activeKey" type="card">
+          <TabPane key="component" tab="元素属性" class="no-top-radius">
+            <PropsTable
+              v-if="!editorStore.currentElement?.isLocked"
+              :compProps="editorStore.currentElement?.props"
+              @change="handleChange"
+            />
+            <div v-else>
+              <Empty description="该元素已被锁定，无法编辑" />
+            </div>
+          </TabPane>
+          <TabPane key="layer" tab="元素列表">
+            <LayerList
+              :list="editorStore.components"
+              :currentElementId="editorStore.currentElement?.id"
+              @setActive="editorStore.setCurrentElement"
+              @change="handleLayerChange"
+            />
+          </TabPane>
+          <TabPane key="page" tab="页面设置">
+            <p>页面设置</p>
+          </TabPane>
+        </Tabs>
         <pre>
           {{ editorStore.currentElement }}
         </pre>
@@ -54,15 +75,19 @@
 </template>
 
 <script setup lang="ts">
-import type { ComponentData } from '@/components'
+import type { ComponentData, EditableCompField } from '@/components'
 import type { ImageComponentProps, TextComponentProps } from '@/defaultProps.ts'
-import { Layout, LayoutContent, LayoutSider } from 'ant-design-vue'
+import { Empty, Layout, LayoutContent, LayoutSider, TabPane, Tabs } from 'ant-design-vue'
+import { ref } from 'vue'
 import { componentMap } from '@/components'
 import ComponentList from '@/components/ComponentList.vue'
 import EditWrapper from '@/components/EditWrapper.vue'
+import LayerList from '@/components/LayerList'
 import PropsTable from '@/components/PropsTable.vue'
 import { defaultTextTemplates } from '@/defaultTemplates.ts'
 import { useEditorStore } from '@/stores/editor.ts'
+
+export type TabType = 'component' | 'layer' | 'page'
 
 const editorStore = useEditorStore()
 
@@ -72,8 +97,18 @@ const addComponent = (item: ComponentData) => {
 
 const handleChange = (key: string, value: any) => {
   console.log('handleChange', key, value)
-  editorStore.updateComponent(key as keyof (TextComponentProps | ImageComponentProps), value)
+  editorStore.updateCompProp(key as keyof (TextComponentProps | ImageComponentProps), value)
 }
+
+const handleLayerChange = <T extends EditableCompField>(
+  id: ComponentData['id'],
+  key: T,
+  value: ComponentData[T],
+) => {
+  editorStore.updateCompData(id, key, value)
+}
+
+const activeKey = ref<TabType>('layer')
 </script>
 
 <style>
