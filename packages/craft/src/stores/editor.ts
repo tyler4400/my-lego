@@ -153,6 +153,16 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
+  const move = (startIndex: number, endIndex: number) => {
+    if (startIndex === endIndex || startIndex === undefined || endIndex === undefined) return
+    if (startIndex < 0 || endIndex < 0) return
+    if (startIndex >= components.length || endIndex >= components.length) return
+
+    const deleteComp = components[startIndex] as ComponentData
+    components.splice(startIndex, 1)
+    components.splice(endIndex, 0, deleteComp)
+  }
+
   const updateCompProp = (key: keyof (TextComponentProps | ImageComponentProps), value: string) => {
     if (currentElement.value) {
       currentElement.value.props[key] = value
@@ -173,5 +183,6 @@ export const useEditorStore = defineStore('editor', () => {
     setCurrentElement,
     updateCompProp,
     updateCompData,
+    move,
   }
 })
