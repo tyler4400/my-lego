@@ -46,8 +46,11 @@
       >
         <Tabs v-model:activeKey="activeKey" type="card">
           <TabPane key="component" tab="元素属性" class="no-top-radius">
+            <div v-if="!editorStore.currentElement">
+              <Empty description="请在画布中选择元素" />
+            </div>
             <PropsTable
-              v-if="!editorStore.currentElement?.isLocked"
+              v-else-if="!editorStore.currentElement?.isLocked"
               :compProps="editorStore.currentElement?.props"
               @change="handleChange"
             />
@@ -65,6 +68,7 @@
               :currentElementId="editorStore.currentElement?.id"
               @setActive="editorStore.setCurrentElement"
               @change="handleLayerChange"
+              @move="editorStore.move"
             />
           </TabPane>
           <TabPane key="page" tab="页面设置">
