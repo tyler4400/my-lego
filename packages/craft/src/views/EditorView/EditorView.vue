@@ -22,6 +22,7 @@
           >
             <EditWrapper
               v-for="comp in editorStore.components"
+              v-show="!comp.isHidden"
               :id="comp.id"
               :key="comp.id"
               :active="editorStore.currentElement?.id === comp.id"
@@ -51,7 +52,11 @@
               @change="handleChange"
             />
             <div v-else>
-              <Empty description="该元素已被锁定，无法编辑" />
+              <Empty description="该元素已被锁定，无法编辑">
+                <Button @click="() => handleLayerChange(editorStore.currentElement!.id, 'isLocked', false)">
+                  解除锁定
+                </Button>
+              </Empty>
             </div>
           </TabPane>
           <TabPane key="layer" tab="元素列表">
@@ -77,7 +82,7 @@
 <script setup lang="ts">
 import type { ComponentData, EditableCompField } from '@/components'
 import type { ImageComponentProps, TextComponentProps } from '@/defaultProps.ts'
-import { Empty, Layout, LayoutContent, LayoutSider, TabPane, Tabs } from 'ant-design-vue'
+import { Button, Empty, Layout, LayoutContent, LayoutSider, TabPane, Tabs } from 'ant-design-vue'
 import { ref } from 'vue'
 import { componentMap } from '@/components'
 import ComponentList from '@/components/ComponentList.vue'

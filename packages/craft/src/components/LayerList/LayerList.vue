@@ -10,7 +10,16 @@
       <div class="element-item">
         <div class="item-left">
           <MenuOutlined class="item-drag" />
-          <span class="item-text">{{ index + 1 }}.{{ item.layerName }}</span>
+          {{ index + 1 }}.
+          <TypographyParagraph
+            :editable="{ triggerType: ['text'], tooltip: false, maxlength: 15 }"
+            class="item-text"
+            ellipsis
+            :content="item.layerName"
+            @update:content="(e) => handleRename(item, e)"
+          >
+            {{ item.layerName }}
+          </TypographyParagraph>
         </div>
         <div class="item-setting">
           <IconSwitch
@@ -34,8 +43,10 @@
 <script setup lang="ts">
 import type { ComponentData, EditableCompField } from '@/components'
 import { EyeInvisibleOutlined, EyeOutlined, LockOutlined, MenuOutlined, UnlockOutlined } from '@ant-design/icons-vue'
+import { TypographyParagraph } from 'ant-design-vue'
+
 import { h } from 'vue'
-import IconSwitch from '@/components/IconSwitch/IconSwitch.tsx'
+import IconSwitch from '@/components/IconSwitch'
 
 export interface LayerListProps {
   list?: ComponentData[]
@@ -58,9 +69,9 @@ const handleToggleHidden = (item: ComponentData) => {
 const handleToggleLocked = (item: ComponentData) => {
   emit('change', item.id, 'isLocked', !item.isLocked)
 }
-// const handleRename = (item: ComponentData, layerName: string) => {
-//   emit('change', item.id, 'layerName', layerName)
-// }
+const handleRename = (item: ComponentData, layerName: string) => {
+  emit('change', item.id, 'layerName', layerName)
+}
 </script>
 
 <style scoped>
@@ -101,10 +112,17 @@ const handleToggleLocked = (item: ComponentData) => {
         align-items: center;
         justify-content: space-between;
         gap: 0 10px;
+        color: #000000a6;
 
         & .item-drag {
           font-size: 16px;
           cursor: grab;
+        }
+        & .item-text {
+          margin-bottom: 0;
+          cursor: text;
+          max-width: 150px;
+          color: #000000a6;
         }
       }
     }
