@@ -1,16 +1,19 @@
 <template>
-  <ul class="ant-list-items ant-list-bordered">
+  <VueDraggable
+    :animation="150"
+    ghostClass="ghost"
+    class="ant-list-items ant-list-bordered"
+    tag="ul"
+    :modelValue="list"
+    handle=".item-drag-icon"
+    @update="handleMove"
+  >
     <li
       v-for="(item, index) in list"
       :key="item.id"
       class="ant-list-item"
-      :class="{ active: item.id === currentElementId, drag: item.id === currentDraggingId }"
-      draggable="true"
+      :class="{ active: item.id === currentElementId }"
       @click="() => handleClick(item.id)"
-      @dragstart="handleDragStart($event, index)"
-      @drop="handleDrop($event, index)"
-      @dragover="handleDragOver"
-      @dragend="handleDragEnd"
     >
       <div class="element-item">
         <div class="item-left">
@@ -42,15 +45,17 @@
         </div>
       </div>
     </li>
-  </ul>
+  </VueDraggable>
 </template>
 
 <script setup lang="ts">
+import type { DraggableEvent } from 'vue-draggable-plus'
 import type { ComponentData, EditableCompField } from '@/components'
 import { EyeInvisibleOutlined, EyeOutlined, LockOutlined, MenuOutlined, UnlockOutlined } from '@ant-design/icons-vue'
 import { TypographyParagraph } from 'ant-design-vue'
 
-import { h, ref } from 'vue'
+import { h } from 'vue'
+import { VueDraggable } from 'vue-draggable-plus'
 import IconSwitch from '@/components/IconSwitch'
 
 export interface LayerListProps {
@@ -80,41 +85,20 @@ const handleRename = (item: ComponentData, layerName: string) => {
 }
 
 /* drag and drop */
-const currentDraggingId = ref<string>() // to change UI
-let startDragIndex: number | undefined
-
-const handleDragStart = (e: DragEvent, index: number) => {
-  currentDraggingId.value = list[index]?.id
-  startDragIndex = index
-
-  if (e.dataTransfer) {
-    e.dataTransfer.effectAllowed = 'move'
+const handleMove = (e: DraggableEvent) => {
+  console.log('handleMove', e)
+  if (e.oldIndex !== undefined && e.newIndex !== undefined) {
+    emit('move', e.oldIndex, e.newIndex)
   }
-}
-
-const handleDragOver = (e: DragEvent) => {
-  // 很多元素默认不可以dropdown的。阻止默认行为以允许放置，才可以接受drop是件
-  e.preventDefault()
-
-  if (e.dataTransfer) {
-    e.dataTransfer.dropEffect = 'move'
-  }
-}
-
-const handleDragEnd = () => {
-  // emit('move', startDragIndex, index)
-  startDragIndex = undefined
-  currentDraggingId.value = undefined
-}
-
-const handleDrop = (e: DragEvent, index: number) => {
-  if (index === startDragIndex || startDragIndex === undefined) return
-  emit('move', startDragIndex, index)
 }
 </script>
 
 <style scoped>
-  .ant-list-items{
+  .ghost {
+    opacity: 0.5;
+    background-color: #dedfe0 !important;
+  }
+  .ant-list-items {
     padding-left: 0;
   }
   .ant-list-item {
@@ -129,9 +113,6 @@ const handleDrop = (e: DragEvent, index: number) => {
     &.active {
       border: 1px solid #1890ff;
       background-color: #e6f7ff;
-    }
-    &.drag {
-      background-color: #dedfe0 !important;
     }
 
     &:hover {
