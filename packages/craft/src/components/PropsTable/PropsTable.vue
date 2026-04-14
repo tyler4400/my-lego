@@ -24,7 +24,7 @@
 import type { VNode } from 'vue'
 import type { AllComponentProps } from '@/defaultProps.ts'
 import { computed } from 'vue'
-import { mapPropsToForms } from '@/views/EditorView/propsMap.tsx'
+import { mapPropsToForms } from './propsMap.tsx'
 
 const { compProps = {} } = defineProps<{ compProps?: Partial<AllComponentProps> }>()
 
@@ -81,16 +81,18 @@ const fields = computed<FinalField[]>(() => {
 })
 </script>
 
-<style scoped>
-.prop-item {
-  display: flex;
-  margin-bottom: 10px;
-  align-items: center;
-}
-.label {
-  width: 28%;
-}
-.prop-component {
-  width: 70%;
+<style>
+.props-table {
+  & .prop-item {
+    display: flex;
+    margin-bottom: 10px;
+    align-items: center;
+  }
+  & .label {
+    width: 28%;
+  }
+  & .prop-component {
+    width: 70%;
+  }
 }
 </style>

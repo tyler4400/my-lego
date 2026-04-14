@@ -3,6 +3,7 @@ import type { ImageComponentProps, TextComponentProps } from '@/defaultProps.ts'
 import { defineStore } from 'pinia'
 import { v4 as uuidv4 } from 'uuid'
 import { reactive, ref } from 'vue'
+import { imageDefaultProps, textDefaultProps } from '@/defaultProps.ts'
 
 const testComponents: ComponentData[] = [
   {
@@ -10,6 +11,7 @@ const testComponents: ComponentData[] = [
     name: 'LText',
     layerName: '元素1',
     props: {
+      ...textDefaultProps,
       text: '你好呀',
       fontSize: '20px',
       color: '#f5222d',
@@ -27,6 +29,7 @@ const testComponents: ComponentData[] = [
     name: 'LText',
     layerName: '元素2',
     props: {
+      ...textDefaultProps,
       text: 'hello2',
       fontSize: '10px',
       fontWeight: 'bold',
@@ -41,6 +44,7 @@ const testComponents: ComponentData[] = [
     name: 'LText',
     layerName: '元素3',
     props: {
+      ...textDefaultProps,
       text: '一个链接',
       fontSize: '15px',
       actionType: 'url',
@@ -56,6 +60,7 @@ const testComponents: ComponentData[] = [
     id: uuidv4(),
     layerName: '元素4',
     props: {
+      ...imageDefaultProps,
       src: 'http://typescript-vue.oss-cn-beijing.aliyuncs.com/vue-marker/69cf21f8b558154f039349b0.jpg',
       actionType: '',
       url: '',
@@ -83,6 +88,7 @@ const testComponents: ComponentData[] = [
     id: uuidv4(),
     layerName: '元素5',
     props: {
+      ...imageDefaultProps,
       src: 'http://typescript-vue.oss-cn-beijing.aliyuncs.com/vue-marker/69cf69d4b558154f039349b1.png',
       actionType: '',
       url: '',
@@ -110,6 +116,7 @@ const testComponents: ComponentData[] = [
     layerName: '元素6',
     id: uuidv4(),
     props: {
+      ...imageDefaultProps,
       src: 'http://typescript-vue.oss-cn-beijing.aliyuncs.com/vue-marker/69d4d224b558154f039349b2.jpg',
       actionType: '',
       url: '',

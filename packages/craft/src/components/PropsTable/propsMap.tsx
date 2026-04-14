@@ -2,7 +2,7 @@ import type { VNode } from 'vue'
 import type { AllComponentProps } from '@/defaultProps.ts'
 import { BoldOutlined, ItalicOutlined, UnderlineOutlined } from '@ant-design/icons-vue'
 import { isNumber, isString } from '@my-lego/shared'
-import { InputNumber, RadioButton, RadioGroup, Select, SelectOption, Slider, Textarea } from 'ant-design-vue'
+import { Col, InputNumber, RadioButton, RadioGroup, Row, Select, SelectOption, Slider, Textarea } from 'ant-design-vue'
 import ColorPicker from '@/components/ColorPicker'
 import IconSwitch from '@/components/IconSwitch'
 import ImageProcesser from '@/components/ImageProcesser'
@@ -47,6 +47,37 @@ const textAlignOptions = [
   { label: '右', value: 'right' },
 ]
 
+const borderStyleOptions = [
+  { label: '无', value: 'none' },
+  { label: '实线', value: 'solid' },
+  { label: '破折线', value: 'dashed' },
+  { label: '点状线', value: 'dotted' },
+]
+
+const numberToPx = (val: number | undefined) => {
+  if (!isNumber(val)) return ''
+  return `${val}px`
+}
+
+const pxToNumber = (raw: any) => {
+  if (!isString(raw)) return undefined
+  const parsed = Number.parseInt(raw, 10)
+  return Number.isNaN(parsed) ? undefined : parsed
+}
+
+const pxToNumberFieldConfig: () => Omit<FieldConfig<number | undefined>, 'label'> = () => ({
+  render: ({ value, onChange }) => (
+    <InputNumber
+      value={value}
+      onChange={val => onChange(val as number)}
+      addonAfter="px"
+    />
+  ),
+  // 可以使用toProps/fromProps来转换value，也可以直接在render中完成。这里保留一个示例
+  toProps: numberToPx,
+  fromProps: pxToNumber,
+})
+
 export const mapPropsToForms: PropsToForms = {
   text: {
     label: '文本',
@@ -61,23 +92,8 @@ export const mapPropsToForms: PropsToForms = {
   },
 
   fontSize: {
+    ...pxToNumberFieldConfig(),
     label: '字号',
-    render: ({ value, onChange }) => (
-      <InputNumber
-        value={value as number | undefined}
-        onChange={val => onChange(val)}
-        addonAfter="px"
-      />
-    ),
-    toProps: (val) => {
-      if (!isNumber(val)) return ''
-      return `${val}px`
-    },
-    fromProps: (raw) => {
-      if (!isString(raw)) return undefined
-      const parsed = Number.parseInt(raw, 10)
-      return Number.isNaN(parsed) ? undefined : parsed
-    },
   },
 
   lineHeight: {
@@ -92,13 +108,26 @@ export const mapPropsToForms: PropsToForms = {
       return val.toString()
     },
     render: ({ value, onChange }) => (
-      <Slider
-        min={0}
-        max={3}
-        step={0.1}
-        value={value}
-        onChange={val => onChange(val)}
-      />
+      <Row gutter={8}>
+        <Col span="12">
+          <Slider
+            min={0}
+            max={3}
+            step={0.1}
+            value={value}
+            onChange={val => onChange(val)}
+          />
+        </Col>
+        <Col span="12">
+          <InputNumber
+            min={0}
+            max={3}
+            step={0.1}
+            value={value}
+            onChange={val => onChange(val as number)}
+          />
+        </Col>
+      </Row>
     ),
   },
 
@@ -124,6 +153,7 @@ export const mapPropsToForms: PropsToForms = {
     label: '字体',
     render: ({ value, onChange }) => (
       <Select
+        style={{ width: '100%' }}
         value={value}
         onChange={val => onChange(val)}
       >
@@ -204,4 +234,145 @@ export const mapPropsToForms: PropsToForms = {
       />
     ),
   },
+  width: {
+    ...pxToNumberFieldConfig(),
+    label: '宽度',
+  },
+  height: {
+    label: '高度',
+    ...pxToNumberFieldConfig(),
+  },
+  paddingLeft: {
+    ...pxToNumberFieldConfig(),
+    label: '左边距',
+  },
+  paddingRight: {
+    ...pxToNumberFieldConfig(),
+    label: '右边距',
+  },
+  paddingTop: {
+    ...pxToNumberFieldConfig(),
+    label: '上边距',
+  },
+  paddingBottom: {
+    ...pxToNumberFieldConfig(),
+    label: '下边距',
+  },
+  borderWidth: {
+    ...pxToNumberFieldConfig(),
+    label: '边框宽度',
+  },
+  borderRadius: {
+    label: '边框圆角',
+    fromProps: pxToNumber,
+    toProps: numberToPx,
+    render: ({ value, onChange }) => (
+      <Row gutter={8}>
+        <Col span="12">
+          <Slider
+            min={0}
+            max={100}
+            tipFormatter={numberToPx}
+            value={value}
+            onChange={val => onChange(val)}
+          />
+        </Col>
+        <Col span="12">
+          <InputNumber
+            min={0}
+            max={100}
+            value={value}
+            onChange={val => onChange(val as number)}
+            addonAfter="px"
+          />
+        </Col>
+      </Row>
+    ),
+  },
+  borderStyle: {
+    label: '边框类型',
+    render: ({ value, onChange }) => (
+      <Select
+        style={{ width: '100%' }}
+        value={value}
+        onChange={val => onChange(val)}
+      >
+        {borderStyleOptions.map(opt => (
+          <SelectOption key={opt.value} value={opt.value}>
+            <span style={{ borderStyle: opt.value || undefined }}>
+              {opt.label}
+            </span>
+          </SelectOption>
+        ))}
+      </Select>
+    ),
+  },
+  borderColor: {
+    label: '边框颜色',
+    render: ({ value, onChange }) => (
+      <ColorPicker
+        value={value}
+        onChange={(val: string) => onChange(val)}
+      />
+    ),
+  },
+  left: {
+    ...pxToNumberFieldConfig(),
+    label: 'X轴坐标',
+  },
+  top: {
+    ...pxToNumberFieldConfig(),
+    label: 'Y轴坐标',
+  },
+  boxShadow: {
+    render: () => (
+
+      <>
+        <div class="prop-item">
+          <span class="label">111</span>
+          <div class="prop-component">
+            <span>222</span>
+          </div>
+        </div>
+        <div class="prop-item">
+          <span class="label">sadfefef</span>
+          <div class="prop-component">
+            <span>dewdew</span>
+          </div>
+        </div>
+      </>
+
+    ),
+  },
+  opacity: {
+    label: '透明度',
+    render: ({ value, onChange }) => {
+      const num = Number.parseFloat(String(value))
+      const valFromProp = Number.isNaN(num) ? 100 : (num * 100)
+
+      return (
+        <Row gutter={8}>
+          <Col span="12">
+            <Slider
+              min={0}
+              max={100}
+              tipFormatter={val => `${(val ?? 100)}%`}
+              value={valFromProp}
+              onChange={val => onChange(`${val as number / 100}`)}
+            />
+          </Col>
+          <Col span="12">
+            <InputNumber
+              min={0}
+              max={100}
+              addonAfter="%"
+              value={valFromProp}
+              onChange={val => onChange(`${val as number / 100}`)}
+            />
+          </Col>
+        </Row>
+      )
+    },
+  },
+
 }

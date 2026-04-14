@@ -92,7 +92,7 @@ import { componentMap } from '@/components'
 import ComponentList from '@/components/ComponentList.vue'
 import EditWrapper from '@/components/EditWrapper.vue'
 import LayerList from '@/components/LayerList'
-import PropsTable from '@/components/PropsTable.vue'
+import PropsTable from '@/components/PropsTable'
 import { defaultTextTemplates } from '@/defaultTemplates.ts'
 import { useEditorStore } from '@/stores/editor.ts'
 
@@ -117,7 +117,7 @@ const handleLayerChange = <T extends EditableCompField>(
   editorStore.updateCompData(id, key, value)
 }
 
-const activeKey = ref<TabType>('layer')
+const activeKey = ref<TabType>('component')
 </script>
 
 <style>

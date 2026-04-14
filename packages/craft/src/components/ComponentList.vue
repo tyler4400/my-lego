@@ -19,7 +19,7 @@ import type { UploadResponse } from '@/types/upload.ts'
 import { v4 as uuidv4 } from 'uuid'
 import LText from '@/components/LText.vue'
 import StyleUploader from '@/components/StyleUploader'
-import { imageDefaultProps } from '@/defaultProps.ts'
+import { imageDefaultProps, textDefaultProps } from '@/defaultProps.ts'
 import { getImageDimensions } from '@/utils/utils.ts'
 
 defineProps<{ list: Partial<TextComponentProps>[] }>()
@@ -49,6 +49,7 @@ const handleTextClick = (data: Partial<TextComponentProps>) => {
     name: 'LText',
     id: uuidv4(),
     props: {
+      ...textDefaultProps,
       ...data,
     },
   }
