@@ -52,6 +52,7 @@
             <PropsTable
               v-else-if="!editorStore.currentElement?.isLocked"
               :compProps="editorStore.currentElement?.props"
+              :currentElementId="editorStore.currentElement?.id"
               @change="handleChange"
             />
             <div v-else>

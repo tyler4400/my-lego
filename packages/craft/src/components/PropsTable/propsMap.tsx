@@ -1,4 +1,4 @@
-import type { VNode } from 'vue'
+import type { VNodeChild } from 'vue'
 import type { AllComponentProps } from '@/defaultProps.ts'
 import { BoldOutlined, ItalicOutlined, UnderlineOutlined } from '@ant-design/icons-vue'
 import { isNumber, isString } from '@my-lego/shared'
@@ -26,7 +26,7 @@ export interface FieldRenderContext<TValue = any> {
  */
 export interface FieldConfig<TValue = any> {
   label?: string
-  render: (ctx: FieldRenderContext<TValue>) => VNode
+  render: (ctx: FieldRenderContext<TValue>) => VNodeChild
   fromProps?: (raw: any, rawProps: Partial<AllComponentProps>, key: keyof AllComponentProps) => TValue
   toProps?: (val: TValue, rawProps: Partial<AllComponentProps>, key: keyof AllComponentProps) => any
 }
