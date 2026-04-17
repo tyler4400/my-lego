@@ -33,6 +33,7 @@
 <script setup lang="ts">
 import type { FieldConfig } from './propsMap.tsx'
 import type { AllComponentProps } from '@/defaultProps.ts'
+import { isArray } from '@my-lego/shared'
 import { computed } from 'vue'
 import RenderPropField from '@/components/PropsTable/RenderPropField.tsx'
 import { mapPropsToForms } from './propsMap.tsx'
@@ -57,7 +58,15 @@ const fieldDefinition = computed<FieldDefinition[]>(() => {
 
     if (!config) return result
 
-    result.push({ key: fieldKey, config })
+    if (isArray(config)) {
+      config.forEach((item) => {
+        result.push({ key: fieldKey, config: item })
+      })
+    }
+    else {
+      result.push({ key: fieldKey, config })
+    }
+
     return result
   }, [])
 })

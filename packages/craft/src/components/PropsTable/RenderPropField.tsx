@@ -56,23 +56,31 @@ export default defineComponent({
       return props.config.fromProps?.(rawValue.value, props.compProps, props.fieldKey) ?? rawValue.value
     })
 
-    const handleValueChange = (val: any) => {
+    const visible = computed(() => {
+      return props.config.visible?.(props.compProps) ?? true
+    })
+
+    const handleValueChange = (val: any, key: keyof AllComponentProps = props.fieldKey) => {
       const nextVal = props.config.toProps?.(val, props.compProps, props.fieldKey) ?? val
-      emit('change', props.fieldKey, nextVal)
+      emit('change', key, nextVal)
     }
 
-    return () => (
-      <div class="prop-item">
-        {props.config.label && <span class="label">{props.config.label}</span>}
-        <div class="prop-component">
-          {props.config.render({
-            key: props.fieldKey,
-            value: fieldValue.value,
-            rawProps: props.compProps,
-            onChange: handleValueChange,
-          })}
+    return () => {
+      if (!visible.value) return null
+
+      return (
+        <div class="prop-item">
+          {props.config.label && <span class="label">{props.config.label}</span>}
+          <div class="prop-component">
+            {props.config.render({
+              key: props.fieldKey,
+              value: fieldValue.value,
+              rawProps: props.compProps,
+              onChange: handleValueChange,
+            })}
+          </div>
         </div>
-      </div>
-    )
+      )
+    }
   },
 })

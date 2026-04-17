@@ -6,14 +6,15 @@ import { Col, InputNumber, RadioButton, RadioGroup, Row, Select, SelectOption, S
 import ColorPicker from '@/components/ColorPicker'
 import IconSwitch from '@/components/IconSwitch'
 import ImageProcesser from '@/components/ImageProcesser'
+import { commonDefaultProps } from '@/defaultProps.ts'
 
 export interface FieldRenderContext<TValue = any> {
   /** 当前字段 key，比如 'fontSize' */
   key: keyof AllComponentProps
   /** 传给 render 的“内部值”，是否做转换由 fromProps 决定 */
   value: TValue
-  /** 通知外部值变更，是否做转换由 toProps 决定 */
-  onChange: (val: TValue) => void
+  /** 通知外部值变更，是否做转换由 toProps 决定. 可自定义key，默认为当前对象的key */
+  onChange: (val: TValue, key?: keyof AllComponentProps) => void
   /** 当前组件的原始 props（用于某些字段间联动时可选使用） */
   rawProps: Partial<AllComponentProps>
 }
@@ -21,17 +22,19 @@ export interface FieldRenderContext<TValue = any> {
 /**
  * 字段配置：
  *  - label：右侧属性面板显示的名称
+ *  - visible: 是否显示。 若为false，则会display: none
  *  - render：完全由使用者控制如何渲染这个字段
  *  - fromProps / toProps：可选的“原始 props ↔ 内部值”转换函数
  */
 export interface FieldConfig<TValue = any> {
   label?: string
+  visible?: (rawProps: Partial<AllComponentProps>) => boolean
   render: (ctx: FieldRenderContext<TValue>) => VNodeChild
   fromProps?: (raw: any, rawProps: Partial<AllComponentProps>, key: keyof AllComponentProps) => TValue
   toProps?: (val: TValue, rawProps: Partial<AllComponentProps>, key: keyof AllComponentProps) => any
 }
 
-export type PropsToForms = Partial<Record<keyof AllComponentProps, FieldConfig>>
+export type PropsToForms = Partial<Record<keyof AllComponentProps, FieldConfig | FieldConfig[]>>
 
 const fontFamilyTemplates = [
   { label: '默认', value: '' },
@@ -52,6 +55,11 @@ const borderStyleOptions = [
   { label: '实线', value: 'solid' },
   { label: '破折线', value: 'dashed' },
   { label: '点状线', value: 'dotted' },
+]
+
+const actionTypeOptions = [
+  { label: '无', value: '' },
+  { label: '跳转链接', value: 'url' },
 ]
 
 const numberToPx = (val: number | undefined) => {
@@ -77,6 +85,49 @@ const pxToNumberFieldConfig: () => Omit<FieldConfig<number | undefined>, 'label'
   toProps: numberToPx,
   fromProps: pxToNumber,
 })
+
+export interface BoxShadowValue {
+  offset: number
+  blur: number
+  color: string
+}
+
+/**
+ *       // box shadow should like this
+ *       // 10px 10px 0px red;
+ *       // the first two should be sizes
+ *       // the 3rd one should be blur
+ *       // the last one should be color
+ *
+ *  约定 boxShadow 为 `offsetX offsetY blur color`。
+ * “阴影尺寸”会同时控制前两个 offset 值。
+ */
+const parserBoxShadow = (raw: string): BoxShadowValue => {
+  const rawVal = (!isString(raw) || !raw.trim()) ? commonDefaultProps.boxShadow : raw
+
+  const [offsetX = '0', offsetY = offsetX, blur = '0', ...color] = rawVal.trim().split(/\s+/)
+
+  return {
+    offset: pxToNumber(offsetX) ?? pxToNumber(offsetY) ?? 0,
+    blur: pxToNumber(blur) ?? 0,
+    color: color?.join?.(' ') || '#000000',
+  }
+}
+
+const stringifyBoxShadow = (val: BoxShadowValue) => {
+  const offset = numberToPx(val.offset) || '0px'
+  const blur = numberToPx(val.blur) || '0px'
+  const color = val.color || '#000000'
+
+  return `${offset} ${offset} ${blur} ${color}`
+}
+
+const patchBoxShadow = (rawProps: Partial<AllComponentProps>, patch: Partial<BoxShadowValue>) => {
+  return stringifyBoxShadow({
+    ...parserBoxShadow(rawProps.boxShadow ?? commonDefaultProps.boxShadow),
+    ...patch,
+  })
+}
 
 export const mapPropsToForms: PropsToForms = {
   text: {
@@ -261,11 +312,13 @@ export const mapPropsToForms: PropsToForms = {
   borderWidth: {
     ...pxToNumberFieldConfig(),
     label: '边框宽度',
+    visible: rawProps => rawProps.borderStyle !== 'none',
   },
   borderRadius: {
     label: '边框圆角',
     fromProps: pxToNumber,
     toProps: numberToPx,
+    visible: rawProps => rawProps.borderStyle !== 'none',
     render: ({ value, onChange }) => (
       <Row gutter={8}>
         <Col span="12">
@@ -309,6 +362,7 @@ export const mapPropsToForms: PropsToForms = {
   },
   borderColor: {
     label: '边框颜色',
+    visible: rawProps => rawProps.borderStyle !== 'none',
     render: ({ value, onChange }) => (
       <ColorPicker
         value={value}
@@ -324,26 +378,85 @@ export const mapPropsToForms: PropsToForms = {
     ...pxToNumberFieldConfig(),
     label: 'Y轴坐标',
   },
-  boxShadow: {
-    render: () => (
-
-      <>
-        <div class="prop-item">
-          <span class="label">111</span>
-          <div class="prop-component">
-            <span>222</span>
-          </div>
-        </div>
-        <div class="prop-item">
-          <span class="label">sadfefef</span>
-          <div class="prop-component">
-            <span>dewdew</span>
-          </div>
-        </div>
-      </>
-
-    ),
-  },
+  boxShadow: [
+    {
+      label: '阴影颜色',
+      fromProps: (raw) => {
+        return parserBoxShadow(raw).color
+      },
+      toProps: (val, rawProps) => {
+        return patchBoxShadow(rawProps, { color: val })
+      },
+      render: ({ value, onChange }) => (
+        <ColorPicker
+          value={value}
+          onChange={(val: string) => onChange(val)}
+        />
+      ),
+    },
+    {
+      label: '阴影大小',
+      fromProps: (raw) => {
+        return parserBoxShadow(raw).offset
+      },
+      toProps: (val, rawProps) => {
+        return patchBoxShadow(rawProps, { offset: val })
+      },
+      render: ({ value, onChange }) => (
+        <Row gutter={8}>
+          <Col span="12">
+            <Slider
+              min={0}
+              max={20}
+              tipFormatter={numberToPx}
+              value={value}
+              onChange={val => onChange(val)}
+            />
+          </Col>
+          <Col span="12">
+            <InputNumber
+              min={0}
+              max={20}
+              value={value}
+              onChange={val => onChange(val as number)}
+              addonAfter="px"
+            />
+          </Col>
+        </Row>
+      ),
+    },
+    {
+      label: '阴影模糊',
+      fromProps: (raw) => {
+        return parserBoxShadow(raw).blur
+      },
+      toProps: (val, rawProps) => {
+        return patchBoxShadow(rawProps, { blur: val })
+      },
+      render: ({ value, onChange }) => (
+        <Row gutter={8}>
+          <Col span="12">
+            <Slider
+              min={0}
+              max={20}
+              tipFormatter={numberToPx}
+              value={value}
+              onChange={val => onChange(val)}
+            />
+          </Col>
+          <Col span="12">
+            <InputNumber
+              min={0}
+              max={20}
+              value={value}
+              onChange={val => onChange(val as number)}
+              addonAfter="px"
+            />
+          </Col>
+        </Row>
+      ),
+    },
+  ],
   opacity: {
     label: '透明度',
     render: ({ value, onChange }) => {
@@ -374,5 +487,31 @@ export const mapPropsToForms: PropsToForms = {
       )
     },
   },
-
+  actionType: {
+    label: '动作类型',
+    render: ({ value, onChange }) => (
+      <Select
+        style={{ width: '100%' }}
+        value={value}
+        onChange={val => onChange(val)}
+      >
+        {actionTypeOptions.map(opt => (
+          <SelectOption key={opt.value} value={opt.value}>
+            {opt.label}
+          </SelectOption>
+        ))}
+      </Select>
+    ),
+  },
+  url: {
+    label: '链接地址',
+    visible: rawProps => rawProps.actionType === 'url',
+    render: ({ value, onChange }) => (
+      <Textarea
+        rows={2}
+        value={value as string | undefined}
+        onChange={e => onChange(e.target.value)}
+      />
+    ),
+  },
 }

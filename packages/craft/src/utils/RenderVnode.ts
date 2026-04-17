@@ -1,9 +1,10 @@
+import type { PropType, VNodeChild } from 'vue'
 import { defineComponent } from 'vue'
 
 const RenderVnode = defineComponent({
   props: {
     node: {
-      type: [String, Object],
+      type: null as unknown as PropType<VNodeChild>,
       required: true,
     },
   },
