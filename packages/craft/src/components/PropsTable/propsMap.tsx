@@ -1,5 +1,5 @@
 import type { VNodeChild } from 'vue'
-import type { AllComponentProps } from '@/defaultProps.ts'
+import type { AllComponentProps, CompFieldKey } from '@/defaultProps.ts'
 import { BoldOutlined, ItalicOutlined, UnderlineOutlined } from '@ant-design/icons-vue'
 import { isNumber, isString } from '@my-lego/shared'
 import { Col, InputNumber, RadioButton, RadioGroup, Row, Select, SelectOption, Slider, Textarea } from 'ant-design-vue'
@@ -8,33 +8,37 @@ import IconSwitch from '@/components/IconSwitch'
 import ImageProcesser from '@/components/ImageProcesser'
 import { commonDefaultProps } from '@/defaultProps.ts'
 
+export type GroupKey = 'content' | 'size' | 'border' | 'shadowAndOpacity' | 'position' | 'action'
+
 export interface FieldRenderContext<TValue = any> {
   /** 当前字段 key，比如 'fontSize' */
-  key: keyof AllComponentProps
+  key: CompFieldKey
   /** 传给 render 的“内部值”，是否做转换由 fromProps 决定 */
   value: TValue
   /** 通知外部值变更，是否做转换由 toProps 决定. 可自定义key，默认为当前对象的key */
-  onChange: (val: TValue, key?: keyof AllComponentProps) => void
+  onChange: (val: TValue, key?: CompFieldKey) => void
   /** 当前组件的原始 props（用于某些字段间联动时可选使用） */
   rawProps: Partial<AllComponentProps>
 }
 
 /**
  * 字段配置：
+ *  - groupKey?: 用于分组. 未填写就默认content
  *  - label：右侧属性面板显示的名称
  *  - visible: 是否显示。 若为false，则会display: none
  *  - render：完全由使用者控制如何渲染这个字段
  *  - fromProps / toProps：可选的“原始 props ↔ 内部值”转换函数
  */
 export interface FieldConfig<TValue = any> {
+  groupKey?: GroupKey
   label?: string
   visible?: (rawProps: Partial<AllComponentProps>) => boolean
   render: (ctx: FieldRenderContext<TValue>) => VNodeChild
-  fromProps?: (raw: any, rawProps: Partial<AllComponentProps>, key: keyof AllComponentProps) => TValue
-  toProps?: (val: TValue, rawProps: Partial<AllComponentProps>, key: keyof AllComponentProps) => any
+  fromProps?: (raw: any, rawProps: Partial<AllComponentProps>, key: CompFieldKey) => TValue
+  toProps?: (val: TValue, rawProps: Partial<AllComponentProps>, key: CompFieldKey) => any
 }
 
-export type PropsToForms = Partial<Record<keyof AllComponentProps, FieldConfig | FieldConfig[]>>
+export type PropsToForms = Partial<Record<CompFieldKey, FieldConfig | FieldConfig[]>>
 
 const fontFamilyTemplates = [
   { label: '默认', value: '' },
@@ -131,6 +135,7 @@ const patchBoxShadow = (rawProps: Partial<AllComponentProps>, patch: Partial<Box
 
 export const mapPropsToForms: PropsToForms = {
   text: {
+    groupKey: 'content',
     label: '文本',
     // 不做 fromProps/toProps，直接在 render 里处理原始 string
     render: ({ value, onChange }) => (
@@ -145,10 +150,12 @@ export const mapPropsToForms: PropsToForms = {
   fontSize: {
     ...pxToNumberFieldConfig(),
     label: '字号',
+    groupKey: 'content',
   },
 
   lineHeight: {
     label: '行高',
+    groupKey: 'content',
     fromProps: (raw) => {
       if (raw == null) return undefined
       const num = Number.parseFloat(String(raw))
@@ -184,6 +191,7 @@ export const mapPropsToForms: PropsToForms = {
 
   textAlign: {
     label: '对齐方式',
+    groupKey: 'content',
     // 不用 fromProps/toProps，直接把原始 string 当成 value
     render: ({ value, onChange }) => (
       <RadioGroup
@@ -202,6 +210,7 @@ export const mapPropsToForms: PropsToForms = {
 
   fontFamily: {
     label: '字体',
+    groupKey: 'content',
     render: ({ value, onChange }) => (
       <Select
         style={{ width: '100%' }}
@@ -221,6 +230,7 @@ export const mapPropsToForms: PropsToForms = {
 
   color: {
     label: '文字颜色',
+    groupKey: 'content',
     render: ({ value, onChange }) => (
       <ColorPicker
         value={value}
@@ -231,6 +241,7 @@ export const mapPropsToForms: PropsToForms = {
 
   backgroundColor: {
     label: '背景颜色',
+    groupKey: 'content',
     render: ({ value, onChange }) => (
       <ColorPicker
         value={value}
@@ -241,6 +252,7 @@ export const mapPropsToForms: PropsToForms = {
 
   fontWeight: {
     label: '粗体',
+    groupKey: 'content',
     render: ({ value, onChange }) => (
       <IconSwitch
         checked={value === 'bold'}
@@ -253,6 +265,7 @@ export const mapPropsToForms: PropsToForms = {
 
   fontStyle: {
     label: '斜体',
+    groupKey: 'content',
     render: ({ value, onChange }) => (
       <IconSwitch
         checked={value === 'italic'}
@@ -265,6 +278,7 @@ export const mapPropsToForms: PropsToForms = {
 
   textDecoration: {
     label: '下划线',
+    groupKey: 'content',
     render: ({ value, onChange }) => (
       <IconSwitch
         checked={value === 'underline'}
@@ -276,6 +290,7 @@ export const mapPropsToForms: PropsToForms = {
   },
   src: {
     // label: '图片',
+    groupKey: 'content',
     render: ({ value, onChange }) => (
       <ImageProcesser
         value={value}
@@ -288,34 +303,42 @@ export const mapPropsToForms: PropsToForms = {
   width: {
     ...pxToNumberFieldConfig(),
     label: '宽度',
+    groupKey: 'size',
   },
   height: {
-    label: '高度',
     ...pxToNumberFieldConfig(),
+    label: '高度',
+    groupKey: 'size',
   },
   paddingLeft: {
     ...pxToNumberFieldConfig(),
     label: '左边距',
+    groupKey: 'size',
   },
   paddingRight: {
     ...pxToNumberFieldConfig(),
     label: '右边距',
+    groupKey: 'size',
   },
   paddingTop: {
     ...pxToNumberFieldConfig(),
     label: '上边距',
+    groupKey: 'size',
   },
   paddingBottom: {
     ...pxToNumberFieldConfig(),
     label: '下边距',
+    groupKey: 'size',
   },
   borderWidth: {
     ...pxToNumberFieldConfig(),
     label: '边框宽度',
+    groupKey: 'border',
     visible: rawProps => rawProps.borderStyle !== 'none',
   },
   borderRadius: {
     label: '边框圆角',
+    groupKey: 'border',
     fromProps: pxToNumber,
     toProps: numberToPx,
     visible: rawProps => rawProps.borderStyle !== 'none',
@@ -344,6 +367,7 @@ export const mapPropsToForms: PropsToForms = {
   },
   borderStyle: {
     label: '边框类型',
+    groupKey: 'border',
     render: ({ value, onChange }) => (
       <Select
         style={{ width: '100%' }}
@@ -362,6 +386,7 @@ export const mapPropsToForms: PropsToForms = {
   },
   borderColor: {
     label: '边框颜色',
+    groupKey: 'border',
     visible: rawProps => rawProps.borderStyle !== 'none',
     render: ({ value, onChange }) => (
       <ColorPicker
@@ -373,14 +398,17 @@ export const mapPropsToForms: PropsToForms = {
   left: {
     ...pxToNumberFieldConfig(),
     label: 'X轴坐标',
+    groupKey: 'position',
   },
   top: {
     ...pxToNumberFieldConfig(),
     label: 'Y轴坐标',
+    groupKey: 'position',
   },
   boxShadow: [
     {
       label: '阴影颜色',
+      groupKey: 'shadowAndOpacity',
       fromProps: (raw) => {
         return parserBoxShadow(raw).color
       },
@@ -396,6 +424,7 @@ export const mapPropsToForms: PropsToForms = {
     },
     {
       label: '阴影大小',
+      groupKey: 'shadowAndOpacity',
       fromProps: (raw) => {
         return parserBoxShadow(raw).offset
       },
@@ -427,6 +456,7 @@ export const mapPropsToForms: PropsToForms = {
     },
     {
       label: '阴影模糊',
+      groupKey: 'shadowAndOpacity',
       fromProps: (raw) => {
         return parserBoxShadow(raw).blur
       },
@@ -459,6 +489,7 @@ export const mapPropsToForms: PropsToForms = {
   ],
   opacity: {
     label: '透明度',
+    groupKey: 'shadowAndOpacity',
     render: ({ value, onChange }) => {
       const num = Number.parseFloat(String(value))
       const valFromProp = Number.isNaN(num) ? 100 : (num * 100)
@@ -489,6 +520,7 @@ export const mapPropsToForms: PropsToForms = {
   },
   actionType: {
     label: '动作类型',
+    groupKey: 'action',
     render: ({ value, onChange }) => (
       <Select
         style={{ width: '100%' }}
@@ -505,6 +537,7 @@ export const mapPropsToForms: PropsToForms = {
   },
   url: {
     label: '链接地址',
+    groupKey: 'action',
     visible: rawProps => rawProps.actionType === 'url',
     render: ({ value, onChange }) => (
       <Textarea

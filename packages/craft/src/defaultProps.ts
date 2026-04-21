@@ -146,3 +146,5 @@ export interface ImageComponentProps extends CommonComponentProps {
 }
 
 export type AllComponentProps = TextComponentProps & ImageComponentProps
+
+export type CompFieldKey = keyof AllComponentProps

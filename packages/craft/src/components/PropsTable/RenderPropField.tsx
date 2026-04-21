@@ -1,11 +1,11 @@
 import type { ExtractPublicPropTypes, PropType } from 'vue'
 import type { FieldConfig } from '@/components/PropsTable/propsMap.tsx'
-import type { AllComponentProps } from '@/defaultProps.ts'
+import type { AllComponentProps, CompFieldKey } from '@/defaultProps.ts'
 import { computed, defineComponent, toRef } from 'vue'
 
 const renderPropFieldProps = {
   fieldKey: {
-    type: String as PropType<keyof AllComponentProps>,
+    type: String as PropType<CompFieldKey>,
     required: true,
   },
   config: {
@@ -21,11 +21,11 @@ const renderPropFieldProps = {
 export type RenderPropFieldProps = ExtractPublicPropTypes<typeof renderPropFieldProps>
 
 export interface RenderPropFieldEmits {
-  (e: 'change', key: keyof AllComponentProps, value: any): void
+  (e: 'change', key: CompFieldKey, value: any): void
 }
 
 const renderPropFieldEmits = {
-  change: (_key: keyof AllComponentProps, _value: any) => true,
+  change: (_key: CompFieldKey, _value: any) => true,
 }
 /**
  * 之前是compProps的任意一个字段改变，都会重新渲染整个compProps
@@ -60,7 +60,7 @@ export default defineComponent({
       return props.config.visible?.(props.compProps) ?? true
     })
 
-    const handleValueChange = (val: any, key: keyof AllComponentProps = props.fieldKey) => {
+    const handleValueChange = (val: any, key: CompFieldKey = props.fieldKey) => {
       const nextVal = props.config.toProps?.(val, props.compProps, props.fieldKey) ?? val
       emit('change', key, nextVal)
     }
