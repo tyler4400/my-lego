@@ -85,8 +85,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ComponentData, EditableCompField } from '@/components'
-import type { ImageComponentProps, TextComponentProps } from '@/defaultProps.ts'
+import type { CompFieldKey, ComponentData, EditableCompField } from '@/types/editor.ts'
 import { Button, Empty, Layout, LayoutContent, LayoutSider, TabPane, Tabs } from 'ant-design-vue'
 import { ref } from 'vue'
 import { componentMap } from '@/components'
@@ -107,7 +106,7 @@ const addComponent = (item: ComponentData) => {
 
 const handleChange = (key: string, value: any) => {
   console.log('handleChange', key, value)
-  editorStore.updateCompProp(key as keyof (TextComponentProps | ImageComponentProps), value)
+  editorStore.updateCompProp(key as CompFieldKey, value)
 }
 
 const handleLayerChange = <T extends EditableCompField>(

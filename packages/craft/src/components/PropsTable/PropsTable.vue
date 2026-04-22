@@ -19,7 +19,7 @@
     <!--    </div> -->
 
     <!-- 上面是优化前版本，下面是优化后版本   -->
-    <Collapse defaultActiveKey="border">
+    <Collapse defaultActiveKey="content">
       <CollapsePanel
         v-for="group in groups"
         :key="group.groupKey"
@@ -40,7 +40,7 @@
 
 <script setup lang="ts">
 import type { FieldConfig, GroupKey } from './propsMap.tsx'
-import type { AllComponentProps, CompFieldKey } from '@/defaultProps.ts'
+import type { AllComponentProps, CompFieldKey } from '@/types/editor.ts'
 import { isArray } from '@my-lego/shared'
 import { Collapse, CollapsePanel } from 'ant-design-vue'
 import { computed } from 'vue'
@@ -104,20 +104,3 @@ const handleFieldChange = (key: CompFieldKey, value: any) => {
   emit('change', key, value)
 }
 </script>
-
-<style>
-.props-table {
-  /* 这些样式在RenderPropField.tsx中会用到 */
-  & .prop-item {
-    display: flex;
-    margin-bottom: 10px;
-    align-items: center;
-  }
-  & .label {
-    width: 28%;
-  }
-  & .prop-component {
-    width: 70%;
-  }
-}
-</style>

@@ -1,0 +1,14 @@
+/* 单个属性编辑项的样式，配合 RenderPropField.tsx 使用 */
+.propItem {
+  display: flex;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.label {
+  width: 28%;
+}
+
+.propComponent {
+  width: 70%;
+}

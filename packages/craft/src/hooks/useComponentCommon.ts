@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'vue'
-import type { CommonComponentProps } from '@/defaultProps.ts'
+import type { CommonComponentProps } from '@/types/editor.ts'
 import { message } from 'ant-design-vue'
 import { pick } from 'lodash-es'
 import { computed } from 'vue'

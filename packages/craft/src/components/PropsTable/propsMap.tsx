@@ -1,12 +1,12 @@
 import type { VNodeChild } from 'vue'
-import type { AllComponentProps, CompFieldKey } from '@/defaultProps.ts'
+import type { AllComponentProps, CompFieldKey } from '@/types/editor.ts'
 import { BoldOutlined, ItalicOutlined, UnderlineOutlined } from '@ant-design/icons-vue'
 import { isNumber, isString } from '@my-lego/shared'
 import { Col, InputNumber, RadioButton, RadioGroup, Row, Select, SelectOption, Slider, Textarea } from 'ant-design-vue'
+import { commonDefaultProps } from '@/components'
 import ColorPicker from '@/components/ColorPicker'
 import IconSwitch from '@/components/IconSwitch'
 import ImageProcesser from '@/components/ImageProcesser'
-import { commonDefaultProps } from '@/defaultProps.ts'
 
 export type GroupKey = 'content' | 'size' | 'border' | 'shadowAndOpacity' | 'position' | 'action'
 

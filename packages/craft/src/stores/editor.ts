@@ -1,9 +1,8 @@
-import type { ComponentData, EditableCompField } from '@/components'
-import type { ImageComponentProps, TextComponentProps } from '@/defaultProps.ts'
+import type { AllComponentProps, CompFieldKey, ComponentData, EditableCompField } from '@/types/editor.ts'
 import { defineStore } from 'pinia'
 import { v4 as uuidv4 } from 'uuid'
 import { reactive, ref } from 'vue'
-import { imageDefaultProps, textDefaultProps } from '@/defaultProps.ts'
+import { imageDefaultProps, textDefaultProps } from '@/components/defaultProps.ts'
 
 const testComponents: ComponentData[] = [
   {
@@ -170,7 +169,7 @@ export const useEditorStore = defineStore('editor', () => {
     components.splice(endIndex, 0, deleteComp)
   }
 
-  const updateCompProp = (key: keyof (TextComponentProps | ImageComponentProps), value: string) => {
+  const updateCompProp = <K extends CompFieldKey>(key: K, value: AllComponentProps[K]) => {
     if (currentElement.value) {
       currentElement.value.props[key] = value
     }

@@ -1,7 +1,8 @@
 import type { ExtractPublicPropTypes, PropType } from 'vue'
 import type { FieldConfig } from '@/components/PropsTable/propsMap.tsx'
-import type { AllComponentProps, CompFieldKey } from '@/defaultProps.ts'
+import type { AllComponentProps, CompFieldKey } from '@/types/editor.ts'
 import { computed, defineComponent, toRef } from 'vue'
+import styles from './RenderPropField.module.css'
 
 const renderPropFieldProps = {
   fieldKey: {
@@ -69,9 +70,9 @@ export default defineComponent({
       if (!visible.value) return null
 
       return (
-        <div class="prop-item">
-          {props.config.label && <span class="label">{props.config.label}</span>}
-          <div class="prop-component">
+        <div class={styles.propItem}>
+          {props.config.label && <span class={styles.label}>{props.config.label}</span>}
+          <div class={styles.propComponent}>
             {props.config.render({
               key: props.fieldKey,
               value: fieldValue.value,

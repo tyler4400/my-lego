@@ -9,14 +9,17 @@
 </template>
 
 <script setup lang="ts">
-import type { ImageComponentProps } from '@/defaultProps.ts'
-import { imageStylePropsKeys } from '@/defaultProps.ts'
+import type { ImageComponentProps } from '@/types/editor.ts'
+import { without } from 'lodash-es'
+import { imageDefaultProps } from '@/components'
 import useComponentCommon from '@/hooks/useComponentCommon.ts'
 
 defineOptions({
   name: 'LImage',
 })
 const props = defineProps<ImageComponentProps>()
+
+const imageStylePropsKeys = without(Object.keys(imageDefaultProps), 'src', 'naturalWidth', 'naturalHeight')
 
 const { stylesProps, handleClick } = useComponentCommon(
   props,

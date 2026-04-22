@@ -10,8 +10,9 @@
 </template>
 
 <script setup lang="ts">
-import type { TextComponentProps } from '@/defaultProps.ts'
-import { textDefaultProps, textStylePropsKeys } from '@/defaultProps.ts'
+import type { TextComponentProps } from '@/types/editor.ts'
+import { without } from 'lodash-es'
+import { textDefaultProps } from '@/components/defaultProps.ts'
 import useComponentCommon from '@/hooks/useComponentCommon.ts'
 
 export type LTextProps = Partial<TextComponentProps> & {
@@ -37,6 +38,11 @@ const props = withDefaults(defineProps<LTextProps>(), {
   tag: 'div',
 })
 
+/**
+ * 参与样式计算的文本组件属性 key 列表
+ * 用于从 props 中挑选出会体现在 style 上的字段
+ */
+const textStylePropsKeys = without(Object.keys(textDefaultProps), 'actionType', 'url', 'text')
 const { stylesProps, handleClick } = useComponentCommon(props, textStylePropsKeys)
 </script>
 

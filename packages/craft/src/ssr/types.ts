@@ -23,4 +23,10 @@ export interface ComponentData {
    * - 渲染时会被透传到具体组件
    */
   props?: Record<string, unknown>
+  // 组件是否隐藏
+  isHidden?: boolean
+  // 组件是否锁定
+  isLocked?: boolean
+  // 组件名称
+  layerName?: string
 }

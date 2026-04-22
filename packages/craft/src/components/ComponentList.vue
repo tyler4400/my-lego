@@ -13,13 +13,12 @@
 </template>
 
 <script setup lang="ts">
-import type { ComponentData } from '@/components'
-import type { TextComponentProps } from '@/defaultProps.ts'
+import type { ComponentData, TextComponentProps } from '@/types/editor.ts'
 import type { UploadResponse } from '@/types/upload.ts'
 import { v4 as uuidv4 } from 'uuid'
+import { imageDefaultProps, textDefaultProps } from '@/components/defaultProps.ts'
 import LText from '@/components/LText.vue'
 import StyleUploader from '@/components/StyleUploader'
-import { imageDefaultProps, textDefaultProps } from '@/defaultProps.ts'
 import { getImageDimensions } from '@/utils/utils.ts'
 
 defineProps<{ list: Partial<TextComponentProps>[] }>()
