@@ -19,14 +19,14 @@
     <!--    </div> -->
 
     <!-- 上面是优化前版本，下面是优化后版本   -->
-    <Collapse defaultActiveKey="content">
+    <Collapse :defaultActiveKey="defaultActiveKey">
       <CollapsePanel
         v-for="group in groups"
         :key="group.groupKey"
         :header="group.text"
       >
         <RenderPropField
-          v-for="field in group.items"
+          v-for="field in group.configs"
           :key="`${currentElementId}: ${field.key}`"
           :fieldKey="field.key"
           :config="field.config"
@@ -39,17 +39,19 @@
 </template>
 
 <script setup lang="ts">
-import type { FieldConfig, GroupKey } from './propsMap.tsx'
-import type { AllComponentProps, CompFieldKey } from '@/types/editor.ts'
+import type { FieldConfig } from './propsMap.tsx'
+import type { AllFormProps, CompFieldKey } from '@/types/editor.ts'
 import { isArray } from '@my-lego/shared'
 import { Collapse, CollapsePanel } from 'ant-design-vue'
 import { computed } from 'vue'
 import RenderPropField from '@/components/PropsTable/RenderPropField.tsx'
 import { mapPropsToForms } from './propsMap.tsx'
 
-const { compProps = {}, currentElementId = '' } = defineProps<{
-  compProps?: Partial<AllComponentProps>
+const { compProps = {}, currentElementId = '', propGroup, defaultActiveKey } = defineProps<{
+  compProps?: Partial<AllFormProps>
   currentElementId?: string
+  propGroup: PropGroup[]
+  defaultActiveKey?: string
 }>()
 
 const emit = defineEmits<{ change: [key: CompFieldKey, value: any] }>()
@@ -59,45 +61,39 @@ interface FieldDefinition {
   config: FieldConfig
 }
 
-interface Group {
-  groupKey: GroupKey
+export interface PropGroup {
+  groupKey: string
   text: string
-  items: FieldDefinition[]
+  keys: CompFieldKey[]
 }
 
-const getPresetGroups: () => Group[] = () => [
-  { groupKey: 'content', text: '基本属性', items: [] },
-  { groupKey: 'size', text: '尺寸', items: [] },
-  { groupKey: 'border', text: '边框', items: [] },
-  { groupKey: 'shadowAndOpacity', text: '阴影与透明度', items: [] },
-  { groupKey: 'position', text: '位置', items: [] },
-  { groupKey: 'action', text: '事件功能', items: [] },
-]
+interface PropGroupConfig extends PropGroup {
+  configs: FieldDefinition[]
+}
 
-const groups = computed<Group[]>(() => {
+const groups = computed<PropGroupConfig[]>(() => {
   console.log('PropTable渲染了: ', compProps)
-  return Object.keys(compProps).reduce<Group[]>((result, key) => {
+
+  const init = (propGroup ?? []).map(item => ({ ...item, configs: [] }))
+  return Object.keys(compProps).reduce<PropGroupConfig[]>((result, key) => {
     const fieldKey = key as FieldDefinition['key']
 
     const config = mapPropsToForms[fieldKey]
 
     if (!config) return result
 
-    if (isArray(config)) {
-      config.forEach((item) => {
-        const groupKey = item.groupKey ?? 'content'
-        const group = result.find(g => g.groupKey === groupKey)
-        if (group) group.items.push({ key: fieldKey, config: item })
-      })
-    }
-    else {
-      const groupKey = config.groupKey ?? 'content'
-      const group = result.find(item => item.groupKey === groupKey)
-      if (group) group.items.push({ key: fieldKey, config })
-    }
+    const configList = isArray(config) ? config : [config]
+
+    configList.forEach((item) => {
+      const group = result.find(groupField => groupField.keys?.includes?.(fieldKey))
+      if (group) {
+        if (!isArray(group.configs)) group.configs = []
+        group.configs.push({ key: fieldKey, config: item })
+      }
+    })
 
     return result
-  }, getPresetGroups())
+  }, init)
 })
 
 const handleFieldChange = (key: CompFieldKey, value: any) => {

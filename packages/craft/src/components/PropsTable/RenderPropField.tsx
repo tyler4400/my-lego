@@ -1,6 +1,6 @@
 import type { ExtractPublicPropTypes, PropType } from 'vue'
 import type { FieldConfig } from '@/components/PropsTable/propsMap.tsx'
-import type { AllComponentProps, CompFieldKey } from '@/types/editor.ts'
+import type { AllFormProps, CompFieldKey } from '@/types/editor.ts'
 import { computed, defineComponent, toRef } from 'vue'
 import styles from './RenderPropField.module.css'
 
@@ -14,7 +14,7 @@ const renderPropFieldProps = {
     required: true,
   },
   compProps: {
-    type: Object as PropType<Partial<AllComponentProps>>,
+    type: Object as PropType<Partial<AllFormProps>>,
     required: true,
   },
 } as const

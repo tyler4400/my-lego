@@ -1,4 +1,4 @@
-import type { AllComponentProps, CompFieldKey, ComponentData, EditableCompField } from '@/types/editor.ts'
+import type { AllFormProps, CompFieldKey, ComponentData, EditableCompField, EditablePageField, PageData, PageProps } from '@/types/editor.ts'
 import { defineStore } from 'pinia'
 import { v4 as uuidv4 } from 'uuid'
 import { reactive, ref } from 'vue'
@@ -140,11 +140,24 @@ const testComponents: ComponentData[] = [
   },
 ]
 
+const pageDefaultProps = {
+  backgroundColor: '#ffffff',
+  backgroundImage: '',
+  backgroundRepeat: 'no-repeat',
+  backgroundSize: 'cover',
+  height: '560px',
+}
+
 export const useEditorStore = defineStore('editor', () => {
   // 供中间编辑器渲染的数组
   const components = reactive<ComponentData[]>(testComponents)
   // 当前编辑的是哪个元素，uuid
   const currentElement = ref<ComponentData>()
+  // 编辑页的整体页面信息
+  const pageData = ref<PageData>({
+    props: pageDefaultProps,
+    title: 'new page',
+  })
 
   const setCurrentElement = (id: string) => {
     currentElement.value = components.find(item => item.id === id)
@@ -169,7 +182,7 @@ export const useEditorStore = defineStore('editor', () => {
     components.splice(endIndex, 0, deleteComp)
   }
 
-  const updateCompProp = <K extends CompFieldKey>(key: K, value: AllComponentProps[K]) => {
+  const updateCompProp = <K extends CompFieldKey>(key: K, value: AllFormProps[K]) => {
     if (currentElement.value) {
       currentElement.value.props[key] = value
     }
@@ -182,6 +195,14 @@ export const useEditorStore = defineStore('editor', () => {
     element[key] = value
   }
 
+  const updatePageProp = <T extends keyof PageProps>(key: T, value: PageProps[T]) => {
+    pageData.value.props[key] = value
+  }
+
+  const updatePageData = <T extends EditablePageField>(key: T, value: PageData[T]) => {
+    pageData.value[key] = value
+  }
+
   return {
     components,
     currentElement,
@@ -190,5 +211,8 @@ export const useEditorStore = defineStore('editor', () => {
     updateCompProp,
     updateCompData,
     move,
+    pageData,
+    updatePageData,
+    updatePageProp,
   }
 })

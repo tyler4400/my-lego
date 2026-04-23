@@ -20,22 +20,24 @@
             id="canvas-area"
             class="preview-list"
           >
-            <EditWrapper
-              v-for="comp in editorStore.components"
-              v-show="!comp.isHidden"
-              :id="comp.id"
-              :key="comp.id"
-              :active="editorStore.currentElement?.id === comp.id"
-              @setActive="editorStore.setCurrentElement"
-            >
-              <component
-                :is="componentMap[comp.name]"
-                v-bind="comp.props"
-              />
-            </EditWrapper>
+            <div class="body-container" :style="editorStore.pageData.props">
+              <EditWrapper
+                v-for="comp in editorStore.components"
+                v-show="!comp.isHidden"
+                :id="comp.id"
+                :key="comp.id"
+                :active="editorStore.currentElement?.id === comp.id"
+                @setActive="editorStore.setCurrentElement"
+              >
+                <component
+                  :is="componentMap[comp.name]"
+                  v-bind="comp.props"
+                />
+              </EditWrapper>
+            </div>
           </div>
           <pre>
-              {{ editorStore.components }}
+              {{ editorStore.pageData }}
           </pre>
         </LayoutContent>
       </Layout>
@@ -53,7 +55,9 @@
               v-else-if="!editorStore.currentElement?.isLocked"
               :compProps="editorStore.currentElement?.props"
               :currentElementId="editorStore.currentElement?.id"
-              @change="handleChange"
+              :propGroup="compPropGroupList"
+              defaultActiveKey="content"
+              @change="handleCompChange"
             />
             <div v-else>
               <Empty description="该元素已被锁定，无法编辑">
@@ -73,7 +77,12 @@
             />
           </TabPane>
           <TabPane key="page" tab="页面设置">
-            <p>页面设置</p>
+            <PropsTable
+              :compProps="editorStore.pageData.props"
+              :propGroup="pagePropGroupPropList"
+              defaultActiveKey="background"
+              @change="handlePagePropChange"
+            />
           </TabPane>
         </Tabs>
         <pre>
@@ -85,7 +94,7 @@
 </template>
 
 <script setup lang="ts">
-import type { CompFieldKey, ComponentData, EditableCompField } from '@/types/editor.ts'
+import type { CompFieldKey, ComponentData, EditableCompField, PageProps } from '@/types/editor.ts'
 import { Button, Empty, Layout, LayoutContent, LayoutSider, TabPane, Tabs } from 'ant-design-vue'
 import { ref } from 'vue'
 import { componentMap } from '@/components'
@@ -95,6 +104,7 @@ import LayerList from '@/components/LayerList'
 import PropsTable from '@/components/PropsTable'
 import { defaultTextTemplates } from '@/defaultTemplates.ts'
 import { useEditorStore } from '@/stores/editor.ts'
+import { compPropGroupList, pagePropGroupPropList } from '@/views/EditorView/config.ts'
 
 export type TabType = 'component' | 'layer' | 'page'
 
@@ -104,9 +114,12 @@ const addComponent = (item: ComponentData) => {
   editorStore.addComponent(item)
 }
 
-const handleChange = (key: string, value: any) => {
-  console.log('handleChange', key, value)
+const handleCompChange = (key: string, value: any) => {
   editorStore.updateCompProp(key as CompFieldKey, value)
+}
+
+const handlePagePropChange = (key: string, value: any) => {
+  editorStore.updatePageProp(key as keyof PageProps, value)
 }
 
 const handleLayerChange = <T extends EditableCompField>(
