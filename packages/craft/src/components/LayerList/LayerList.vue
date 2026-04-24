@@ -50,10 +50,10 @@
 
 <script setup lang="ts">
 import type { DraggableEvent } from 'vue-draggable-plus'
-import type { ComponentData, EditableCompField } from '@/components'
+import type { ComponentData, EditableCompField } from '@/types/editor.ts'
 import { EyeInvisibleOutlined, EyeOutlined, LockOutlined, MenuOutlined, UnlockOutlined } from '@ant-design/icons-vue'
-import { TypographyParagraph } from 'ant-design-vue'
 
+import { TypographyParagraph } from 'ant-design-vue'
 import { h } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import IconSwitch from '@/components/IconSwitch'

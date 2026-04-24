@@ -142,7 +142,8 @@ const testComponents: ComponentData[] = [
 
 const pageDefaultProps = {
   backgroundColor: '#ffffff',
-  backgroundImage: '',
+  // backgroundImage: '',
+  backgroundImage: 'url("http://typescript-vue.oss-cn-beijing.aliyuncs.com/vue-marker/69e9f073b558154f039349eb.jpg")',
   backgroundRepeat: 'no-repeat',
   backgroundSize: 'cover',
   height: '560px',

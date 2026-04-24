@@ -7,6 +7,7 @@ import { commonDefaultProps } from '@/components'
 import ColorPicker from '@/components/ColorPicker'
 import IconSwitch from '@/components/IconSwitch'
 import ImageProcesser from '@/components/ImageProcesser'
+import { getImageDimensions } from '@/utils/utils.ts'
 
 export interface FieldRenderContext<TValue = any> {
   /** 当前字段 key，比如 'fontSize' */
@@ -289,14 +290,26 @@ export const mapPropsToForms: PropsToForms = {
   },
   src: {
     // label: '图片',
-    render: ({ value, onChange }) => (
-      <ImageProcesser
-        value={value}
-        showDelete
-        ratio={0}
-        onChange={url => onChange(url)}
-      />
-    ),
+    render: ({ value, onChange }) => {
+      const handleChange = (newUrl: string) => {
+        onChange(newUrl)
+        if (!newUrl) onChange('', 'height')
+      }
+      // 仅上传 / 裁剪后触发：用 File 读 naturalHeight，把 height 同步到画布
+      const handleUploaded = async (_resp: any, file: File) => {
+        const { height } = await getImageDimensions(file)
+        onChange(`${height}px`, 'height')
+      }
+      return (
+        <ImageProcesser
+          value={value}
+          showDelete
+          ratio={0}
+          onChange={handleChange}
+          onUploaded={handleUploaded}
+        />
+      )
+    },
   },
   width: {
     ...pxToNumberFieldConfig(),
@@ -528,14 +541,45 @@ export const mapPropsToForms: PropsToForms = {
     ),
   },
   backgroundImage: {
-    render: ({ value, onChange }) => (
-      <ImageProcesser
-        value={value}
-        showDelete
-        ratio={0}
-        onChange={url => onChange(url)}
-      />
-    ),
+    render: ({ value, onChange }) => {
+      // 解析 `url("xxx")` -> "xxx"
+      const parseUrl = (raw: any): string => {
+        if (!raw) return ''
+        /**
+         * reg.exec('url("xxx.jpg")') 返回：
+         * [
+         *   '("xxx.jpg")',  // matches[0]：整体
+         *   'xxx.jpg',      // matches[1]：捕获组 1（就是我们要的）
+         *   index: 3,
+         *   input: 'url("xxx.jpg")',
+         *   groups: undefined
+         * ]
+         */
+        const matches = /\(["'](.+)["']\)/.exec(raw)
+        return matches?.[1] ?? ''
+      }
+      // "xxx" -> `url('xxx')`（空字符串保持空，避免写出 `url('')`）
+      const wrapUrl = (url: string) => (url ? `url('${url}')` : '')
+      // 上传 / 裁剪 / 删除 都会触发：同步负责 backgroundImage，删除时顺带清空 height
+      const handleChange = (newUrl: string) => {
+        onChange(wrapUrl(newUrl))
+        if (!newUrl) onChange('', 'height')
+      }
+      // 仅上传 / 裁剪后触发：用 File 读 naturalHeight，把 height 同步到画布
+      const handleUploaded = async (_resp: any, file: File) => {
+        const { height } = await getImageDimensions(file)
+        onChange(`${height}px`, 'height')
+      }
+      return (
+        <ImageProcesser
+          value={parseUrl(value)}
+          showDelete
+          ratio={0}
+          onChange={handleChange}
+          onUploaded={handleUploaded}
+        />
+      )
+    },
   },
   backgroundRepeat: {
     label: '背景重复',

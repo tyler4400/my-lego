@@ -6,17 +6,22 @@
       :style="{ backgroundImage: backgroundUrl }"
     />
     <div class="image-process">
-      <StyleUploader @success="handleFileUploaded" />
-      <Button v-if="value" @click="openCropperModal">
+      <StyleUploader @success="handleFileUploaded">
+        <Button>
+          <UploadOutlined />
+          {{ !!value ? '重新上传' : '点击上传' }}
+        </Button>
+      </StyleUploader>
+      <Button v-show="value" @click="openCropperModal">
         <ScissorOutlined />
         裁剪图片
       </Button>
-      <Button v-if="showDelete" danger @click="handleDelete">
+      <Button v-if="showDelete" v-show="value" danger @click="handleDelete">
         <DeleteOutlined />
         删除图片
       </Button>
     </div>
-    {{ ratio }}
+    <!--    {{ ratio }} -->
   </div>
   <!--
 forceRender
@@ -43,7 +48,7 @@ forceRender
 
 <script setup lang="ts">
 import type { UploadResponse } from '@/types/upload.ts'
-import { DeleteOutlined, ScissorOutlined } from '@ant-design/icons-vue'
+import { DeleteOutlined, ScissorOutlined, UploadOutlined } from '@ant-design/icons-vue'
 import { tryCatch } from '@my-lego/shared'
 import { Button, message, Modal } from 'ant-design-vue'
 import { computed, nextTick, ref, useTemplateRef } from 'vue'
@@ -54,10 +59,10 @@ import { waitForNextFrame } from '@/utils/utils.ts'
 
 export interface ImageProcesserProps {
   value: string
-  ratio: number
+  ratio?: number
   showDelete?: boolean
 }
-const { value, showDelete = false, ratio } = defineProps<ImageProcesserProps>()
+const { value, showDelete = false } = defineProps<ImageProcesserProps>()
 
 const emit = defineEmits<ImageProcesserEmits>()
 
@@ -147,7 +152,7 @@ const handleConfirmCrop = async () => {
     message.error(uploadErr.message)
     return
   }
-  handleFileUploaded(res, croppedFile) // todo 裁剪图片之后图片的宽度可能发生改变，也要改变store中的宽度值
+  handleFileUploaded(res, croppedFile)
   closeCropperModal()
 }
 </script>
@@ -156,16 +161,26 @@ const handleConfirmCrop = async () => {
   .image-processer {
     display: flex;
     justify-content: space-between;
+    gap: 10px; /* 顺便替掉 .image-process 的 margin-left */
   }
 
   .image-preview {
-    width: 150px;
+    flex: 1;              /* 占据剩余空间 */
+    min-width: 0;         /* 允许在必要时收缩，避免内容撑破布局 */
     height: 84px;
     border: 1px solid #e6ebed;
     background: no-repeat 50%/contain;
   }
   .image-preview.extraHeight {
     height: 110px;
+  }
+
+  .image-process {
+    flex: 0 0 auto;       /* 固定宽度：按内容撑开，不伸不缩 */
+    /* 或者明确写死： flex: 0 0 110px; width: 110px; */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
 
   .image-cropper {
@@ -176,13 +191,5 @@ const handleConfirmCrop = async () => {
   .image-cropper :deep(cropper-canvas) {
     width: 100%;
     height: var(--cropper-canvas-height, 300px);
-  }
-
-  .image-process {
-    padding: 5px 0;
-    margin-left: 10px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
   }
 </style>

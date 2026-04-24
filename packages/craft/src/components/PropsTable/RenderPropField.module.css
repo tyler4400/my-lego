@@ -10,5 +10,6 @@
 }
 
 .propComponent {
-  width: 70%;
+  flex: 1;
+  min-width: 0; /* 允许在必要时收缩，避免内容撑破布局 */
 }

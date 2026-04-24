@@ -6,7 +6,11 @@
     :beforeUpload="commonUploadCheck"
     @success="data => handleUploadSuccess(data.resp, data.file)"
     @error="data => handleUploadError(data.err)"
-  />
+  >
+    <template v-for="(_, slotKey) in $slots" #[slotKey]="slotProps" :key="slotKey">
+      <slot :name="slotKey" v-bind="slotProps" />
+    </template>
+  </Uploader>
 </template>
 
 <script lang="ts" setup>
