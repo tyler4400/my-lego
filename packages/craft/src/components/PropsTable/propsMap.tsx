@@ -7,7 +7,7 @@ import { commonDefaultProps } from '@/components'
 import ColorPicker from '@/components/ColorPicker'
 import IconSwitch from '@/components/IconSwitch'
 import ImageProcesser from '@/components/ImageProcesser'
-import { getImageDimensions } from '@/utils/utils.ts'
+import { getImageDimensions, numberToPx, pxToNumber } from '@/utils/utils.ts'
 
 export interface FieldRenderContext<TValue = any> {
   /** 当前字段 key，比如 'fontSize' */
@@ -75,17 +75,6 @@ const actionTypeOptions = [
   { label: '无', value: '' },
   { label: '跳转链接', value: 'url' },
 ]
-
-const numberToPx = (val: number | undefined) => {
-  if (!isNumber(val)) return ''
-  return `${val}px`
-}
-
-const pxToNumber = (raw: any) => {
-  if (!isString(raw)) return undefined
-  const parsed = Number.parseInt(raw, 10)
-  return Number.isNaN(parsed) ? undefined : parsed
-}
 
 const pxToNumberFieldConfig: () => Omit<FieldConfig<number | undefined>, 'label'> = () => ({
   render: ({ value, onChange }) => (

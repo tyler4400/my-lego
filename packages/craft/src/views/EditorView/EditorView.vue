@@ -16,18 +16,16 @@
       <Layout style="padding: 0 24px 24px">
         <LayoutContent class="preview-container">
           <p>画布区域</p>
-          <div
-            id="canvas-area"
-            class="preview-list"
-          >
+          <div id="canvas-area" ref="canvasArea" class="preview-list">
             <div class="body-container" :style="editorStore.pageData.props">
               <EditWrapper
                 v-for="comp in editorStore.components"
                 v-show="!comp.isHidden"
-                :id="comp.id"
                 :key="comp.id"
                 :active="editorStore.currentElement?.id === comp.id"
+                :comp="comp"
                 @setActive="editorStore.setCurrentElement"
+                @updatePosition="handlePositionChange"
               >
                 <component
                   :is="componentMap[comp.name]"
@@ -56,7 +54,7 @@
               :compProps="editorStore.currentElement?.props"
               :currentElementId="editorStore.currentElement?.id"
               :propGroup="compPropGroupList"
-              defaultActiveKey="content"
+              defaultActiveKey="position"
               @change="handleCompChange"
             />
             <div v-else>
@@ -96,7 +94,7 @@
 <script setup lang="ts">
 import type { CompFieldKey, ComponentData, EditableCompField, PageProps } from '@/types/editor.ts'
 import { Button, Empty, Layout, LayoutContent, LayoutSider, TabPane, Tabs } from 'ant-design-vue'
-import { ref } from 'vue'
+import { provide, ref, useTemplateRef } from 'vue'
 import { componentMap } from '@/components'
 import ComponentList from '@/components/ComponentList.vue'
 import EditWrapper from '@/components/EditWrapper.vue'
@@ -104,9 +102,11 @@ import LayerList from '@/components/LayerList'
 import PropsTable from '@/components/PropsTable'
 import { defaultTextTemplates } from '@/defaultTemplates.ts'
 import { useEditorStore } from '@/stores/editor.ts'
+import { canvasKey } from '@/views/EditorView/canvasContext.ts'
 import { compPropGroupList, pagePropGroupPropList } from '@/views/EditorView/config.ts'
 
 export type TabType = 'component' | 'layer' | 'page'
+const activeKey = ref<TabType>('component')
 
 const editorStore = useEditorStore()
 
@@ -114,8 +114,8 @@ const addComponent = (item: ComponentData) => {
   editorStore.addComponent(item)
 }
 
-const handleCompChange = (key: string, value: any) => {
-  editorStore.updateCompProp(key as CompFieldKey, value)
+const handleCompChange = (key: string, value: any, id?: ComponentData['id']) => {
+  editorStore.updateCompProp(key as CompFieldKey, value, id)
 }
 
 const handlePagePropChange = (key: string, value: any) => {
@@ -130,7 +130,14 @@ const handleLayerChange = <T extends EditableCompField>(
   editorStore.updateCompData(id, key, value)
 }
 
-const activeKey = ref<TabType>('component')
+const handlePositionChange = (id: ComponentData['id'], left: string, top: string) => {
+  handleCompChange('left', left, id)
+  handleCompChange('top', top, id)
+}
+
+const canvasAreaRef = useTemplateRef('canvasArea')
+const getCanvasRect = () => canvasAreaRef.value?.getBoundingClientRect()
+provide(canvasKey, getCanvasRect)
 </script>
 
 <style>

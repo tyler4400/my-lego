@@ -10,5 +10,5 @@ export const compPropGroupList: PropGroup[] = [
 ] as const
 
 export const pagePropGroupPropList: PropGroup[] = [
-  { groupKey: 'background', text: '背景', keys: ['backgroundColor', 'backgroundSize', 'backgroundRepeat', 'backgroundImage', 'height'] },
+  { groupKey: 'background', text: '画布', keys: ['backgroundColor', 'backgroundSize', 'backgroundRepeat', 'backgroundImage', 'height'] },
 ] as const

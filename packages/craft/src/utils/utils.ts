@@ -1,3 +1,5 @@
+import { isNumber, isString } from '@my-lego/shared'
+
 /**
  * 获取图片图像固有的（自然的）、修正后的 CSS 像素宽高。
  * https://developer.mozilla.org/zh-CN/docs/Web/API/HTMLImageElement/naturalHeight
@@ -58,4 +60,15 @@ export const canvasToBlob = (canvas: HTMLCanvasElement, mimeType?: string, quali
       resolve(blob)
     }, mimeType, quality)
   })
+}
+
+export const numberToPx = (val: number | undefined) => {
+  if (!isNumber(val)) return ''
+  return `${val}px`
+}
+
+export const pxToNumber = (raw: any) => {
+  if (!isString(raw)) return undefined
+  const parsed = Number.parseInt(raw, 10)
+  return Number.isNaN(parsed) ? undefined : parsed
 }

@@ -49,6 +49,7 @@ export interface CommonComponentProps {
   left: string
   top: string
   right: string
+  bottom: string
 }
 
 /**
