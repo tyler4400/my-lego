@@ -1,5 +1,3 @@
-import { onBeforeUnmount } from 'vue'
-
 export interface OnMove {
   (deltaX: number, deltaY: number, moveEnd: boolean): void
 }
@@ -54,8 +52,8 @@ export const useMouseDrag = (
   document.addEventListener('mousemove', handleMove)
   document.addEventListener('mouseup', handleMouseUp)
 
-  onBeforeUnmount(() => {
-    document.removeEventListener('mousemove', handleMove)
-    document.removeEventListener('mouseup', handleMouseUp)
-  })
+  // onBeforeUnmount(() => {
+  //   document.removeEventListener('mousemove', handleMove)
+  //   document.removeEventListener('mouseup', handleMouseUp)
+  // })
 }
