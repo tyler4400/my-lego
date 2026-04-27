@@ -27,3 +27,7 @@ export function isArray(value: unknown) {
 }
 
 export const NOOP = () => {}
+
+export function isNullOrUndefined(value: unknown) {
+  return isUndefined(value) || value === null
+}

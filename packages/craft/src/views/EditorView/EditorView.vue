@@ -92,12 +92,14 @@
 </template>
 
 <script setup lang="ts">
+import type { PositionPayload } from '@/components/EditWrapper'
 import type { CompFieldKey, ComponentData, EditableCompField, PageProps } from '@/types/editor.ts'
+import { isNullOrUndefined } from '@my-lego/shared'
 import { Button, Empty, Layout, LayoutContent, LayoutSider, TabPane, Tabs } from 'ant-design-vue'
 import { provide, ref, useTemplateRef } from 'vue'
 import { componentMap } from '@/components'
 import ComponentList from '@/components/ComponentList.vue'
-import EditWrapper from '@/components/EditWrapper.vue'
+import EditWrapper from '@/components/EditWrapper'
 import LayerList from '@/components/LayerList'
 import PropsTable from '@/components/PropsTable'
 import { defaultTextTemplates } from '@/defaultTemplates.ts'
@@ -130,9 +132,12 @@ const handleLayerChange = <T extends EditableCompField>(
   editorStore.updateCompData(id, key, value)
 }
 
-const handlePositionChange = (id: ComponentData['id'], left: string, top: string) => {
-  handleCompChange('left', left, id)
-  handleCompChange('top', top, id)
+const handlePositionChange = (id: ComponentData['id'], position: PositionPayload) => {
+  const { left, top, width, height } = position
+  if (!isNullOrUndefined(left)) handleCompChange('left', left, id)
+  if (!isNullOrUndefined(top)) handleCompChange('top', top, id)
+  if (!isNullOrUndefined(width)) handleCompChange('width', width, id)
+  if (!isNullOrUndefined(height)) handleCompChange('height', height, id)
 }
 
 const canvasAreaRef = useTemplateRef('canvasArea')
