@@ -83,7 +83,8 @@ const startResize = (e: MouseEvent, direction: ResizeDirection) => {
   const initLeft: number | null = pxToNumber(positionStyle.value.left) ?? null
   const initTop: number | null = pxToNumber(positionStyle.value.top) ?? null
   const initWidth: number | null = pxToNumber(positionStyle.value.width) ?? null
-  const initHeight: number | null = pxToNumber(positionStyle.value.height) ?? null
+  const initHeight: number | null = pxToNumber(positionStyle.value.height)
+    ?? currentEle.value?.getBoundingClientRect()?.height ?? null // 有的文本元素没有默认高度
 
   if (initLeft === null || initTop === null || initWidth === null || initHeight === null) return
 

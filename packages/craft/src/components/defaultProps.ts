@@ -10,7 +10,7 @@ export const commonDefaultProps: CommonComponentProps = {
   url: '',
 
   // size
-  height: '',
+  height: '', // 高度必须指定，否则不能resize // 已在editWrapper组件中兼容
   width: '318px',
   paddingLeft: '0px',
   paddingRight: '0px',

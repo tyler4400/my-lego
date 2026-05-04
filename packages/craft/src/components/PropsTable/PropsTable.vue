@@ -27,7 +27,7 @@
       >
         <RenderPropField
           v-for="field in group.configs"
-          :key="`${currentElementId}: ${field.key}`"
+          :key="`${currentElementId}: ${field.id}`"
           :fieldKey="field.key"
           :config="field.config"
           :compProps="compProps"
@@ -57,6 +57,7 @@ const { compProps = {}, currentElementId = '', propGroup, defaultActiveKey } = d
 const emit = defineEmits<{ change: [key: CompFieldKey, value: any] }>()
 
 interface FieldDefinition {
+  id: string
   key: CompFieldKey
   config: FieldConfig
 }
@@ -84,11 +85,11 @@ const groups = computed<PropGroupConfig[]>(() => {
 
     const configList = isArray(config) ? config : [config]
 
-    configList.forEach((item) => {
+    configList.forEach((item, index) => {
       const group = result.find(groupField => groupField.keys?.includes?.(fieldKey))
       if (group) {
         if (!isArray(group.configs)) group.configs = []
-        group.configs.push({ key: fieldKey, config: item })
+        group.configs.push({ key: fieldKey, config: item, id: fieldKey + index })
       }
     })
 

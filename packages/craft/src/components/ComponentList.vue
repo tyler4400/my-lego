@@ -61,4 +61,8 @@ const handleTextClick = (data: Partial<TextComponentProps>) => {
   width: 100px;
   margin: 0 auto 15px;
 }
+
+.component-item > * {
+  position: static !important;
+}
 </style>

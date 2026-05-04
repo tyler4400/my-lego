@@ -165,7 +165,7 @@ export const useEditorStore = defineStore('editor', () => {
   const addComponent = (data: ComponentData): void => {
     if (data) {
       components.push({
-        layerName: data.name,
+        layerName: `元素${components.length}`,
         ...data,
       })
     }
