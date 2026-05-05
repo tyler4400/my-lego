@@ -1,4 +1,5 @@
 import type { AllFormProps, CompFieldKey, ComponentData, EditableCompField, EditablePageField, PageData, PageProps } from '@/types/editor.ts'
+import { cloneDeep } from 'lodash-es'
 import { defineStore } from 'pinia'
 import { v4 as uuidv4 } from 'uuid'
 import { reactive, ref } from 'vue'
@@ -150,24 +151,32 @@ const pageDefaultProps = {
 export const useEditorStore = defineStore('editor', () => {
   // 供中间编辑器渲染的数组
   const components = reactive<ComponentData[]>(testComponents)
-  // 当前编辑的是哪个元素，uuid
+  // 当前编辑的是哪个元素
   const currentElement = ref<ComponentData>()
+  // 当前复制的是哪个元素
+  const copiedElement = ref<ComponentData>()
   // 编辑页的整体页面信息
   const pageData = ref<PageData>({
     props: pageDefaultProps,
     title: 'new page',
   })
 
-  const setCurrentElement = (id: string) => {
-    currentElement.value = components.find(item => item.id === id)
+  const setCurrentElement = (id?: string) => {
+    if (id) {
+      currentElement.value = components.find(item => item.id === id)
+    }
+    else {
+      currentElement.value = undefined
+    }
   }
 
   const addComponent = (data: ComponentData): void => {
     if (data) {
       components.push({
-        layerName: `元素${components.length}`,
+        layerName: `元素${components.length + 1}`,
         ...data,
       })
+      setCurrentElement(data.id)
     }
   }
 
@@ -206,6 +215,35 @@ export const useEditorStore = defineStore('editor', () => {
     pageData.value[key] = value
   }
 
+  const copyElement = (id?: string) => {
+    if (id) {
+      copiedElement.value = components.find(item => item.id === id)
+    }
+    else {
+      copiedElement.value = currentElement.value
+    }
+    return !!copiedElement.value
+  }
+
+  const removeElement = (id?: string) => {
+    const targetId = id ?? currentElement.value?.id
+    if (targetId) {
+      const index = components.findIndex(item => item.id === targetId)
+      components.splice(index, 1)
+    }
+  }
+
+  const pasteElement = () => {
+    if (copiedElement.value) {
+      const clone = cloneDeep(copiedElement.value)
+      clone.id = uuidv4()
+      clone.layerName += '副本'
+      addComponent(clone)
+      return true
+    }
+    return false
+  }
+
   return {
     components,
     currentElement,
@@ -217,5 +255,8 @@ export const useEditorStore = defineStore('editor', () => {
     pageData,
     updatePageData,
     updatePageProp,
+    copyElement,
+    pasteElement,
+    removeElement,
   }
 })

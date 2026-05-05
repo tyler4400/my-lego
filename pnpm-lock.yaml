@@ -41,6 +41,9 @@ importers:
       cropperjs:
         specifier: ^2.1.0
         version: 2.1.0
+      hotkeys-js:
+        specifier: ^4.0.4
+        version: 4.0.4
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
@@ -3588,6 +3591,9 @@ packages:
 
   hookable@5.5.3:
     resolution: {integrity: sha512-Yc+BQe8SvoXH1643Qez1zqLRmbA5rCL+sSmk6TVos0LWVfNIB7PGncdlId77WzLGSIB5KaWgTaNTs2lNVEI6VQ==}
+
+  hotkeys-js@4.0.4:
+    resolution: {integrity: sha512-hseNiqaskxSnujuGp8aRMLJfcjaFiTSS0I2GQhqru82N/sx6CGyUf6pvU5X1iycvw2EqmvILkFIb5OzYFXY+9A==}
 
   html-encoding-sniffer@4.0.0:
     resolution: {integrity: sha512-Y22oTqIU4uuPgEemfz7NDJz6OeKf12Lsu+QC+s3BVpda64lTiMYCyGwg5ki4vFxkMwQdeZDl2adZoqUgdFuTgQ==}
@@ -9478,6 +9484,8 @@ snapshots:
   he@1.2.0: {}
 
   hookable@5.5.3: {}
+
+  hotkeys-js@4.0.4: {}
 
   html-encoding-sniffer@4.0.0:
     dependencies:

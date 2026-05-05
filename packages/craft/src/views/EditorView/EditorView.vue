@@ -103,9 +103,12 @@ import EditWrapper from '@/components/EditWrapper'
 import LayerList from '@/components/LayerList'
 import PropsTable from '@/components/PropsTable'
 import { defaultTextTemplates } from '@/defaultTemplates.ts'
+import initHotKeys from '@/plugin/hotKeysPlugin.ts'
 import { useEditorStore } from '@/stores/editor.ts'
 import { canvasKey } from '@/views/EditorView/canvasContext.ts'
 import { compPropGroupList, pagePropGroupPropList } from '@/views/EditorView/config.ts'
+
+initHotKeys()
 
 export type TabType = 'component' | 'layer' | 'page'
 const activeKey = ref<TabType>('component')
