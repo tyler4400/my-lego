@@ -3,6 +3,7 @@ import { isNumber } from '@my-lego/shared'
 import { message } from 'ant-design-vue'
 import useHotKey from '@/hooks/useHotKey.ts'
 import { useEditorStore } from '@/stores/editor.ts'
+import { useHistoryStore } from '@/stores/history.ts'
 import { numberToPx, pxToNumber } from '@/utils/utils.ts'
 
 const preventDefaultWrap = (callback: KeyHandler) => {
@@ -14,6 +15,7 @@ const preventDefaultWrap = (callback: KeyHandler) => {
 
 export default function initHotKeys() {
   const editorStore = useEditorStore()
+  const historyStore = useHistoryStore()
 
   useHotKey('ctrl+c, command+c', () => {
     const flag = editorStore.copyElement()
@@ -70,4 +72,12 @@ export default function initHotKeys() {
       editorStore.updateCompProp('left', numberToPx(current + 1))
     }
   }))
+
+  useHotKey('ctrl+z, command+z', () => {
+    historyStore.undo()
+  })
+
+  useHotKey('ctrl+y, command+y', () => {
+    historyStore.redo()
+  })
 }
