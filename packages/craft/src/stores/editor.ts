@@ -1,9 +1,11 @@
 import type { AllFormProps, CompFieldKey, ComponentData, EditableCompField, EditablePageField, PageData, PageProps } from '@/types/editor.ts'
+import { isNumber } from '@my-lego/shared'
 import { cloneDeep } from 'lodash-es'
 import { defineStore } from 'pinia'
 import { v4 as uuidv4 } from 'uuid'
-import { reactive, ref } from 'vue'
+import { reactive, readonly, ref } from 'vue'
 import { imageDefaultProps } from '@/components/defaultProps.ts'
+import { useHistoryStore } from '@/stores/history.ts'
 
 const testComponents: ComponentData[] = [
   // {
@@ -170,14 +172,28 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
-  const addComponent = (data: ComponentData): void => {
-    if (data) {
-      components.push({
-        layerName: `元素${components.length + 1}`,
-        ...data,
-      })
-      setCurrentElement(data.id)
+  const addComponent = (data: ComponentData, index?: number): void => {
+    if (!data) return
+
+    const newComp: ComponentData = {
+      layerName: `元素${components.length + 1}`,
+      ...data,
     }
+
+    if (isNumber(index)) {
+      components.splice(index, 0, newComp)
+    }
+    else {
+      components.push(newComp)
+    }
+
+    setCurrentElement(data.id)
+
+    useHistoryStore().pushAction({
+      actionType: 'add',
+      componentId: data.id,
+      data: cloneDeep(newComp),
+    })
   }
 
   const move = (startIndex: number, endIndex: number) => {
@@ -188,31 +204,69 @@ export const useEditorStore = defineStore('editor', () => {
     const deleteComp = components[startIndex] as ComponentData
     components.splice(startIndex, 1)
     components.splice(endIndex, 0, deleteComp)
+
+    useHistoryStore().pushAction({
+      actionType: 'reorder',
+      data: { startIndex, endIndex },
+    })
   }
 
   const updateCompProp = <K extends CompFieldKey>(key: K, value: AllFormProps[K], id?: string) => {
-    if (id) {
-      const element = components.find(item => item.id === id)
-      if (element) element.props[key] = value
-    }
-    else if (currentElement.value) {
-      currentElement.value.props[key] = value
-    }
-  }
+    const targetId = id ?? currentElement.value?.id
+    if (!targetId) return
 
-  const updateCompData = <T extends EditableCompField>(id: string, key: T, value: ComponentData[T]) => {
-    const element = components.find(item => item.id === id)
+    const element = components.find(item => item.id === targetId)
     if (!element) return
 
+    const oldValue = element.props[key]
+    element.props[key] = value
+
+    useHistoryStore().pushAction({
+      actionType: 'updateComp',
+      componentId: targetId,
+      target: 'props',
+      data: { key, oldValue, newValue: value },
+    })
+  }
+
+  const updateCompData = <T extends EditableCompField>(key: T, value: ComponentData[T], id?: string) => {
+    const targetId = id ?? currentElement.value?.id
+    if (!targetId) return
+
+    const element = components.find(item => item.id === targetId)
+    if (!element) return
+
+    const oldValue = element[key]
     element[key] = value
+
+    useHistoryStore().pushAction({
+      actionType: 'updateComp',
+      componentId: targetId,
+      target: 'compData',
+      data: { key, oldValue, newValue: value },
+    })
   }
 
   const updatePageProp = <T extends keyof PageProps>(key: T, value: PageProps[T]) => {
+    const oldValue = pageData.value.props[key]
     pageData.value.props[key] = value
+
+    useHistoryStore().pushAction({
+      actionType: 'updatePage',
+      target: 'props',
+      data: { key, oldValue, newValue: value },
+    })
   }
 
   const updatePageData = <T extends EditablePageField>(key: T, value: PageData[T]) => {
+    const oldValue = pageData.value[key]
     pageData.value[key] = value
+
+    useHistoryStore().pushAction({
+      actionType: 'updatePage',
+      target: 'pageData',
+      data: { key, oldValue, newValue: value },
+    })
   }
 
   const copyElement = (id?: string) => {
@@ -227,10 +281,22 @@ export const useEditorStore = defineStore('editor', () => {
 
   const removeElement = (id?: string) => {
     const targetId = id ?? currentElement.value?.id
-    if (targetId) {
-      const index = components.findIndex(item => item.id === targetId)
-      components.splice(index, 1)
-    }
+    if (!targetId) return
+
+    const index = components.findIndex(item => item.id === targetId)
+    if (index < 0) return
+
+    const removed = components[index] as ComponentData
+    components.splice(index, 1)
+
+    if (targetId === currentElement.value?.id) setCurrentElement(undefined)
+
+    useHistoryStore().pushAction({
+      actionType: 'delete',
+      componentId: targetId,
+      data: cloneDeep(removed),
+      index,
+    })
   }
 
   const pasteElement = () => {
@@ -245,14 +311,14 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   return {
-    components,
-    currentElement,
+    components: readonly(components),
+    currentElement: readonly(currentElement),
     addComponent,
     setCurrentElement,
     updateCompProp,
     updateCompData,
     move,
-    pageData,
+    pageData: readonly(pageData),
     updatePageData,
     updatePageProp,
     copyElement,

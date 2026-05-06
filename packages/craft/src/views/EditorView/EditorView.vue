@@ -132,7 +132,7 @@ const handleLayerChange = <T extends EditableCompField>(
   key: T,
   value: ComponentData[T],
 ) => {
-  editorStore.updateCompData(id, key, value)
+  editorStore.updateCompData(key, value, id)
 }
 
 const handlePositionChange = (id: ComponentData['id'], position: PositionPayload) => {
