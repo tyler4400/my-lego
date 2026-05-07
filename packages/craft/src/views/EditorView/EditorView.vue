@@ -16,6 +16,12 @@
       <Layout style="padding: 0 24px 24px">
         <LayoutContent class="preview-container">
           <p>画布区域</p>
+          <HistoryArea
+            :canUndo="historyStore.canUndo"
+            :canRedo="historyStore.canRedo"
+            @undo="historyStore.undo"
+            @redo="historyStore.redo"
+          />
           <div id="canvas-area" ref="canvasArea" class="preview-list">
             <div class="body-container" :style="editorStore.pageData.props">
               <EditWrapper
@@ -105,7 +111,9 @@ import PropsTable from '@/components/PropsTable'
 import { defaultTextTemplates } from '@/defaultTemplates.ts'
 import initHotKeys from '@/plugin/hotKeysPlugin.ts'
 import { useEditorStore } from '@/stores/editor.ts'
+import { useHistoryStore } from '@/stores/history.ts'
 import { canvasKey } from '@/views/EditorView/canvasContext.ts'
+import HistoryArea from '@/views/EditorView/components/HistoryArea.vue'
 import { compPropGroupList, pagePropGroupPropList } from '@/views/EditorView/config.ts'
 
 initHotKeys()
@@ -114,6 +122,7 @@ export type TabType = 'component' | 'layer' | 'page'
 const activeKey = ref<TabType>('component')
 
 const editorStore = useEditorStore()
+const historyStore = useHistoryStore()
 
 const addComponent = (item: ComponentData) => {
   editorStore.addComponent(item)
