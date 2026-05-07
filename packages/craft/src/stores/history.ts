@@ -54,9 +54,11 @@ const applyAction = (action: ActionHistory, direction: 'undo' | 'redo') => {
       }
       return
     }
-    default:
-      console.warn('unknown action type', action)
+    default: {
+      const exhaustive: never = action
+      console.warn('unknown action type', exhaustive)
       break
+    }
   }
 }
 

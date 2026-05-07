@@ -73,11 +73,11 @@ export default function initHotKeys() {
     }
   }))
 
-  useHotKey('ctrl+z, command+z', () => {
+  useHotKey('ctrl+z, command+z', preventDefaultWrap(() => {
     historyStore.undo()
-  })
+  }))
 
-  useHotKey('ctrl+y, command+y', () => {
+  useHotKey('ctrl+y, command+y, ctrl+shift+z, command+shift+z', preventDefaultWrap(() => {
     historyStore.redo()
-  })
+  }))
 }
