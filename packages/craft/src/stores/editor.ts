@@ -196,7 +196,7 @@ export const useEditorStore = defineStore('editor', () => {
     })
   }
 
-  const move = (startIndex: number, endIndex: number) => {
+  const reorder = (startIndex: number, endIndex: number) => {
     if (startIndex === endIndex || startIndex === undefined || endIndex === undefined) return
     if (startIndex < 0 || endIndex < 0) return
     if (startIndex >= components.length || endIndex >= components.length) return
@@ -292,7 +292,7 @@ export const useEditorStore = defineStore('editor', () => {
     if (targetId === currentElement.value?.id) setCurrentElement(undefined)
 
     useHistoryStore().pushAction({
-      actionType: 'delete',
+      actionType: 'remove',
       componentId: targetId,
       data: cloneDeep(removed),
       index,
@@ -310,6 +310,14 @@ export const useEditorStore = defineStore('editor', () => {
     return false
   }
 
+  /**
+   * 批量更新事务：fn 内的多次 setter 调用会合并成一条 history
+   * 业务侧无需感知 history store
+   */
+  const batchUpdate = (fn: () => void) => {
+    useHistoryStore().compose(fn)
+  }
+
   return {
     components: readonly(components),
     currentElement: readonly(currentElement),
@@ -317,12 +325,13 @@ export const useEditorStore = defineStore('editor', () => {
     setCurrentElement,
     updateCompProp,
     updateCompData,
-    move,
+    reorder,
     pageData: readonly(pageData),
     updatePageData,
     updatePageProp,
     copyElement,
     pasteElement,
     removeElement,
+    batchUpdate,
   }
 })

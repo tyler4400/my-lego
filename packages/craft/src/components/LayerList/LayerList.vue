@@ -64,7 +64,7 @@ export interface LayerListProps {
 }
 export interface LayerListEmits {
   (e: 'setActive', id: ComponentData['id']): void
-  (e: 'move', startIndex: number, endIndex: number): void
+  (e: 'reorder', startIndex: number, endIndex: number): void
   <T extends EditableCompField>(e: 'change', id: ComponentData['id'], key: T, value: ComponentData[T]): void
 }
 const { list = [], currentElementId } = defineProps<LayerListProps>()
@@ -86,9 +86,8 @@ const handleRename = (item: ComponentData, layerName: string) => {
 
 /* drag and drop */
 const handleMove = (e: DraggableEvent) => {
-  console.log('handleMove', e)
   if (e.oldIndex !== undefined && e.newIndex !== undefined) {
-    emit('move', e.oldIndex, e.newIndex)
+    emit('reorder', e.oldIndex, e.newIndex)
   }
 }
 </script>
