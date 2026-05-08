@@ -10,7 +10,7 @@ export interface ActionPayloadMap {
     data: ComponentData
   }
   // 删除组件（保存原位置以便 undo 插回）
-  delete: {
+  remove: {
     componentId: string
     data: ComponentData
     index: number
@@ -37,6 +37,11 @@ export interface ActionPayloadMap {
       oldValue: any
       newValue: any
     }
+  }
+  // 一组动作的事务
+  batch: {
+    // 引用 OK：ActionHistory 在同一个文件里通过映射类型展开后，batch.data: ActionHistory[] 的 ActionHistory 已包含 batch 自己。允许嵌套 batch（虽然暂时不支持嵌套）。
+    data: ActionHistory[]
   }
 }
 

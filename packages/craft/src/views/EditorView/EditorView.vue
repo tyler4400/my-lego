@@ -77,7 +77,7 @@
               :currentElementId="editorStore.currentElement?.id"
               @setActive="editorStore.setCurrentElement"
               @change="handleLayerChange"
-              @move="editorStore.move"
+              @reorder="editorStore.reorder"
             />
           </TabPane>
           <TabPane key="page" tab="页面设置">
@@ -146,10 +146,12 @@ const handleLayerChange = <T extends EditableCompField>(
 
 const handlePositionChange = (id: ComponentData['id'], position: PositionPayload) => {
   const { left, top, width, height } = position
-  if (!isNullOrUndefined(left)) handleCompChange('left', left, id)
-  if (!isNullOrUndefined(top)) handleCompChange('top', top, id)
-  if (!isNullOrUndefined(width)) handleCompChange('width', width, id)
-  if (!isNullOrUndefined(height)) handleCompChange('height', height, id)
+  editorStore.batchUpdate(() => {
+    if (!isNullOrUndefined(left)) handleCompChange('left', left, id)
+    if (!isNullOrUndefined(top)) handleCompChange('top', top, id)
+    if (!isNullOrUndefined(width)) handleCompChange('width', width, id)
+    if (!isNullOrUndefined(height)) handleCompChange('height', height, id)
+  })
 }
 
 const canvasAreaRef = useTemplateRef('canvasArea')
