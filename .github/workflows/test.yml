@@ -3,7 +3,6 @@ name: Test
 # 触发条件：所有分支 push + 任何 PR（用于 PR 页面 status check）
 on:
   push:
-  pull_request:
 
 # 同分支后续 push 自动取消前次跑，节省 CI 额度
 concurrency:
