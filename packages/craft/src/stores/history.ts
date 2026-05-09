@@ -7,7 +7,7 @@ import { useEditorStore } from '@/stores/editor.ts'
 
 // 高频合并时间
 const MERGE_WINDOW_MS = 1000
-// 最大桟深
+// 最大栈深
 const MAX_HISTORY_LENGTH = 100
 
 const applyAction = (action: ActionHistory, direction: 'undo' | 'redo') => {
@@ -114,21 +114,24 @@ export const useHistoryStore = defineStore('history', () => {
   let lastPushAt = 0
 
   // 事务相关api
-  let composing = false
+  let composing = 0
   let composeBuffer: ActionHistory[] = []
 
   const startCompose = () => {
-    if (composing) {
-      console.warn('[history store] nested compose is not supported')
-      return
+    if (composing === 0) {
+      composeBuffer = []
     }
-    composing = true
-    composeBuffer = []
+    composing++
+    if (composing > 1) {
+      console.warn('[history store] nested compose will be flatten.')
+    }
   }
 
   const endCompose = () => {
-    if (!composing) return
-    composing = false
+    if (composing === 0) return
+    composing--
+
+    if (composing > 0) return // 说明还在外层事务中
 
     const buffer = composeBuffer
     composeBuffer = []

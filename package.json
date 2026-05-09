@@ -8,6 +8,7 @@
     "lint": "pnpm -r run lint",
     "lint:fix": "pnpm -r run lint:fix",
     "format": "pnpm -r run format",
+    "test:craft": "pnpm --filter @my-lego/craft test:unit",
     "dev:craft": "pnpm --filter @my-lego/craft dev",
     "dev:craft-backend": "pnpm --filter @my-lego/craft-backend dev"
   },
