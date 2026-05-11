@@ -4,6 +4,7 @@
     class="edit-wrapper"
     :style="positionStyle as CSSProperties"
     style="position: absolute"
+    :data-comp-id="comp.id"
     :class="{ active, locked: comp.isLocked }"
     @mousedown.prevent="startMove"
     @click="() => handleClick(comp.id)"
@@ -127,7 +128,7 @@ const startResize = (e: MouseEvent, direction: ResizeDirection) => {
 .edit-wrapper.active {
   border: 1px solid #1890ff;
   user-select: none;
-  z-index: 1500;
+  z-index: 150;
 
   .resizer-container {
 

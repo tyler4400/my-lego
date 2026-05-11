@@ -27,6 +27,7 @@
               <EditWrapper
                 v-for="comp in editorStore.components"
                 v-show="!comp.isHidden"
+                id="edit-wrapper"
                 :key="comp.id"
                 :active="editorStore.currentElement?.id === comp.id"
                 :comp="comp"
@@ -52,6 +53,17 @@
       >
         <Tabs v-model:activeKey="activeKey" type="card">
           <TabPane key="component" tab="元素属性" class="no-top-radius">
+            <Alert v-if="editorStore.currentElement?.isHidden" message="当前元素已隐藏" banner>
+              <template #action>
+                <Button
+                  size="small"
+                  type="text"
+                  @click="() => handleLayerChange(editorStore.currentElement!.id, 'isHidden', false)"
+                >
+                  显示
+                </Button>
+              </template>
+            </Alert>
             <div v-if="!editorStore.currentElement">
               <Empty description="请在画布中选择元素" />
             </div>
@@ -101,7 +113,7 @@
 import type { PositionPayload } from '@/components/EditWrapper'
 import type { CompFieldKey, ComponentData, EditableCompField, PageProps } from '@/types/editor.ts'
 import { isNullOrUndefined } from '@my-lego/shared'
-import { Button, Empty, Layout, LayoutContent, LayoutSider, TabPane, Tabs } from 'ant-design-vue'
+import { Alert, Button, Empty, Layout, LayoutContent, LayoutSider, TabPane, Tabs } from 'ant-design-vue'
 import { provide, ref, useTemplateRef } from 'vue'
 import { componentMap } from '@/components'
 import ComponentList from '@/components/ComponentList.vue'
@@ -109,14 +121,17 @@ import EditWrapper from '@/components/EditWrapper'
 import LayerList from '@/components/LayerList'
 import PropsTable from '@/components/PropsTable'
 import { defaultTextTemplates } from '@/defaultTemplates.ts'
-import initHotKeys from '@/plugin/hotKeysPlugin.ts'
 import { useEditorStore } from '@/stores/editor.ts'
 import { useHistoryStore } from '@/stores/history.ts'
 import { canvasKey } from '@/views/EditorView/canvasContext.ts'
 import HistoryArea from '@/views/EditorView/components/HistoryArea.vue'
 import { compPropGroupList, pagePropGroupPropList } from '@/views/EditorView/config.ts'
+import initContextMenu from '@/views/EditorView/plugin/contextMenuPlugin.ts'
+import initHotKeys from '@/views/EditorView/plugin/hotKeysPlugin.ts'
 
+// 插件
 initHotKeys()
+initContextMenu('#edit-wrapper')
 
 export type TabType = 'component' | 'layer' | 'page'
 const activeKey = ref<TabType>('component')

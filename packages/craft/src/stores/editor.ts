@@ -4,43 +4,47 @@ import { cloneDeep } from 'lodash-es'
 import { defineStore } from 'pinia'
 import { v4 as uuidv4 } from 'uuid'
 import { reactive, readonly, ref } from 'vue'
-import { imageDefaultProps } from '@/components/defaultProps.ts'
+import { imageDefaultProps, textDefaultProps } from '@/components/defaultProps.ts'
 import { useHistoryStore } from '@/stores/history.ts'
 
 const testComponents: ComponentData[] = [
-  // {
-  //   id: uuidv4(),
-  //   name: 'LText',
-  //   layerName: '元素1',
-  //   props: {
-  //     ...textDefaultProps,
-  //     text: '你好呀',
-  //     fontSize: '20px',
-  //     color: '#f5222d',
-  //     lineHeight: '1',
-  //     textAlign: 'left',
-  //     fontFamily: '',
-  //     fontStyle: 'normal',
-  //     fontWeight: 'normal',
-  //     textDecoration: 'none',
-  //     position: 'relative',
-  //   },
-  // },
-  // {
-  //   id: uuidv4(),
-  //   name: 'LText',
-  //   layerName: '元素2',
-  //   props: {
-  //     ...textDefaultProps,
-  //     text: 'hello2',
-  //     fontSize: '10px',
-  //     fontWeight: 'bold',
-  //     lineHeight: '2',
-  //     textAlign: 'left',
-  //     fontFamily: '',
-  //     position: 'relative',
-  //   },
-  // },
+  {
+    id: uuidv4(),
+    name: 'LText',
+    layerName: '元素1',
+    props: {
+      ...textDefaultProps,
+      text: '你好呀',
+      fontSize: '20px',
+      color: '#f5222d',
+      lineHeight: '1',
+      textAlign: 'left',
+      fontFamily: '',
+      fontStyle: 'normal',
+      fontWeight: 'normal',
+      textDecoration: 'none',
+      position: 'absolute',
+      top: '10px',
+      left: '1px',
+    },
+  },
+  {
+    id: uuidv4(),
+    name: 'LText',
+    layerName: '元素2',
+    props: {
+      ...textDefaultProps,
+      text: 'hello2',
+      fontSize: '10px',
+      fontWeight: 'bold',
+      lineHeight: '2',
+      textAlign: 'left',
+      fontFamily: '',
+      position: 'absolute',
+      top: '300px',
+      left: '100px',
+    },
+  },
   // {
   //   id: uuidv4(),
   //   name: 'LText',
@@ -77,8 +81,8 @@ const testComponents: ComponentData[] = [
       boxShadow: '0 0 0 #000000',
       opacity: '1',
       position: 'absolute',
-      top: '10px',
-      left: '10px',
+      top: '100px',
+      left: '100px',
       width: '130px',
       height: '100px',
     },
@@ -321,6 +325,7 @@ export const useEditorStore = defineStore('editor', () => {
   return {
     components: readonly(components),
     currentElement: readonly(currentElement),
+    copiedElement: readonly(copiedElement),
     addComponent,
     setCurrentElement,
     updateCompProp,

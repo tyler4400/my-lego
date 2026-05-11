@@ -80,4 +80,16 @@ export default function initHotKeys() {
   useHotKey('ctrl+y, command+y, ctrl+shift+z, command+shift+z', preventDefaultWrap(() => {
     historyStore.redo()
   }))
+
+  useHotKey('ctrl+l, command+l', preventDefaultWrap(() => {
+    const cur = editorStore.currentElement
+    if (!cur) return
+    editorStore.updateCompData('isLocked', !cur.isLocked, cur.id)
+  }))
+
+  useHotKey('ctrl+h, command+h', preventDefaultWrap(() => {
+    const cur = editorStore.currentElement
+    if (!cur) return
+    editorStore.updateCompData('isHidden', true, cur.id)
+  }))
 }

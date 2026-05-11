@@ -194,7 +194,6 @@ export const useHistoryStore = defineStore('history', () => {
     // 等值过滤：updateComp / updatePage 的 old===new 时直接忽略
     if (action.actionType === 'updateComp' || action.actionType === 'updatePage') {
       if (action.data.oldValue === action.data.newValue) {
-        console.log('等值过滤', action)
         return
       }
     }
@@ -211,7 +210,6 @@ export const useHistoryStore = defineStore('history', () => {
     if (top && (now - lastPushAt) < MERGE_WINDOW_MS && canMerge(top, action)) {
       // 此时 top 的 actionType 一定是 updateComp或者updatePage，data 一定有 newValue
       (top.data as any).newValue = (action as any).data.newValue
-      console.log('栈顶合并', action)
 
       // 栈顶合并也要裁剪forward
       if (historyIndex.value < histories.value.length - 1) {
