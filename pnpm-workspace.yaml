@@ -2,4 +2,11 @@ packages:
   - 'packages/*'
   # 排除测试目录中的包
   - '!**/test/**'
+allowBuilds:
+  '@nestjs/core': true
+  core-js: true
+  esbuild: true
+  sharp: true
+  unrs-resolver: true
+
 #linkWorkspacePackages: true
