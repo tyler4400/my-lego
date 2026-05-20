@@ -1,12 +1,21 @@
+import type { AxiosResponse } from 'axios'
 import type { BizError } from './error'
 import type { CraftRequestConfig } from './types'
 import mitt from 'mitt'
 
 /**
- * 事件载荷：包含错误对象与触发该错误的请求 config（用于读取 silent 等开关）
+ * 事件载荷：包含错误对象与触发该错误的请求 config（用于读取 silentError 等开关）
  */
-export interface HttpEventPayload {
+export interface HttpErrEventPayload {
   error: BizError
+  config: CraftRequestConfig
+}
+
+/**
+ * 事件载荷：包含错误对象与触发该错误的请求 config（用于读取 silentError 等开关）
+ */
+export interface HttpSuccessEventPayload {
+  res: AxiosResponse
   config: CraftRequestConfig
 }
 
@@ -21,11 +30,12 @@ export interface HttpEventPayload {
  */
 // eslint-disable-next-line ts/consistent-type-definitions
 export type HttpEvents = {
-  'http:bizError': HttpEventPayload
-  'http:systemError': HttpEventPayload
-  'http:networkError': HttpEventPayload
-  'http:unauthorized': HttpEventPayload
-  'http:error': HttpEventPayload
+  'http:bizError': HttpErrEventPayload
+  'http:systemError': HttpErrEventPayload
+  'http:networkError': HttpErrEventPayload
+  'http:unauthorized': HttpErrEventPayload
+  'http:error': HttpErrEventPayload
+  'http:success': HttpSuccessEventPayload
 }
 
 /**
@@ -45,7 +55,7 @@ export const httpBus = mitt<HttpEvents>()
  */
 export const emitHttpError = (
   type: Exclude<keyof HttpEvents, 'http:error'>,
-  payload: HttpEventPayload,
+  payload: HttpErrEventPayload,
 ) => {
   const handlers = httpBus.all.get(type)
   if (handlers && handlers.length > 0) {

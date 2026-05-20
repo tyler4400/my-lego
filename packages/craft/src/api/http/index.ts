@@ -5,7 +5,7 @@ import { tryCatch } from '@my-lego/shared'
 export { BizError } from './error'
 export type { BizErrorType } from './error'
 export { httpBus } from './events'
-export type { HttpEventPayload, HttpEvents } from './events'
+export type { HttpErrEventPayload, HttpEvents } from './events'
 
 export { http } from './instance'
 export type { HttpClient } from './instance'

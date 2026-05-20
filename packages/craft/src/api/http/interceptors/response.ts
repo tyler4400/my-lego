@@ -2,7 +2,7 @@ import type { AxiosError, AxiosResponse } from 'axios'
 import type { CraftRequestConfig, MetaResponse } from '../types'
 import { SUCCESS_CODE, UNAUTHORIZED_STATUS } from '../constants'
 import { BizError } from '../error'
-import { emitHttpError } from '../events'
+import { emitHttpError, httpBus } from '../events'
 
 /**
  * 判断响应体是否符合 MetaResponse 结构
@@ -27,6 +27,7 @@ export const responseSuccessInterceptor = (response: AxiosResponse) => {
   if (!isMetaResponse(raw)) return response
 
   if (raw.code === SUCCESS_CODE) {
+    httpBus.emit('http:success', { res: response, config })
     return config.returnRaw ? raw : raw.data
   }
 

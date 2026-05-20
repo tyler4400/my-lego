@@ -38,14 +38,9 @@ axiosInstance.interceptors.request.use(requestInterceptor)
  * 实际返回类型不再是 AxiosResponse；用 Parameters<...>[0] 强制匹配 axios 期望的回调签名
  * 对外类型由下方 HttpClient 函数重载保证。
  */
-type ResponseFulfilledFn = Parameters<
-  typeof axiosInstance.interceptors.response.use
->[0]
+type ResponseFulfilledFn = Parameters<typeof axiosInstance.interceptors.response.use>[0]
 
-axiosInstance.interceptors.response.use(
-  responseSuccessInterceptor as ResponseFulfilledFn,
-  responseErrorInterceptor,
-)
+axiosInstance.interceptors.response.use(responseSuccessInterceptor as ResponseFulfilledFn, responseErrorInterceptor)
 
 /** 复用的"返回业务 data"请求配置类型 */
 type ConfigForData<D = unknown> = CraftRequestConfig<D> & { returnRaw?: false }

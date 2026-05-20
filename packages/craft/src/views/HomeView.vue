@@ -3,14 +3,14 @@
     <Layout :style="{ background: '#fff' }">
       <LayoutHeader class="header">
         <div class="page-title">
-          <router-link to="/">
+          <router-link to="/login">
             i分享
           </router-link>
         </div>
       </LayoutHeader>
       <LayoutContent class="home-layout">
         <div>
-          <Avatar v-if="userStore.isLogin" :src="userStore.userInfo.picture" />
+          <Avatar v-if="userStore.userInfo.picture" :src="userStore.userInfo.picture" />
           <Avatar v-else>
             <UserOutlined />
           </Avatar>
@@ -22,16 +22,19 @@
         </Button>
       </LayoutContent>
     </Layout>
-    <LayoutFooter>footer</LayoutFooter>
+    <LayoutFooter @click="getMe">
+      footer
+    </LayoutFooter>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { UserInfo } from '@/stores/userInfo.ts'
+import type { UserInfo } from '@/stores/session.js'
 import { GithubOutlined, UserOutlined } from '@ant-design/icons-vue'
 import { useEventListener } from '@vueuse/core'
 import { Avatar, Button, Layout, LayoutContent, LayoutFooter, LayoutHeader } from 'ant-design-vue'
-import { useUserInfoStore } from '@/stores/userInfo.ts'
+import { getMe } from '@/api/modules/user.ts'
+import { useSessionStore } from '@/stores/session.js'
 
 interface GithubLogin {
   payload: {
@@ -41,7 +44,7 @@ interface GithubLogin {
   type: string // oauth.github
 }
 
-const userStore = useUserInfoStore()
+const userStore = useSessionStore()
 
 const BACKEND_ORIGIN = 'http://localhost:3001'
 const AUTHORIZE_URL = `${BACKEND_ORIGIN}/api/v1/oauth/github/authorize`

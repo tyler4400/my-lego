@@ -170,9 +170,7 @@ callback 使用：
   - `packages/craft-backend/views/oauth-login-success.hbs`
 - 前端接收与 UI：
   - `packages/craft/src/views/HomeView.vue`
-  - `packages/craft/src/stores/userInfo.ts`
+  - `packages/craft/src/stores/session.ts`
 - 联调脚本：
   - `packages/craft-backend/test/http/http-client.env.json`
   - `packages/craft-backend/test/http/3.oauth.http`
-
-

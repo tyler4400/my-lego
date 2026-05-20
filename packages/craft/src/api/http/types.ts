@@ -23,10 +23,17 @@ export interface MetaResponse<T> {
 
 /**
  * 扩展 axios 的请求配置
- * - silent：抑制 UI 错误提示（事件依然会发出，业务层可自行订阅处理）
+ * - silentError：抑制全局错误 toast（事件依然会发出，业务方可自行订阅处理）
+ * - silentSuccess：抑制全局成功 toast（占位字段，等接入全局成功提示拦截后启用）
+ * - silentLoading：抑制全局 loading（占位字段，等接入全局 loading 进度条后启用）
  * - returnRaw：返回完整 MetaResponse 而非 data（用于需要 traceId / requestTime 的场景）
+ *
+ * 命名约定：所有 silentXxx 都是「抑制 / opt-out」语义，默认 false（即默认走全局），
+ * 业务侧只在需要"自定义反馈 UI / 后台静默请求"时才设为 true。
  */
 export interface CraftRequestConfig<D = unknown> extends AxiosRequestConfig<D> {
-  silent?: boolean
+  silentError?: boolean
+  silentSuccess?: boolean
+  silentLoading?: boolean
   returnRaw?: boolean
 }
