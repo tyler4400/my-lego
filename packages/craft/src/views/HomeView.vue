@@ -10,21 +10,23 @@
       </LayoutHeader>
       <LayoutContent class="home-layout">
         <div>
-          <Avatar v-if="userStore.userInfo.picture" :src="userStore.userInfo.picture" />
+          <Avatar v-if="sessionStore.userInfo.picture" :src="sessionStore.userInfo.picture" />
           <Avatar v-else>
             <UserOutlined />
           </Avatar>
-          <span>{{ userStore.userInfo.nickName }}</span>
+          <span>{{ sessionStore.userInfo.nickName }}</span>
         </div>
-        <Button type="primary" :disabled="userStore.isLogin" @click="handleGithubLogin">
+        <Button type="primary" :disabled="sessionStore.isLogin" @click="handleGithubLogin">
           <GithubOutlined />
-          {{ userStore.isLogin ? '已登录' : '登录' }}
+          {{ sessionStore.isLogin ? '已登录' : '登录' }}
         </Button>
       </LayoutContent>
     </Layout>
     <LayoutFooter @click="getMe">
       footer
     </LayoutFooter>
+    <pre>{{ sessionStore.userInfo }}</pre>
+    <p @click="sessionStore.logout">退出登录</p>
   </div>
 </template>
 
@@ -44,7 +46,7 @@ interface GithubLogin {
   type: string // oauth.github
 }
 
-const userStore = useSessionStore()
+const sessionStore = useSessionStore()
 
 const BACKEND_ORIGIN = 'http://localhost:3001'
 const AUTHORIZE_URL = `${BACKEND_ORIGIN}/api/v1/oauth/github/authorize`
@@ -60,7 +62,7 @@ const handleMessage = (event: MessageEvent) => {
 
   const { accessToken, userInfo } = data.payload
   console.log('handleMessage/accessToken: ', accessToken)
-  userStore.setUserInfo(userInfo)
+  sessionStore.setUserInfo(userInfo)
   // 后面再开发前端的登录登出
   // localStorage.setItem('access_token', accessToken)
   popup?.close()

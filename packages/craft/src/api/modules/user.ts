@@ -1,3 +1,4 @@
+import type { ServiceConfig } from '@/api/http'
 import { http, httpTry } from '@/api/http'
 
 /**
@@ -7,7 +8,7 @@ import { http, httpTry } from '@/api/http'
  * - id 是数据库自增 number，前端展示场景一般不依赖具体类型
  */
 export interface PublicUserDto {
-  id?: number
+  id: number
   username: string
   email?: string
   nickName?: string
@@ -73,29 +74,30 @@ export interface LoginByCellphoneReq {
 /**
  * 邮箱注册（不会自动登录，由调用方决定后续动作）
  */
-export const createByEmail = (body: CreateByEmailReq) =>
-  httpTry(http.post<PublicUserDto, CreateByEmailReq>('/v1/user/createByEmail', body))
+export const createByEmail = (body: CreateByEmailReq, config?: ServiceConfig<CreateByEmailReq>) =>
+  httpTry(http.post<PublicUserDto, CreateByEmailReq>('/v1/user/createByEmail', body, config))
 
 /**
  * 邮箱登录
  */
-export const loginByEmail = (body: LoginByEmailReq) =>
-  httpTry(http.post<LoginResDto, LoginByEmailReq>('/v1/user/loginByEmail', body))
+export const loginByEmail = (body: LoginByEmailReq, config?: ServiceConfig<LoginByEmailReq>) =>
+  httpTry(http.post<LoginResDto, LoginByEmailReq>('/v1/user/loginByEmail', body, config))
 
 /**
  * 发送短信验证码
  */
-export const sendVerifyCode = (body: SendVerifyCodeReq) =>
-  httpTry(http.post<SendVerifyCodeRes, SendVerifyCodeReq>('/v1/user/sendVerifyCode', body))
+export const sendVerifyCode = (body: SendVerifyCodeReq, config?: ServiceConfig<SendVerifyCodeReq>) =>
+  httpTry(http.post<SendVerifyCodeRes, SendVerifyCodeReq>('/v1/user/sendVerifyCode', body, config))
 
 /**
  * 手机号 + 验证码 登录（未注册手机号自动注册）
  */
-export const loginByCellphone = (body: LoginByCellphoneReq) =>
-  httpTry(http.post<LoginResDto, LoginByCellphoneReq>('/v1/user/loginByCellphone', body))
+export const loginByCellphone = (body: LoginByCellphoneReq, config?: ServiceConfig<LoginByCellphoneReq>) =>
+  httpTry(http.post<LoginResDto, LoginByCellphoneReq>('/v1/user/loginByCellphone', body, config))
 
 /**
  * 获取当前登录用户信息（JWT 保护）
  * - 401 会被全局 http:unauthorized 拦截器接管（自动跳登录页）
  */
-export const getMe = () => httpTry(http.get<PublicUserDto>('/v1/user/me'))
+export const getMe = (config?: ServiceConfig) =>
+  httpTry(http.get<PublicUserDto>('/v1/user/me', config))

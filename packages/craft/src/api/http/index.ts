@@ -5,12 +5,17 @@ import { tryCatch } from '@my-lego/shared'
 export { BizError } from './error'
 export type { BizErrorType } from './error'
 export { httpBus } from './events'
-export type { HttpErrEventPayload, HttpEvents } from './events'
+export type {
+  HttpErrorPayload,
+  HttpEvents,
+  HttpLoadingPayload,
+  HttpSuccessPayload,
+} from './events'
 
 export { http } from './instance'
 export type { HttpClient } from './instance'
 export { clearToken, getToken, setToken } from './token'
-export type { CraftRequestConfig, MetaResponse } from './types'
+export type { CraftRequestConfig, MetaResponse, ServiceConfig } from './types'
 
 /**
  * httpTry：http 请求专用的 tryCatch

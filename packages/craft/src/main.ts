@@ -1,14 +1,11 @@
-import { isFunction } from '@my-lego/shared'
 import { createPinia } from 'pinia'
 
 import { createApp } from 'vue'
-import App from './App.vue'
+import { setupEventHandlers } from './handlers'
 
-import { setupEventHandlers } from './event-handlers'
+import App from './App.vue'
 import router from './router'
 import './styles/index.css'
-
-console.log('main.ts--isFunction: ', isFunction(234))
 
 const app = createApp(App)
 

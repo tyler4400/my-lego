@@ -1,3 +1,4 @@
+import type { ServiceConfig } from '@/api/http'
 import type {
   CreateByEmailReq,
   LoginByCellphoneReq,
@@ -33,6 +34,7 @@ export type UserInfo = PublicUserDto
  * - 用最小可用值占位：未登录态下其他页面读取依然安全
  */
 const getInitialUserInfo = (): UserInfo => ({
+  id: -1,
   username: '',
   nickName: '游客',
 })
@@ -89,9 +91,10 @@ export const useSessionStore = defineStore('session', () => {
   /**
    * 邮箱登录：调接口 → 写 token → 写 userInfo
    * - 失败时透传 BizError，全局 handler 已 toast，调用方只需处理成功路径
+   * - config 透传给底层 service，供 useService 注入 signal 等场景使用
    */
-  const loginByEmail = async (payload: LoginByEmailReq) => {
-    const [data, err] = await apiLoginByEmail(payload)
+  const loginByEmail = async (payload: LoginByEmailReq, config?: ServiceConfig<LoginByEmailReq>) => {
+    const [data, err] = await apiLoginByEmail(payload, config)
     if (err) return [null, err] as const
     setToken(data.accessToken)
     setUserInfo(data.userInfo)
@@ -101,8 +104,8 @@ export const useSessionStore = defineStore('session', () => {
   /**
    * 手机号 + 验证码 登录（未注册手机号自动注册）
    */
-  const loginByCellphone = async (payload: LoginByCellphoneReq) => {
-    const [data, err] = await apiLoginByCellphone(payload)
+  const loginByCellphone = async (payload: LoginByCellphoneReq, config?: ServiceConfig<LoginByCellphoneReq>) => {
+    const [data, err] = await apiLoginByCellphone(payload, config)
     if (err) return [null, err] as const
     setToken(data.accessToken)
     setUserInfo(data.userInfo)
@@ -113,20 +116,23 @@ export const useSessionStore = defineStore('session', () => {
    * 邮箱注册
    * - 仅注册，不自动登录；"注册成功后立即登录" 的组合逻辑由调用方完成
    */
-  const registerByEmail = (payload: CreateByEmailReq) => apiCreateByEmail(payload)
+  const registerByEmail = (payload: CreateByEmailReq, config?: ServiceConfig<CreateByEmailReq>) =>
+    apiCreateByEmail(payload, config)
 
   /**
    * 发送短信验证码（透传 service 调用）
    * - 调用方拿到 verifyCode 可在开发态做调试展示
    */
-  const sendVerifyCode = (payload: SendVerifyCodeReq) => apiSendVerifyCode(payload)
+  const sendVerifyCode = (payload: SendVerifyCodeReq, config?: ServiceConfig<SendVerifyCodeReq>) =>
+    apiSendVerifyCode(payload, config)
 
   /**
    * 拉取当前用户信息
    * - 仅写 userInfo，错误透传不做副作用（401 已被全局拦截器接管）
+   * - 守卫场景通常传入 { silentToast: true } 让自身接管错误处理
    */
-  const fetchMe = async () => {
-    const [data, err] = await apiGetMe()
+  const fetchMe = async (config?: ServiceConfig) => {
+    const [data, err] = await apiGetMe(config)
     if (err) return [null, err] as const
     setUserInfo(data)
     return [data, null] as const

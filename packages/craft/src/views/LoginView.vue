@@ -200,10 +200,6 @@
               </InputPassword>
             </FormItem>
 
-            <p class="form-tip">
-              注册成功后将自动登录
-            </p>
-
             <Button
               type="primary"
               size="large"
@@ -277,7 +273,8 @@ import { computed, onUnmounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import loginBg from '@/assets/login-vertical.png'
-import logo from '@/assets/logo-with-bg.png'
+import logo from '@/assets/logo-chrome-512x512.png'
+import { useService } from '@/hooks/useService'
 import { useSessionStore } from '@/stores/session'
 
 const loginBgStyle = { backgroundImage: `url(${loginBg})` }
@@ -287,38 +284,45 @@ const router = useRouter()
 const sessionStore = useSessionStore()
 
 // ============================================================
-// 模式状态
+// 公共：模式状态 / 文案 / 跳转
+// 这些是跨业务模块共享的"页面级"状态，不属于任何单一登录方式
 // ============================================================
 type LoginMode = 'phone' | 'email'
 const loginMode = ref<LoginMode>('phone')
 const isRegister = ref(false)
 
+const titleText = computed(() => (isRegister.value ? '创建账号' : '欢迎回来'))
+
+const subtitleText = computed(() => {
+  if (isRegister.value) return '注册一个新的海豹乐高账号，注册成功后将自动登录'
+  if (loginMode.value === 'email') return '使用邮箱登录海豹乐高'
+  return '使用手机号码登录海豹乐高'
+})
+
+const redirectAfterLogin = () => {
+  // vue-router 已自动 decode query；优先回跳 redirect，没有则回首页
+  const redirect = (route.query.redirect as string | undefined) || '/'
+  router.replace(redirect)
+}
+
+const handleSwitchToRegister = () => {
+  isRegister.value = true
+}
+
+const handleSwitchToLogin = () => {
+  isRegister.value = false
+}
+
 // ============================================================
-// 表单数据：字段名直接对齐后端 API 入参，提交时无需再转换
+// 业务模块 1：手机号登录（含发送验证码 + 倒计时）
+// 三块逻辑共享同一份 phoneForm，未来抽 useLoginByPhone() composable 时应一并搬走，
+// 因此按业务垂直组织在同一模块下：formRef / form / rules / 子逻辑 / handler 自上而下
 // ============================================================
+const phoneFormRef = ref<FormInstance>()
 const phoneForm = reactive({
   phoneNumber: '',
   verifyCode: '',
 })
-
-const emailForm = reactive({
-  username: '',
-  password: '',
-})
-
-const registerForm = reactive({
-  username: '',
-  password: '',
-})
-
-// 表单 ref（用于触发 validate）
-const phoneFormRef = ref<FormInstance>()
-const emailFormRef = ref<FormInstance>()
-const registerFormRef = ref<FormInstance>()
-
-// ============================================================
-// 表单校验规则（与后端 DTO 校验保持一致：手机号正则、验证码 4 位、邮箱、密码 ≥ 8 位）
-// ============================================================
 const phoneRules: Record<string, Rule[]> = {
   phoneNumber: [
     { required: true, message: '请输入手机号' },
@@ -330,41 +334,8 @@ const phoneRules: Record<string, Rule[]> = {
   ],
 }
 
-const emailRules: Record<string, Rule[]> = {
-  username: [
-    { required: true, message: '请输入邮箱' },
-    { type: 'email', message: '邮箱格式不正确' },
-  ],
-  password: [
-    { required: true, message: '请输入密码' },
-    { min: 8, message: '密码长度不能少于 8 位' },
-  ],
-}
-
-// 注册规则与登录规则一致，独立定义便于未来按需扩展（如确认密码、用户协议勾选等）
-const registerRules: Record<string, Rule[]> = {
-  username: [
-    { required: true, message: '请输入邮箱' },
-    { type: 'email', message: '邮箱格式不正确' },
-  ],
-  password: [
-    { required: true, message: '请设置密码' },
-    { min: 8, message: '密码长度不能少于 8 位' },
-  ],
-}
-
-// ============================================================
-// 按钮 loading（细粒度，防止二次提交）
-// ============================================================
-const phoneLoading = ref(false)
-const emailLoading = ref(false)
-const registerLoading = ref(false)
-const codeLoading = ref(false)
-
-// ============================================================
-// 验证码倒计时
-// ============================================================
-const COUNTDOWN_SECONDS = 6 // 开发阶段为6秒
+// ---------- 1a. 验证码倒计时（被发送验证码子模块依赖） ----------
+const COUNTDOWN_SECONDS = 60 // 开发阶段为 6 秒，上线前改为 60
 const countdown = ref(0)
 let countdownTimer: ReturnType<typeof setInterval> | null = null
 
@@ -384,6 +355,9 @@ onUnmounted(() => {
   if (countdownTimer) clearInterval(countdownTimer)
 })
 
+// ---------- 1b. 发送短信验证码 ----------
+const [codeLoading, , , doSendCode] = useService(sessionStore.sendVerifyCode)
+
 const isCodeBtnDisabled = computed(() => countdown.value > 0 || codeLoading.value)
 
 const codeBtnText = computed(() => {
@@ -392,39 +366,14 @@ const codeBtnText = computed(() => {
   return '获取验证码'
 })
 
-// ============================================================
-// 文案
-// ============================================================
-const subtitleText = computed(() => {
-  if (isRegister.value) return '注册一个新的海豹乐高账号，注册成功后将自动登录'
-  if (loginMode.value === 'email') return '使用邮箱登录海豹乐高'
-  return '使用手机号码登录海豹乐高'
-})
-
-const titleText = computed(() => (isRegister.value ? '创建账号' : '欢迎回来'))
-
-// ============================================================
-// 跳转
-// ============================================================
-const redirectAfterLogin = () => {
-  // vue-router 已自动 decode query；优先回跳 redirect，没有则回首页
-  const redirect = (route.query.redirect as string | undefined) || '/'
-  router.replace(redirect)
-}
-
-// ============================================================
-// 业务 handler
-// ============================================================
-
 /**
  * 获取短信验证码
  * - 先校验手机号字段（仅这一个字段）
- * - 发送成功后启动 60s 倒计时
+ * - 发送成功后启动倒计时
  * - 开发态后端会返回 verifyCode，临时用 message.info 展示便于联调
  */
 const handleGetCode = async () => {
   if (isCodeBtnDisabled.value) return
-
   try {
     await phoneFormRef.value?.validate(['phoneNumber'])
   }
@@ -432,9 +381,7 @@ const handleGetCode = async () => {
     return
   }
 
-  codeLoading.value = true
-  const [data, err] = await sessionStore.sendVerifyCode({ phoneNumber: phoneForm.phoneNumber })
-  codeLoading.value = false
+  const [data, err] = await doSendCode({ phoneNumber: phoneForm.phoneNumber })
   if (err) return
 
   startCountdown()
@@ -444,9 +391,10 @@ const handleGetCode = async () => {
   }
 }
 
-/**
- * 手机号 + 验证码 登录
- */
+// ---------- 1c. 手机号 + 验证码 登录 ----------
+// 按钮自身已经有 loading 反馈，关闭全局进度条避免重复指示
+const [phoneLoading, , , doPhoneLogin] = useService(sessionStore.loginByCellphone)
+
 const handlePhoneLogin = async () => {
   try {
     await phoneFormRef.value?.validate()
@@ -455,17 +403,33 @@ const handlePhoneLogin = async () => {
     return
   }
 
-  phoneLoading.value = true
-  const [, err] = await sessionStore.loginByCellphone(phoneForm)
-  phoneLoading.value = false
+  const [, err] = await doPhoneLogin(phoneForm)
   if (err) return
 
   redirectAfterLogin()
 }
 
-/**
- * 邮箱登录
- */
+// ============================================================
+// 业务模块 2：邮箱登录
+// ============================================================
+const emailFormRef = ref<FormInstance>()
+const emailForm = reactive({
+  username: '',
+  password: '',
+})
+const emailRules: Record<string, Rule[]> = {
+  username: [
+    { required: true, message: '请输入邮箱' },
+    { type: 'email', message: '邮箱格式不正确' },
+  ],
+  password: [
+    { required: true, message: '请输入密码' },
+    { min: 8, message: '密码长度不能少于 8 位' },
+  ],
+}
+
+const [emailLoading, , , doEmailLogin] = useService(sessionStore.loginByEmail)
+
 const handleEmailLogin = async () => {
   try {
     await emailFormRef.value?.validate()
@@ -474,13 +438,37 @@ const handleEmailLogin = async () => {
     return
   }
 
-  emailLoading.value = true
-  const [, err] = await sessionStore.loginByEmail(emailForm)
-  emailLoading.value = false
+  const [, err] = await doEmailLogin(emailForm)
   if (err) return
 
   redirectAfterLogin()
 }
+
+// ============================================================
+// 业务模块 3：邮箱注册（注册成功后自动登录）
+// ============================================================
+const registerFormRef = ref<FormInstance>()
+const registerForm = reactive({
+  username: '',
+  password: '',
+})
+// 注册规则与登录规则一致，独立定义便于未来按需扩展（如确认密码、用户协议勾选等）
+const registerRules: Record<string, Rule[]> = {
+  username: [
+    { required: true, message: '请输入邮箱' },
+    { type: 'email', message: '邮箱格式不正确' },
+  ],
+  password: [
+    { required: true, message: '请设置密码' },
+    { min: 8, message: '密码长度不能少于 8 位' },
+  ],
+}
+
+// 「注册 → 自动登录」是组合动作，registerLoading 在两步全程都应为 true，
+// 通过 computed 合并两个 useService 的 loading 状态实现
+const [registering, , , doRegister] = useService(sessionStore.registerByEmail)
+const [autoLoggingIn, , , doAutoLogin] = useService(sessionStore.loginByEmail)
+const registerLoading = computed(() => registering.value || autoLoggingIn.value)
 
 /**
  * 邮箱注册
@@ -494,31 +482,20 @@ const handleRegister = async () => {
     return
   }
 
-  registerLoading.value = true
-  const [, registerErr] = await sessionStore.registerByEmail(registerForm)
-  if (registerErr) {
-    registerLoading.value = false
-    return
-  }
+  const [, registerErr] = await doRegister(registerForm)
+  if (registerErr) return
 
-  // 注册成功后自动登录
-  const [, loginErr] = await sessionStore.loginByEmail(registerForm)
-  registerLoading.value = false
+  const [, loginErr] = await doAutoLogin(registerForm)
   if (loginErr) return
 
   redirectAfterLogin()
 }
 
+// ============================================================
+// 业务模块 4：第三方登录（GitHub）
+// ============================================================
 const handleGithubLogin = () => {
   // TODO: GitHub 第三方登录
-}
-
-const handleSwitchToRegister = () => {
-  isRegister.value = true
-}
-
-const handleSwitchToLogin = () => {
-  isRegister.value = false
 }
 </script>
 
