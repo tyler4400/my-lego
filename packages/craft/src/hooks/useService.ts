@@ -34,14 +34,15 @@ export interface UseServiceOptions {
 
 /**
  * useService 的返回类型：同时具备数组（前 4 项）与对象（含 abort）的双重身份
- * - 数组解构：const [loading, data, error, execute] = useService(...)
+ * - 数组解构：const [execute, loading, data, error] = useService(...)
+ *   （execute 使用频率最高，放在首位让常见用法 const [doXxx] = useService(...) 最简洁）
  * - 对象解构：const { loading, data, error, execute, abort } = useService(...)
  */
 export type UseServiceReturn<Data, Args extends any[]> = readonly [
+  (...args: Args) => Promise<ServiceResult<Data>>,
   Ref<boolean>,
   ShallowRef<Data | null>,
   ShallowRef<BizError | null>,
-  (...args: Args) => Promise<ServiceResult<Data>>,
 ] & {
   loading: Ref<boolean>
   data: ShallowRef<Data | null>
@@ -68,7 +69,7 @@ export type UseServiceReturn<Data, Args extends any[]> = readonly [
  *
  * @example 数组解构（推荐：业务相关声明紧挨 handler，可读性高）
  * ```ts
- * const [phoneLoading, , , doPhoneLogin] = useService(sessionStore.loginByCellphone)
+ * const [doPhoneLogin, phoneLoading] = useService(sessionStore.loginByCellphone)
  * const handlePhoneLogin = async () => {
  *   await phoneFormRef.value?.validate()
  *   const [, err] = await doPhoneLogin(phoneForm)
@@ -79,7 +80,7 @@ export type UseServiceReturn<Data, Args extends any[]> = readonly [
  *
  * @example 配置默认 config（如某接口全程静默）
  * ```ts
- * const [, , , doFetchList] = useService(api.fetchList, {
+ * const [doFetchList] = useService(api.fetchList, {
  *   config: { silentToast: true },
  * })
  * doFetchList(query)  // 所有调用都不会弹 toast
@@ -93,7 +94,7 @@ export type UseServiceReturn<Data, Args extends any[]> = readonly [
  *
  * @example 立即执行
  * ```ts
- * const [loading, userInfo, , doFetchMe] = useService(api.getMe)
+ * const [doFetchMe, loading, userInfo] = useService(api.getMe)
  * doFetchMe()  // setup 中直接调用即可
  * ```
  */
@@ -159,7 +160,7 @@ export const useService = <Data, Args extends any[]>(
     loading.value = false
   }
 
-  const tuple = [loading, data, error, execute] as const
+  const tuple = [execute, loading, data, error] as const
   return Object.assign(tuple, {
     loading,
     data,

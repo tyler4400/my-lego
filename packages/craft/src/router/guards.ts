@@ -1,6 +1,7 @@
 import type { Router } from 'vue-router'
 import { message } from 'ant-design-vue'
 import { useSessionStore } from '@/stores/session'
+import { notifyUnauthorized } from '@/utils/biz/notifyUnauthorized.ts'
 
 /**
  * 路由守卫装配
@@ -36,14 +37,14 @@ export const setupRouterGuards = (router: Router) => {
       const [, err] = await session.fetchMe({ silentToast: true })
       if (err) {
         session.logout()
-        message.warning('登录已过期，请重新登录')
-        return { name: 'login', query: { redirect: to.fullPath } }
+        notifyUnauthorized('登录已过期，请重新登录')
+        return false
       }
     }
 
     // 2. 目标路由需要登录 + 当前未登录 → 跳登录页（带 redirect 用于回跳）
     if (to.meta.requiresAuth && !session.isLogin) {
-      message.warning('请先登录后再访问该页面')
+      message.warning('请登录后再访问该页面')
       return { name: 'login', query: { redirect: to.fullPath } }
     }
 

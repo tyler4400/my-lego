@@ -26,7 +26,9 @@
       footer
     </LayoutFooter>
     <pre>{{ sessionStore.userInfo }}</pre>
-    <p @click="sessionStore.logout">退出登录</p>
+    <p @click="sessionStore.logout">
+      退出登录
+    </p>
   </div>
 </template>
 

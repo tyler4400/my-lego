@@ -41,7 +41,7 @@ export interface ProgressBarApi {
  */
 export const createProgressBar = (options: ProgressBarOptions = {}): ProgressBarApi => {
   const {
-    size = 2,
+    size = 3,
     background = 'linear-gradient(90deg, #4f46e5 0%, #6366f1 100%)',
     boxShadow = '0 0 8px rgba(99, 102, 241, 0.5)',
     delayMs = 80,

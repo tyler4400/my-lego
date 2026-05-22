@@ -356,7 +356,7 @@ onUnmounted(() => {
 })
 
 // ---------- 1b. 发送短信验证码 ----------
-const [codeLoading, , , doSendCode] = useService(sessionStore.sendVerifyCode)
+const [doSendCode, codeLoading] = useService(sessionStore.sendVerifyCode)
 
 const isCodeBtnDisabled = computed(() => countdown.value > 0 || codeLoading.value)
 
@@ -393,7 +393,7 @@ const handleGetCode = async () => {
 
 // ---------- 1c. 手机号 + 验证码 登录 ----------
 // 按钮自身已经有 loading 反馈，关闭全局进度条避免重复指示
-const [phoneLoading, , , doPhoneLogin] = useService(sessionStore.loginByCellphone)
+const [doPhoneLogin, phoneLoading] = useService(sessionStore.loginByCellphone)
 
 const handlePhoneLogin = async () => {
   try {
@@ -428,7 +428,7 @@ const emailRules: Record<string, Rule[]> = {
   ],
 }
 
-const [emailLoading, , , doEmailLogin] = useService(sessionStore.loginByEmail)
+const [doEmailLogin, emailLoading] = useService(sessionStore.loginByEmail)
 
 const handleEmailLogin = async () => {
   try {
@@ -466,8 +466,8 @@ const registerRules: Record<string, Rule[]> = {
 
 // 「注册 → 自动登录」是组合动作，registerLoading 在两步全程都应为 true，
 // 通过 computed 合并两个 useService 的 loading 状态实现
-const [registering, , , doRegister] = useService(sessionStore.registerByEmail)
-const [autoLoggingIn, , , doAutoLogin] = useService(sessionStore.loginByEmail)
+const [doRegister, registering] = useService(sessionStore.registerByEmail)
+const [doAutoLogin, autoLoggingIn] = useService(sessionStore.loginByEmail)
 const registerLoading = computed(() => registering.value || autoLoggingIn.value)
 
 /**

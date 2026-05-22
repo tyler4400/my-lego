@@ -1,9 +1,9 @@
 import { createPinia } from 'pinia'
 
 import { createApp } from 'vue'
-import { setupEventHandlers } from './handlers'
-
 import App from './App.vue'
+
+import { setupEventHandlers } from './handlers'
 import router from './router'
 import './styles/index.css'
 
