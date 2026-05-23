@@ -1,7 +1,7 @@
 ## Rule: OAuth（GitHub）联合登录流程（Popup + postMessage）（2025-12）
 
 > 目的：让大模型**快速理解当前项目已落地的 GitHub OAuth2 联合登录实现**（以代码事实为准），并在后续改动时不破坏协议、安全约束与现有工程约定。  
-> 覆盖范围：`packages/craft-backend/src/module/oauth/*` + `packages/craft/src/views/HomeView.vue` + `packages/craft-backend/views/oauth-login-success.hbs` + `.http` 联调文件。
+> 覆盖范围：`packages/craft-backend/src/module/oauth/*` + `packages/craft/src/views/LoginView.vue` + `packages/craft-backend/views/oauth-login-success.hbs` + `.http` 联调文件。
 
 ---
 
@@ -26,7 +26,7 @@
 
 **前端发起（Vue）**：
 
-- 入口：`packages/craft/src/views/HomeView.vue`
+- 入口：`packages/craft/src/views/LoginView.vue`
 - 行为：点击按钮 → `window.open(AUTHORIZE_URL, '_blank')`
 - 监听：`window.addEventListener('message', handleMessage)`
 - 校验：`event.origin` 必须等于 `BACKEND_ORIGIN`
@@ -77,7 +77,7 @@
 - `payload.accessToken`: string（JWT）
 - `payload.userInfo`: 用户信息对象（Mongo `user.toJSON()`）
 
-前端接收（`HomeView.vue`）当前按以下字段读取：
+前端接收（`LoginView.vue`）当前按以下字段读取：
 
 - `data.type === 'oauth.github'`
 - `data.payload.accessToken`
@@ -169,7 +169,7 @@ callback 使用：
 - 后端回调页面：
   - `packages/craft-backend/views/oauth-login-success.hbs`
 - 前端接收与 UI：
-  - `packages/craft/src/views/HomeView.vue`
+  - `packages/craft/src/views/LoginView.vue`
   - `packages/craft/src/stores/session.ts`
 - 联调脚本：
   - `packages/craft-backend/test/http/http-client.env.json`

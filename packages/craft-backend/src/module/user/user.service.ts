@@ -1,7 +1,7 @@
 import type { Model } from 'mongoose'
 import type { UserDocument } from '@/database/mongo/schema/user.schema'
 import type { UserPayload } from '@/types/type'
-import { hashPassword, verifyPassword } from '@my-lego/shared'
+import { hashPassword, VERIFY_CODE_TTL_SECONDS, verifyPassword } from '@my-lego/shared'
 import { Injectable } from '@nestjs/common'
 import { HttpStatus } from '@nestjs/common/enums/http-status.enum'
 import { InjectModel } from '@nestjs/mongoose'
@@ -17,8 +17,6 @@ export class UserService {
     private readonly authTokenService: AuthTokenService,
     private readonly redisService: RedisService,
   ) {}
-
-  private readonly VERIFY_CODE_TTL_SECONDS = 60
 
   /**
    * 邮箱注册（严格邮箱）
@@ -81,7 +79,7 @@ export class UserService {
     }
 
     const verifyCode = `${Math.floor(Math.random() * 9000 + 1000)}`
-    await this.redisService.set(key, verifyCode, this.VERIFY_CODE_TTL_SECONDS)
+    await this.redisService.set(key, verifyCode, VERIFY_CODE_TTL_SECONDS)
 
     return { verifyCode }
   }

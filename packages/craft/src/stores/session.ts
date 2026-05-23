@@ -1,14 +1,13 @@
 import type { ServiceConfig } from '@/api/http'
-import type {
-  CreateByEmailReq,
-  LoginByCellphoneReq,
-  LoginByEmailReq,
-  PublicUserDto,
-  SendVerifyCodeReq,
-} from '@/api/modules/user'
+import type { GithubLoginPayload } from '@/api/modules/oauth.ts'
+import type { CreateByEmailReq, LoginByCellphoneReq, LoginByEmailReq, PublicUserDto, SendVerifyCodeReq } from '@/api/modules/user'
+import type { OAuthError } from '@/utils/biz/openOauthPopup.ts'
+import { GITHUB_OAUTH_TYPE, tryCatch } from '@my-lego/shared'
 import { defineStore } from 'pinia'
 import { computed, reactive, readonly, ref } from 'vue'
 import { clearToken as clearHttpToken, getToken, setToken as setHttpToken } from '@/api/http'
+import { API_HOST } from '@/api/http/constants.ts'
+import { getGithubOauthUrl } from '@/api/modules/oauth.ts'
 import {
   createByEmail as apiCreateByEmail,
   getMe as apiGetMe,
@@ -16,6 +15,7 @@ import {
   loginByEmail as apiLoginByEmail,
   sendVerifyCode as apiSendVerifyCode,
 } from '@/api/modules/user'
+import { openOauthPopup } from '@/utils/biz/openOauthPopup.ts'
 
 /**
  * 用户角色（后端 PublicUserDto.role 实际类型为 string，
@@ -113,6 +113,21 @@ export const useSessionStore = defineStore('session', () => {
   }
 
   /**
+   * Oauth2 GitHub联合登录
+   */
+  const loginByGithub = async () => {
+    const [data, err] = await tryCatch<GithubLoginPayload, OAuthError>(openOauthPopup({
+      expectedOrigin: new URL(API_HOST).origin,
+      url: getGithubOauthUrl(),
+      expectedType: GITHUB_OAUTH_TYPE,
+    }))
+    if (err) return [null, err] as const
+    setToken(data.accessToken)
+    setUserInfo(data.userInfo)
+    return [data, null] as const
+  }
+
+  /**
    * 邮箱注册
    * - 仅注册，不自动登录；"注册成功后立即登录" 的组合逻辑由调用方完成
    */
@@ -155,6 +170,7 @@ export const useSessionStore = defineStore('session', () => {
     clearUserInfo,
     loginByEmail,
     loginByCellphone,
+    loginByGithub,
     registerByEmail,
     sendVerifyCode,
     fetchMe,

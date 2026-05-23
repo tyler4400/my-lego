@@ -1,5 +1,5 @@
 import type { Response } from 'express'
-import { createSafeJson } from '@my-lego/shared'
+import { createSafeJson, GITHUB_OAUTH_TYPE } from '@my-lego/shared'
 import { Controller, Get, HttpStatus, Query, Res } from '@nestjs/common'
 import { plainToInstance } from 'class-transformer'
 import { BizException } from '@/common/error/biz.exception'
@@ -56,7 +56,7 @@ export class OauthController {
       enableImplicitConversion: true,
     })
 
-    const message = { type: 'oauth.github', payload: data }
+    const message = { type: GITHUB_OAUTH_TYPE, payload: data }
 
     // 注意：originJson 是带引号的 JSON 字符串；payloadJson 是 JSON 对象字面量
     const originJson = createSafeJson(statePayload.frontOrigin)

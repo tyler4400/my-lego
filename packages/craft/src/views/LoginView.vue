@@ -257,6 +257,7 @@ import {
   MobileOutlined,
   SafetyCertificateOutlined,
 } from '@ant-design/icons-vue'
+import { VERIFY_CODE_TTL_SECONDS } from '@my-lego/shared'
 import {
   Button,
   Divider,
@@ -270,8 +271,8 @@ import {
   Tooltip,
 } from 'ant-design-vue'
 import { computed, onUnmounted, reactive, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
 
+import { useRoute, useRouter } from 'vue-router'
 import loginBg from '@/assets/login-vertical.png'
 import logo from '@/assets/logo-chrome-512x512.png'
 import { useService } from '@/hooks/useService'
@@ -335,7 +336,7 @@ const phoneRules: Record<string, Rule[]> = {
 }
 
 // ---------- 1a. 验证码倒计时（被发送验证码子模块依赖） ----------
-const COUNTDOWN_SECONDS = 60 // 开发阶段为 6 秒，上线前改为 60
+const COUNTDOWN_SECONDS = VERIFY_CODE_TTL_SECONDS // 开发阶段为 6 秒，上线前改为 60
 const countdown = ref(0)
 let countdownTimer: ReturnType<typeof setInterval> | null = null
 
@@ -494,8 +495,22 @@ const handleRegister = async () => {
 // ============================================================
 // 业务模块 4：第三方登录（GitHub）
 // ============================================================
-const handleGithubLogin = () => {
-  // TODO: GitHub 第三方登录
+const handleGithubLogin = async () => {
+  const [, err] = await sessionStore.loginByGithub()
+  if (err) {
+    // 按 code 分文案；未识别的 code 走兜底
+    if (err.code === 'user_cancelled') {
+      message.info('已取消 GitHub 登录')
+      return
+    }
+    if (err.code === 'popup_blocked') {
+      message.warning('请允许浏览器弹窗后重试')
+      return
+    }
+    message.error(err.message || 'GitHub 登录失败，请稍后再试')
+    return
+  }
+  redirectAfterLogin()
 }
 </script>
 
