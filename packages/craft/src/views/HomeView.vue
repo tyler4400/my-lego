@@ -21,14 +21,14 @@
           {{ sessionStore.isLogin ? '已登录' : '去登录' }}
         </Button>
       </LayoutContent>
+      <LayoutFooter>
+        footer
+        <pre>{{ sessionStore.userInfo }}</pre>
+        <span @click="sessionStore.logout">
+          退出登录
+        </span>
+      </LayoutFooter>
     </Layout>
-    <LayoutFooter>
-      footer
-    </LayoutFooter>
-    <pre>{{ sessionStore.userInfo }}</pre>
-    <span @click="sessionStore.logout">
-      退出登录
-    </span>
   </div>
 </template>
 

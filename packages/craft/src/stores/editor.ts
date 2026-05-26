@@ -164,7 +164,7 @@ export const useEditorStore = defineStore('editor', () => {
   // 编辑页的整体页面信息
   const pageData = ref<PageData>({
     props: pageDefaultProps,
-    title: 'new page',
+    title: '未命名作品',
   })
 
   const setCurrentElement = (id?: string) => {

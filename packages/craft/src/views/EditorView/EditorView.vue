@@ -13,39 +13,31 @@
           />
         </div>
       </LayoutSider>
-      <Layout style="padding: 0 24px 24px">
-        <LayoutContent class="preview-container">
-          <p>画布区域</p>
-          <HistoryArea
-            :canUndo="historyStore.canUndo"
-            :canRedo="historyStore.canRedo"
-            @undo="historyStore.undo"
-            @redo="historyStore.redo"
-          />
-          <div id="canvas-area" ref="canvasArea" class="preview-list">
-            <div class="body-container" :style="editorStore.pageData.props">
-              <EditWrapper
-                v-for="comp in editorStore.components"
-                v-show="!comp.isHidden"
-                id="edit-wrapper"
-                :key="comp.id"
-                :active="editorStore.currentElement?.id === comp.id"
-                :comp="comp"
-                @setActive="editorStore.setCurrentElement"
-                @updatePosition="handlePositionChange"
-              >
-                <component
-                  :is="componentMap[comp.name]"
-                  v-bind="comp.props"
-                />
-              </EditWrapper>
-            </div>
+      <LayoutContent class="preview-container" style="padding: 0 24px 24px">
+        <p>画布区域</p>
+        <div id="canvas-area" ref="canvasArea" class="preview-list">
+          <div class="body-container" :style="editorStore.pageData.props">
+            <EditWrapper
+              v-for="comp in editorStore.components"
+              v-show="!comp.isHidden"
+              id="edit-wrapper"
+              :key="comp.id"
+              :active="editorStore.currentElement?.id === comp.id"
+              :comp="comp"
+              @setActive="editorStore.setCurrentElement"
+              @updatePosition="handlePositionChange"
+            >
+              <component
+                :is="componentMap[comp.name]"
+                v-bind="comp.props"
+              />
+            </EditWrapper>
           </div>
-          <pre>
+        </div>
+        <pre>
               {{ editorStore.pageData }}
           </pre>
-        </LayoutContent>
-      </Layout>
+      </LayoutContent>
       <LayoutSider
         width="300"
         style="background: #fff"
@@ -122,9 +114,7 @@ import LayerList from '@/components/LayerList'
 import PropsTable from '@/components/PropsTable'
 import { defaultTextTemplates } from '@/defaultTemplates.ts'
 import { useEditorStore } from '@/stores/editor.ts'
-import { useHistoryStore } from '@/stores/history.ts'
 import { canvasKey } from '@/views/EditorView/canvasContext.ts'
-import HistoryArea from '@/views/EditorView/components/HistoryArea.vue'
 import { compPropGroupList, pagePropGroupPropList } from '@/views/EditorView/config.ts'
 import initContextMenu from '@/views/EditorView/plugin/contextMenuPlugin.ts'
 import initHotKeys from '@/views/EditorView/plugin/hotKeysPlugin.ts'
@@ -137,7 +127,6 @@ export type TabType = 'component' | 'layer' | 'page'
 const activeKey = ref<TabType>('component')
 
 const editorStore = useEditorStore()
-const historyStore = useHistoryStore()
 
 const addComponent = (item: ComponentData) => {
   editorStore.addComponent(item)
@@ -174,16 +163,30 @@ const getCanvasRect = () => canvasAreaRef.value?.getBoundingClientRect()
 provide(canvasKey, getCanvasRect)
 </script>
 
-<style>
+<style scoped>
+.editor-container {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding-top: 10px;
+}
+
+.editor-container :deep(.ant-layout) {
+  flex: 1;
+  min-height: 0;
+}
+
 .editor-container .preview-container {
+  flex: 1;
   padding: 24px;
   margin: 0;
-  min-height: 85vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
 }
+
 .editor-container .preview-list {
   padding: 0;
   min-width: 375px;
@@ -192,9 +195,12 @@ provide(canvasKey, getCanvasRect)
   background: #fff;
   overflow-x: hidden;
   overflow-y: auto;
-  /*position: fixed; 临时替换为relative*/
   position: relative;
   margin: 50px 0 0;
   max-height: 80vh;
+}
+
+.settings-panel :deep(.ant-tabs-nav-wrap) {
+  justify-content: center;
 }
 </style>

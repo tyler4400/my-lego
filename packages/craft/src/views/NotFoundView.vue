@@ -67,11 +67,11 @@ const handleGoBack = () => {
  * 与 LoginView 右侧白色登录区基调保持一致，让 404 插画成为视觉焦点
  * =================================================== */
 .not-found-page {
+  flex: 1;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
   padding: 48px 24px;
   background: linear-gradient(180deg, #f7f8fa 0%, #ffffff 100%);
   overflow: hidden;

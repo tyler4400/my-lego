@@ -34,14 +34,9 @@ const emit = defineEmits<{
 
 <style scoped>
 .history-area {
-  position: absolute;
-  right: 0;
-  z-index: 500;
+  display: inline-flex;
 }
 .operation-list {
   display: flex;
-}
-.history-area .bold {
-  font-weight: bold;
 }
 </style>
