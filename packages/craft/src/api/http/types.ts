@@ -23,7 +23,9 @@ export interface MetaResponse<Data> {
 
 /**
  * 扩展 axios 的请求配置
- * - silentToast：抑制所有自动 toast（错误 + 成功），事件依然会发出，业务方可自行订阅处理
+ * - silentError：抑制错误类自动 toast（bizError / systemError / networkError / 兜底 error）；
+ *   事件依然会发出，业务方可自行订阅处理。注意：不影响 401 未授权通知（http:unauthorized 始终弹出）
+ * - silentSuccess：抑制成功 toast，事件依然会发出
  * - silentLoading：抑制全局 loading 进度条
  * - returnRaw：返回完整 MetaResponse 而非 data（用于需要 traceId / requestTime 的场景）
  *
@@ -31,7 +33,8 @@ export interface MetaResponse<Data> {
  * 业务侧只在需要"自定义反馈 UI / 后台静默请求"时才设为 true。
  */
 export interface CraftRequestConfig<RequestBody = unknown> extends AxiosRequestConfig<RequestBody> {
-  silentToast?: boolean
+  silentError?: boolean
+  silentSuccess?: boolean
   silentLoading?: boolean
   returnRaw?: boolean
 }
@@ -39,7 +42,7 @@ export interface CraftRequestConfig<RequestBody = unknown> extends AxiosRequestC
 /**
  * service 函数对外暴露的 config 类型
  * - 比 CraftRequestConfig 收窄：去掉 returnRaw（service 自己决定返回 data 还是 MetaResponse，业务方不应控制）
- * - 业务方可传 silentToast / silentLoading / signal / timeout 等
+ * - 业务方可传 silentError / silentSuccess / silentLoading / signal / timeout 等
  * - useService 内部会通过此类型注入 AbortSignal
  */
 export type ServiceConfig<RequestBody = unknown> = Omit<CraftRequestConfig<RequestBody>, 'returnRaw'>

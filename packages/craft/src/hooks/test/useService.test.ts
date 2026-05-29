@@ -234,13 +234,13 @@ describe('useService', () => {
     it('options.config 被 merge 到 service 收到的 config', () => {
       const harness = createControllableService()
       const { execute } = useService(harness.service, {
-        config: { silentToast: true, silentLoading: true } as any,
+        config: { silentSuccess: true, silentLoading: true } as any,
       })
 
       execute({ q: 1 })
 
       const config = harness.getConfigAt(0)
-      expect(config?.silentToast).toBe(true)
+      expect(config?.silentSuccess).toBe(true)
       expect(config?.silentLoading).toBe(true)
       expect(config?.signal).toBeInstanceOf(AbortSignal)
     })

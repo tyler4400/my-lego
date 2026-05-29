@@ -3,7 +3,7 @@ import type { CraftRequestConfig, MetaResponse } from './types'
 import mitt from 'mitt'
 
 /**
- * 错误事件载荷：包含错误对象与触发该错误的请求 config（用于读取 silentToast 等开关）
+ * 错误事件载荷：包含错误对象与触发该错误的请求 config（用于读取 silentError 等开关）
  */
 export interface HttpErrorPayload {
   error: BizError

@@ -1,20 +1,22 @@
+import type { MaybeRefOrGetter } from 'vue'
 import type { WorkDetailDto } from '@/api/modules/work.ts'
 import { Modal } from 'ant-design-vue'
-import { onBeforeUnmount, watch } from 'vue'
+import { onBeforeUnmount, toValue, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { UNAUTHORIZED_STATUS } from '@/api/http/constants.ts'
 import { getWorkDetail, WORK_ERROR_CODE } from '@/api/modules/work.ts'
 import { useService } from '@/hooks/useService.ts'
 import { useEditorStore } from '@/stores/editor.ts'
 import { useSessionStore } from '@/stores/session.ts'
 
-export const useWork = (rawId: unknown, immediate: boolean = false) => {
+export const useWork = (idSource: MaybeRefOrGetter<unknown>, immediate: boolean = false) => {
   const router = useRouter()
   const editorStore = useEditorStore()
   const sessionStore = useSessionStore()
 
-  // 详情加载：错误反馈统一由下方 Modal 接管，silentToast 抑制全局 toast 避免重复提示
+  // 详情加载：错误反馈统一由下方 Modal 接管（silentError），GET 成功无需 toast（silentSuccess）
   const [doFetchDetail, loadLoading] = useService(getWorkDetail, {
-    config: { silentToast: true },
+    config: { silentError: true, silentSuccess: true, silentLoading: true },
   })
 
   /**
@@ -32,8 +34,8 @@ export const useWork = (rawId: unknown, immediate: boolean = false) => {
     Modal.error({
       title,
       content,
-      okText: '返回首页',
-      onOk: () => router.replace('/'),
+      okText: '返回',
+      onOk: () => router.back(),
     })
   }
 
@@ -46,8 +48,9 @@ export const useWork = (rawId: unknown, immediate: boolean = false) => {
       title: '这是一个公开模版',
       content: '该模版属于其他作者，无法直接编辑。是否复制一份到自己名下进行编辑？',
       okText: '复制一份',
-      cancelText: '关闭',
+      cancelText: '返回',
       onOk: () => Modal.info({ title: '提示', content: '复制模版功能开发中，敬请期待' }),
+      onCancel: () => router.back(),
     })
   }
 
@@ -59,7 +62,7 @@ export const useWork = (rawId: unknown, immediate: boolean = false) => {
   const init = async () => {
     editorStore.reset()
 
-    const id = Number(rawId)
+    const id = Number(toValue(idSource))
     if (!Number.isInteger(id) || id <= 0) {
       // 路由正则已限定数字 id，此处仅作兜底
       showFatalError('作品 ID 非法')
@@ -68,6 +71,7 @@ export const useWork = (rawId: unknown, immediate: boolean = false) => {
 
     const [work, err] = await doFetchDetail(id)
     if (err) {
+      if (err.code === UNAUTHORIZED_STATUS) return // 401 已由全局 http:unauthorized 弹「去登录」
       if (err.code === WORK_ERROR_CODE.NOT_EXIST) {
         showFatalError('作品不存在', '该作品可能已被删除')
         return
@@ -94,7 +98,7 @@ export const useWork = (rawId: unknown, immediate: boolean = false) => {
   if (immediate) init()
 
   // 手动改 URL 切换作品 id 时重新加载（next 为空表示正在离开编辑器，交给 onBeforeUnmount 处理）
-  watch(() => rawId, (next, prev) => {
+  watch(() => toValue(idSource), (next, prev) => {
     if (next && next !== prev) init()
   })
 

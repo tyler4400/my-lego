@@ -59,7 +59,7 @@ export type UseServiceReturn<Data, Args extends any[]> = readonly [
  * - 真实 AbortController：execute 会取消上一次 in-flight 请求（通过 axios signal）
  * - 竞态保护（双保险）：requestId 机制确保即使 abort 失效也只接受最新请求的结果
  * - 取消事件不弹 toast（由 axios cancel 拦截器层面静默处理）
- * - options.config：此 hook 内所有调用共享的 config（如 silentToast），signal 字段被 useService 独占
+ * - options.config：此 hook 内所有调用共享的 config（如 silentError / silentSuccess），signal 字段被 useService 独占
  *   单次特殊化场景请另开一个 useService 实例，或绕过 useService 直接调 service
  * - execute 的参数类型只包含 service 的 body 参数，不含 config（config 由 options 提供）
  * - 返回值同时支持数组与对象解构，按需选用
@@ -78,12 +78,12 @@ export type UseServiceReturn<Data, Args extends any[]> = readonly [
  * }
  * ```
  *
- * @example 配置默认 config（如某接口全程静默）
+ * @example 配置默认 config（如列表接口不弹成功 toast）
  * ```ts
  * const [doFetchList] = useService(api.fetchList, {
- *   config: { silentToast: true },
+ *   config: { silentSuccess: true },
  * })
- * doFetchList(query)  // 所有调用都不会弹 toast
+ * doFetchList(query)  // 成功不弹 toast；错误仍由全局统一提示
  * ```
  *
  * @example 对象解构（需要访问 abort 时）

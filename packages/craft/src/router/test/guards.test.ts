@@ -152,13 +152,13 @@ describe('setupRouterGuards', () => {
       await router.push('/editor')
 
       expect(fetchMeSpy).toHaveBeenCalledTimes(1)
-      // fetchMe 必须用 silentToast 调用，避免与守卫自身的 message.warning 重复
-      expect(fetchMeSpy).toHaveBeenCalledWith({ silentToast: true })
+      // fetchMe 用 silentSuccess 抑制成功 toast；错误提示交给全局 httpHandler
+      expect(fetchMeSpy).toHaveBeenCalledWith({ silentSuccess: true })
       // 拉取成功 → 不再走 requiresAuth 拦截（因为 isLogin=true）
       expect(router.currentRoute.value.name).toBe('editor')
     })
 
-    it('fetchMe 失败 → logout + 取消导航 + 触发 notifyUnauthorized 提示', async () => {
+    it('fetchMe 返回 401 → logout + 取消导航（提示交给全局 httpHandler）', async () => {
       setToken(FAKE_TOKEN)
       const session = useSessionStore()
 
@@ -170,17 +170,33 @@ describe('setupRouterGuards', () => {
 
       await router.push('/editor')
 
-      // 1) 守卫主动登出
+      // 1) 401（token 失效）→ 守卫主动登出
       expect(logoutSpy).toHaveBeenCalledTimes(1)
-      // 2) 守卫委托 notifyUnauthorized 提示“登录失效”，
-      //    具体的 UI 表现（notification + 按钮 + 跳转）由 notifyUnauthorized 自身负责
-      expect(notifyUnauthorizedMock).toHaveBeenCalledTimes(1)
-      expect(notifyUnauthorizedMock).toHaveBeenCalledWith('登录已过期，请重新登录')
+      // 2) 守卫不再直接弹提示：401 notification 由全局 http:unauthorized 接管，避免重复
+      expect(notifyUnauthorizedMock).not.toHaveBeenCalled()
       // 3) 守卫 return false：当前导航被取消，未跳进 /editor
       //    （memory history 此时停留在 START_LOCATION，path 为 '/'）
       expect(router.currentRoute.value.path).not.toBe('/editor')
-      // 4) 不再走 message.warning（防止退化回旧行为）
+      // 4) 不走 message.warning（防止退化回旧行为）
       expect(messageMocks.warning).not.toHaveBeenCalled()
+    })
+
+    it('fetchMe 网络错误（非 401）→ 不登出 + 取消导航（保留登录态）', async () => {
+      setToken(FAKE_TOKEN)
+      const session = useSessionStore()
+
+      vi.spyOn(session, 'fetchMe').mockResolvedValue([
+        null,
+        { type: 'network', code: -1, message: '网络异常，请稍后重试' },
+      ] as any)
+      const logoutSpy = vi.spyOn(session, 'logout')
+
+      await router.push('/editor')
+
+      // 网络 / 服务错误不应清除登录态（避免本地后端重启时被误登出）
+      expect(logoutSpy).not.toHaveBeenCalled()
+      // 导航被取消，停在当前页（不跳进 /editor）
+      expect(router.currentRoute.value.path).not.toBe('/editor')
     })
 
     it('userInfo.id 已有 → 不会重复调 fetchMe', async () => {

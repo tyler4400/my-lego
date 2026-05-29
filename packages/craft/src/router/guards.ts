@@ -2,7 +2,6 @@ import type { Router } from 'vue-router'
 import { message } from 'ant-design-vue'
 import { UNAUTHORIZED_STATUS } from '@/api/http/constants.ts'
 import { useSessionStore } from '@/stores/session'
-import { notifyUnauthorized } from '@/utils/biz/notifyUnauthorized.ts'
 
 /**
  * 路由守卫装配
@@ -14,8 +13,8 @@ import { notifyUnauthorized } from '@/utils/biz/notifyUnauthorized.ts'
  * 设计要点：
  * - title 用 afterEach 而不是 beforeEach/beforeResolve：
  *   afterEach 在导航 100% 确认完成后触发，不会因为后续守卫取消导航而导致 title 与路由不一致
- * - fetchMe 失败（如 token 过期）时守卫主动 logout 并跳登录，
- *   且传 silentToast 让 httpHandler 不弹 401 notification（避免 toast 与守卫 toast 重复）
+ * - fetchMe 仅在 401（token 失效）时主动 logout；网络 / 服务错误保留登录态，
+ *   错误提示统一交给全局 httpHandler，守卫只负责导航控制流（避免提示重复）
  * - 三个重定向分支都用 message 提示用户，让用户知晓页面变化的原因
  */
 
@@ -33,17 +32,15 @@ export const setupRouterGuards = (router: Router) => {
     const session = useSessionStore()
 
     // 1. 有 token 但 userInfo 还未拉取（典型场景：用户刷新页面）→ 兜底拉一次
-    //    silentToast 让全局 401 notification 不弹，由守卫主动接管错误处理
+    //    silentSuccess 抑制无意义的成功 toast；错误提示交给全局 httpHandler 统一接管
     if (session.isLogin && session.userInfo.id === -1) {
-      const [, err] = await session.fetchMe({ silentToast: true })
+      const [, err] = await session.fetchMe({ silentSuccess: true })
       if (err) {
-        if (err?.code === UNAUTHORIZED_STATUS) {
+        // 仅 401（token 失效）才登出；网络 / 服务错误保留登录态，下次导航会自动重试 fetchMe
+        if (err.code === UNAUTHORIZED_STATUS) {
           session.logout()
-          notifyUnauthorized('登录已过期，请重新登录')
-          return false
         }
-
-        message.error(err.message || '网络异常，请稍后重试')
+        // 错误提示由全局 httpHandler 接管（401 → notification 带「去登录」，网络 / 系统 → message），守卫只取消本次导航
         return false
       }
     }

@@ -144,7 +144,7 @@ export const useSessionStore = defineStore('session', () => {
   /**
    * 拉取当前用户信息
    * - 仅写 userInfo，错误透传不做副作用（401 已被全局拦截器接管）
-   * - 守卫场景通常传入 { silentToast: true } 让自身接管错误处理
+   * - 守卫场景通常传入 { silentSuccess: true } 抑制成功 toast，错误交给全局接管
    */
   const fetchMe = async (config?: ServiceConfig) => {
     const [data, err] = await apiGetMe(config)

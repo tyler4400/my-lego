@@ -81,7 +81,7 @@ export class WorkController {
   @Post('update')
   @UseGuards(JwtAuthGuard, WorkPolicyGuard)
   @WorkPolicy(WorkAction.Update)
-  @MetaRes({ message: '编辑作品成功' })
+  @MetaRes({ message: '更新作品成功' })
   @Serialize(WorkDetailDto)
   async update(@Body() dto: WorkUpdateDto) {
     return this.workService.updateMyWork(dto)

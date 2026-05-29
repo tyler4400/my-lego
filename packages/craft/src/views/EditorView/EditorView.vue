@@ -129,7 +129,7 @@ initContextMenu('#edit-wrapper')
 
 // 初始化work
 const route = useRoute()
-const [loadingWork] = useWork(route.params.id, true)
+const [loadingWork] = useWork(() => route.params.id, true)
 
 export type TabType = 'component' | 'layer' | 'page'
 const activeKey = ref<TabType>('component')
