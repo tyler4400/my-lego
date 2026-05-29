@@ -27,8 +27,7 @@ export const setupHttpHandler = () => {
     message.error(error.message || '网络异常，请稍后重试')
   })
 
-  httpBus.on('http:unauthorized', ({ error, config }) => {
-    if (config.silentToast) return
+  httpBus.on('http:unauthorized', ({ error }) => {
     notifyUnauthorized(error.message)
   })
 

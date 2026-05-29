@@ -65,10 +65,11 @@ const router = createRouter({
       component: EditorLayout,
       children: [
         {
-          path: '',
+          // 动态路由：:id 限定为数字，非法 id（如 /editor/abc）直接落到 404 通配
+          path: ':id(\\d+)',
           name: 'editor',
           component: () => import('../views/EditorView'),
-          meta: { title: '编辑器', requiresAuth: true },
+          meta: { title: '编辑我的作品', requiresAuth: true },
         },
       ],
     },

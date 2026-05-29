@@ -534,16 +534,16 @@ describe('useHistoryStore + useEditorStore 集成', () => {
     it('updatePageProp → undo/redo 切换 backgroundColor', () => {
       const history = useHistoryStore()
       const editor = useEditorStore()
-      const oldColor = editor.pageData.props.backgroundColor
+      const oldColor = editor.pageProps.backgroundColor
 
       editor.updatePageProp('backgroundColor', '#ff0000')
-      expect(editor.pageData.props.backgroundColor).toBe('#ff0000')
+      expect(editor.pageProps.backgroundColor).toBe('#ff0000')
 
       history.undo()
-      expect(editor.pageData.props.backgroundColor).toBe(oldColor)
+      expect(editor.pageProps.backgroundColor).toBe(oldColor)
 
       history.redo()
-      expect(editor.pageData.props.backgroundColor).toBe('#ff0000')
+      expect(editor.pageProps.backgroundColor).toBe('#ff0000')
     })
 
     it('updatePageData → undo/redo 切换 title', () => {

@@ -1,3 +1,4 @@
+import type { WorkStatusEnum } from '@/api/modules/work'
 import type { ComponentKey } from '@/components'
 
 export interface ComponentData {
@@ -87,28 +88,40 @@ export interface PageProps {
   height: string
 }
 
+/**
+ * 页面级元信息
+ * - 对应后端 work 表「除 content 外」的顶层列
+ * - 画布样式（背景色等）不在这里，独立为 PageProps（对应 content.props）
+ * - id 即「当前编辑的是哪个作品」的唯一标识；服务端只读字段（status/author/copiedCount 等）仅做展示
+ */
 export interface PageData {
   id?: number
-  props: PageProps
+  uuid?: string
   title?: string
   desc?: string
   coverImg?: string
-  uuid?: string
-  setting?: { [key: string]: any }
+  status?: WorkStatusEnum
   isTemplate?: boolean
+  isPublic?: boolean
   isHot?: boolean
-  isNew?: boolean
   author?: string
   copiedCount?: number
-  status?: number
+  latestPublishAt?: string
+  createdAt?: string
+  updatedAt?: string
   user?: {
-    gender: string
-    nickName: string
-    picture: string
-    userName: string
+    username: string
+    nickName?: string
+    picture?: string
   }
 }
-export type EditablePageField = keyof Omit<PageData, 'id' | 'props' | 'uuid'>
+
+/**
+ * 可在编辑器中编辑、并纳入 history 撤销重做的页面级字段
+ * - 仅限用户可改的元信息（当前只有 title 有编辑入口，desc/coverImg 预留给「作品设置」）
+ * - 服务端只读字段（status/author/copiedCount/user 等）不应进入此集合
+ */
+export type EditablePageField = keyof Pick<PageData, 'title' | 'desc' | 'coverImg'>
 
 export type AllFormProps = TextComponentProps & ImageComponentProps & PageProps
 

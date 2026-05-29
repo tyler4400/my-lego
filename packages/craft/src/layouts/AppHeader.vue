@@ -6,9 +6,9 @@
     <!-- 中段：未登录时为空（视觉上 brand 与右段之间留白） -->
     <nav class="app-header__nav">
       <template v-if="sessionStore.isLogin">
-        <Button type="primary" class="app-header__cta" @click="handleCreate">
+        <Button type="primary" class="app-header__cta" :loading="creating" @click="handleCreate">
           <PlusOutlined />
-          创建海报
+          创建作品
         </Button>
         <Button class="app-header__cta" @click="handleWork">
           <FolderOutlined />
@@ -32,6 +32,9 @@ import { FolderOutlined, PlusOutlined } from '@ant-design/icons-vue'
 import { Button } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
 
+import { createWork } from '@/api/modules/work'
+import { useService } from '@/hooks/useService'
+import { defaultPageProps } from '@/stores/editor'
 import { useSessionStore } from '@/stores/session'
 import AppBrand from './AppBrand.vue'
 import UserMenu from './UserMenu.vue'
@@ -39,7 +42,19 @@ import UserMenu from './UserMenu.vue'
 const sessionStore = useSessionStore()
 
 const router = useRouter()
-const handleCreate = () => router.push('/editor')
+
+// 创建空白作品后跳转到对应编辑器；按钮自带 loading，失败由全局拦截器 toast
+const [doCreateWork, creating] = useService(createWork)
+
+const handleCreate = async () => {
+  const [work, err] = await doCreateWork({
+    title: '未命名作品',
+    content: { components: [], props: { ...defaultPageProps } },
+  })
+  if (err || !work) return
+  router.push(`/editor/${work.id}`)
+}
+
 const handleWork = () => router.push('/works')
 const handleLogin = () => router.push('/login')
 </script>

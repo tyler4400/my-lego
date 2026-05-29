@@ -15,25 +15,27 @@
       </LayoutSider>
       <LayoutContent class="preview-container" style="padding: 0 24px 24px">
         <p>画布区域</p>
-        <div id="canvas-area" ref="canvasArea" class="preview-list">
-          <div class="body-container" :style="editorStore.pageData.props">
-            <EditWrapper
-              v-for="comp in editorStore.components"
-              v-show="!comp.isHidden"
-              id="edit-wrapper"
-              :key="comp.id"
-              :active="editorStore.currentElement?.id === comp.id"
-              :comp="comp"
-              @setActive="editorStore.setCurrentElement"
-              @updatePosition="handlePositionChange"
-            >
-              <component
-                :is="componentMap[comp.name]"
-                v-bind="comp.props"
-              />
-            </EditWrapper>
+        <Spin :spinning="loadingWork" tip="正在加载作品..." size="large">
+          <div id="canvas-area" ref="canvasArea" class="preview-list">
+            <div class="body-container" :style="editorStore.pageProps">
+              <EditWrapper
+                v-for="comp in editorStore.components"
+                v-show="!comp.isHidden"
+                id="edit-wrapper"
+                :key="comp.id"
+                :active="editorStore.currentElement?.id === comp.id"
+                :comp="comp"
+                @setActive="editorStore.setCurrentElement"
+                @updatePosition="handlePositionChange"
+              >
+                <component
+                  :is="componentMap[comp.name]"
+                  v-bind="comp.props"
+                />
+              </EditWrapper>
+            </div>
           </div>
-        </div>
+        </Spin>
         <pre>
               {{ editorStore.pageData }}
           </pre>
@@ -64,7 +66,7 @@
               :compProps="editorStore.currentElement?.props"
               :currentElementId="editorStore.currentElement?.id"
               :propGroup="compPropGroupList"
-              defaultActiveKey="position"
+              defaultActiveKey="content"
               @change="handleCompChange"
             />
             <div v-else>
@@ -86,7 +88,7 @@
           </TabPane>
           <TabPane key="page" tab="页面设置">
             <PropsTable
-              :compProps="editorStore.pageData.props"
+              :compProps="editorStore.pageProps"
               :propGroup="pagePropGroupPropList"
               defaultActiveKey="background"
               @change="handlePagePropChange"
@@ -105,14 +107,16 @@
 import type { PositionPayload } from '@/components/EditWrapper'
 import type { CompFieldKey, ComponentData, EditableCompField, PageProps } from '@/types/editor.ts'
 import { isNullOrUndefined } from '@my-lego/shared'
-import { Alert, Button, Empty, Layout, LayoutContent, LayoutSider, TabPane, Tabs } from 'ant-design-vue'
+import { Alert, Button, Empty, Layout, LayoutContent, LayoutSider, Spin, TabPane, Tabs } from 'ant-design-vue'
 import { provide, ref, useTemplateRef } from 'vue'
+import { useRoute } from 'vue-router'
 import { componentMap } from '@/components'
 import ComponentList from '@/components/ComponentList.vue'
 import EditWrapper from '@/components/EditWrapper'
 import LayerList from '@/components/LayerList'
 import PropsTable from '@/components/PropsTable'
 import { defaultTextTemplates } from '@/defaultTemplates.ts'
+import { useWork } from '@/hooks/useWork.ts'
 import { useEditorStore } from '@/stores/editor.ts'
 import { canvasKey } from '@/views/EditorView/canvasContext.ts'
 import { compPropGroupList, pagePropGroupPropList } from '@/views/EditorView/config.ts'
@@ -122,6 +126,10 @@ import initHotKeys from '@/views/EditorView/plugin/hotKeysPlugin.ts'
 // 插件
 initHotKeys()
 initContextMenu('#edit-wrapper')
+
+// 初始化work
+const route = useRoute()
+const [loadingWork] = useWork(route.params.id, true)
 
 export type TabType = 'component' | 'layer' | 'page'
 const activeKey = ref<TabType>('component')

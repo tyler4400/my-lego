@@ -1,5 +1,6 @@
 import type { Router } from 'vue-router'
 import { message } from 'ant-design-vue'
+import { UNAUTHORIZED_STATUS } from '@/api/http/constants.ts'
 import { useSessionStore } from '@/stores/session'
 import { notifyUnauthorized } from '@/utils/biz/notifyUnauthorized.ts'
 
@@ -36,8 +37,13 @@ export const setupRouterGuards = (router: Router) => {
     if (session.isLogin && session.userInfo.id === -1) {
       const [, err] = await session.fetchMe({ silentToast: true })
       if (err) {
-        session.logout()
-        notifyUnauthorized('登录已过期，请重新登录')
+        if (err?.code === UNAUTHORIZED_STATUS) {
+          session.logout()
+          notifyUnauthorized('登录已过期，请重新登录')
+          return false
+        }
+
+        message.error(err.message || '网络异常，请稍后重试')
         return false
       }
     }

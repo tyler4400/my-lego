@@ -133,7 +133,7 @@ const handleGoBack = () => {
   border-radius: 24px;
   box-shadow: 0 24px 60px -20px rgba(45, 27, 105, 0.35);
   user-select: none;
-  animation: floating 6s ease-in-out infinite;
+  animation: floating 3s ease-in-out infinite;
 }
 
 /* 椭圆投影：缩放与浮动反向呼应，营造图片"离开地面"的真实感 */

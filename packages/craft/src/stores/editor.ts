@@ -1,171 +1,44 @@
+import type { WorkDetailDto, WorkUpdateReq } from '@/api/modules/work.ts'
 import type { AllFormProps, CompFieldKey, ComponentData, EditableCompField, EditablePageField, PageData, PageProps } from '@/types/editor.ts'
 import { isNumber } from '@my-lego/shared'
 import { cloneDeep } from 'lodash-es'
 import { defineStore } from 'pinia'
 import { v4 as uuidv4 } from 'uuid'
 import { reactive, readonly, ref } from 'vue'
-import { imageDefaultProps, textDefaultProps } from '@/components/defaultProps.ts'
 import { useHistoryStore } from '@/stores/history.ts'
 
-const testComponents: ComponentData[] = [
-  {
-    id: uuidv4(),
-    name: 'LText',
-    layerName: '元素1',
-    props: {
-      ...textDefaultProps,
-      text: '你好呀',
-      fontSize: '20px',
-      color: '#f5222d',
-      lineHeight: '1',
-      textAlign: 'left',
-      fontFamily: '',
-      fontStyle: 'normal',
-      fontWeight: 'normal',
-      textDecoration: 'none',
-      position: 'absolute',
-      top: '10px',
-      left: '1px',
-    },
-  },
-  {
-    id: uuidv4(),
-    name: 'LText',
-    layerName: '元素2',
-    props: {
-      ...textDefaultProps,
-      text: 'hello2',
-      fontSize: '10px',
-      fontWeight: 'bold',
-      lineHeight: '2',
-      textAlign: 'left',
-      fontFamily: '',
-      position: 'absolute',
-      top: '300px',
-      left: '100px',
-    },
-  },
-  // {
-  //   id: uuidv4(),
-  //   name: 'LText',
-  //   layerName: '元素3',
-  //   props: {
-  //     ...textDefaultProps,
-  //     text: '一个链接',
-  //     fontSize: '15px',
-  //     actionType: 'url',
-  //     url: 'https://www.imooc-lego.com/',
-  //     lineHeight: '3',
-  //     textAlign: 'left',
-  //     fontFamily: '',
-  //     position: 'relative',
-  //   },
-  // },
-  {
-    name: 'LImage',
-    id: uuidv4(),
-    layerName: '元素4',
-    props: {
-      ...imageDefaultProps,
-      src: 'http://typescript-vue.oss-cn-beijing.aliyuncs.com/vue-marker/69cf21f8b558154f039349b0.jpg',
-      actionType: '',
-      url: '',
-      paddingLeft: '0px',
-      paddingRight: '0px',
-      paddingTop: '0px',
-      paddingBottom: '0px',
-      borderStyle: 'none',
-      borderColor: '#000',
-      borderWidth: '0',
-      borderRadius: '0',
-      boxShadow: '0 0 0 #000000',
-      opacity: '1',
-      position: 'absolute',
-      top: '100px',
-      left: '100px',
-      width: '130px',
-      height: '100px',
-    },
-  },
-  // {
-  //   name: 'LImage',
-  //   id: uuidv4(),
-  //   layerName: '元素5',
-  //   props: {
-  //     ...imageDefaultProps,
-  //     src: 'http://typescript-vue.oss-cn-beijing.aliyuncs.com/vue-marker/69cf69d4b558154f039349b1.png',
-  //     actionType: '',
-  //     url: '',
-  //     height: '',
-  //     width: '373px',
-  //     paddingLeft: '0px',
-  //     paddingRight: '0px',
-  //     paddingTop: '0px',
-  //     paddingBottom: '0px',
-  //     borderStyle: 'none',
-  //     borderColor: '#000',
-  //     borderWidth: '0',
-  //     borderRadius: '0',
-  //     boxShadow: '0 0 0 #000000',
-  //     opacity: '1',
-  //     position: 'relative',
-  //     // position: 'absolute',
-  //     left: '0',
-  //     top: '0',
-  //     right: '0',
-  //   },
-  // },
-  // {
-  //   name: 'LImage',
-  //   layerName: '元素6',
-  //   id: uuidv4(),
-  //   props: {
-  //     ...imageDefaultProps,
-  //     src: 'http://typescript-vue.oss-cn-beijing.aliyuncs.com/vue-marker/69d4d224b558154f039349b2.jpg',
-  //     actionType: '',
-  //     url: '',
-  //     height: '',
-  //     width: '258px',
-  //     paddingLeft: '0px',
-  //     paddingRight: '0px',
-  //     paddingTop: '0px',
-  //     paddingBottom: '0px',
-  //     borderStyle: 'none',
-  //     borderColor: '#000',
-  //     borderWidth: '0',
-  //     borderRadius: '0',
-  //     boxShadow: '0 0 0 #000000',
-  //     opacity: '1',
-  //     position: 'relative',
-  //     // position: 'absolute',
-  //     left: '0',
-  //     top: '0',
-  //     right: '0',
-  //   },
-  // },
-]
-
-const pageDefaultProps = {
+/**
+ * 页面级样式默认值（对应后端 content.props）
+ * - export 供「创建空白作品」时拼装初始 content 复用
+ * - 使用处一律 spread 拷贝，避免共享同一引用被意外修改
+ */
+export const defaultPageProps: PageProps = {
   backgroundColor: '#ffffff',
   backgroundImage: '',
-  // backgroundImage: 'url("http://typescript-vue.oss-cn-beijing.aliyuncs.com/vue-marker/69e9f073b558154f039349eb.jpg")',
   backgroundRepeat: 'no-repeat',
   backgroundSize: 'cover',
   height: '560px',
 }
 
+/**
+ * 页面级元信息默认值（空白作品）
+ * - 工厂函数，避免多处复用时共享同一对象引用
+ */
+export const createDefaultPageData = (): PageData => ({
+  title: '未命名作品',
+})
+
 export const useEditorStore = defineStore('editor', () => {
-  // 供中间编辑器渲染的数组
-  const components = reactive<ComponentData[]>(testComponents)
+  // 供中间编辑器渲染的元素数组
+  const components = reactive<ComponentData[]>([])
   // 当前编辑的是哪个元素
   const currentElement = ref<ComponentData>()
   // 当前复制的是哪个元素
   const copiedElement = ref<ComponentData>()
-  // 编辑页的整体页面信息
-  const pageData = ref<PageData>({
-    props: pageDefaultProps,
-    title: '未命名作品',
-  })
+  // 页面级样式（对应后端 content.props）
+  const pageProps = ref<PageProps>({ ...defaultPageProps })
+  // 页面级元信息（对应后端 work 表除 content 外的顶层列）
+  const pageData = ref<PageData>(createDefaultPageData())
 
   const setCurrentElement = (id?: string) => {
     if (id) {
@@ -252,8 +125,8 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   const updatePageProp = <T extends keyof PageProps>(key: T, value: PageProps[T]) => {
-    const oldValue = pageData.value.props[key]
-    pageData.value.props[key] = value
+    const oldValue = pageProps.value[key]
+    pageProps.value[key] = value
 
     useHistoryStore().pushAction({
       actionType: 'updatePage',
@@ -322,21 +195,92 @@ export const useEditorStore = defineStore('editor', () => {
     useHistoryStore().compose(fn)
   }
 
+  /**
+   * 重置编辑器到空白态（离开编辑器、切换作品前调用）
+   */
+  const reset = () => {
+    components.splice(0, components.length)
+    pageProps.value = { ...defaultPageProps }
+    pageData.value = createDefaultPageData()
+    currentElement.value = undefined
+    copiedElement.value = undefined
+
+    useHistoryStore().clear()
+  }
+
+  /**
+   * 用作品详情回填编辑器状态（进入编辑器时调用）
+   * - content.components → components（整批替换，深拷贝避免与服务端数据互相引用）
+   * - content.props → pageProps（缺省回落默认值，兼容空/旧数据）
+   * - work 顶层列 → pageData
+   * - 重置选中态/复制态，并清空历史栈（新作品是全新基线，不可撤销到上一个作品）
+   */
+  const applyDetail = (work: WorkDetailDto) => {
+    reset()
+    const nextComponents = work.content?.components ?? []
+    components.splice(0, components.length, ...cloneDeep(nextComponents))
+
+    pageProps.value = { ...defaultPageProps, ...work.content?.props }
+
+    pageData.value = {
+      id: work.id,
+      uuid: work.uuid,
+      title: work.title,
+      desc: work.desc,
+      coverImg: work.coverImg,
+      status: work.status,
+      isTemplate: work.isTemplate,
+      isPublic: work.isPublic,
+      isHot: work.isHot,
+      author: work.author,
+      copiedCount: work.copiedCount,
+      latestPublishAt: work.latestPublishAt,
+      createdAt: work.createdAt,
+      updatedAt: work.updatedAt,
+      user: work.user ?? undefined,
+    }
+  }
+
+  /**
+   * 序列化当前编辑器状态为「编辑作品」请求体
+   * - 无 id（如未加载作品/模版非本人）时返回 null，调用方据此拦截保存
+   * - components/props 均做拷贝，避免请求体与响应式状态互相引用
+   */
+  const toUpdateBody = (): WorkUpdateReq | null => {
+    const id = pageData.value.id
+    if (!id) return null
+
+    return {
+      id,
+      title: pageData.value.title,
+      desc: pageData.value.desc,
+      coverImg: pageData.value.coverImg,
+      content: {
+        components: cloneDeep(components),
+        props: { ...pageProps.value },
+      },
+    }
+  }
+
   return {
     components: readonly(components),
     currentElement: readonly(currentElement),
     copiedElement: readonly(copiedElement),
+    pageProps: readonly(pageProps),
+    pageData: readonly(pageData),
     addComponent,
     setCurrentElement,
     updateCompProp,
     updateCompData,
     reorder,
-    pageData: readonly(pageData),
     updatePageData,
     updatePageProp,
     copyElement,
     pasteElement,
     removeElement,
     batchUpdate,
+    applyDetail,
+    reset,
+    toUpdateBody,
   }
 })

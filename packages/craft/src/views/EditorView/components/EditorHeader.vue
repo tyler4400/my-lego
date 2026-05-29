@@ -28,7 +28,7 @@
           <SettingOutlined />
           作品设置
         </Button>
-        <Button @click="handleSave">
+        <Button :loading="saving" :disabled="!canSave" @click="handleSave">
           <SaveOutlined />
           保存
         </Button>
@@ -53,6 +53,8 @@ import {
 } from '@ant-design/icons-vue'
 import { Button, message, TypographyParagraph } from 'ant-design-vue'
 import { computed } from 'vue'
+import { updateWork } from '@/api/modules/work'
+import { useService } from '@/hooks/useService'
 import AppBrand from '@/layouts/AppBrand.vue'
 import UserMenu from '@/layouts/UserMenu.vue'
 import { useEditorStore } from '@/stores/editor'
@@ -61,6 +63,10 @@ import HistoryArea from './HistoryArea.vue'
 
 const editorStore = useEditorStore()
 const historyStore = useHistoryStore()
+
+// 保存：按钮自带 loading，保存中 / 无作品（如他人模版空白态）时禁用
+const [doSave, saving] = useService(updateWork)
+const canSave = computed(() => Boolean(editorStore.pageData.id))
 
 const TITLE_PLACEHOLDER = '未命名作品'
 const title = computed(() => editorStore.pageData.title || TITLE_PLACEHOLDER)
@@ -78,7 +84,21 @@ const handleRenameTitle = (next: string) => {
 
 const handlePreview = () => message.info('预览功能开发中')
 const handleSettings = () => message.info('作品设置功能开发中')
-const handleSave = () => message.info('保存功能开发中')
+
+/**
+ * 保存当前作品
+ * - toUpdateBody 无 id（无作品/他人模版）时拦截，提示但不发请求
+ * - 失败由全局拦截器 toast，这里只处理成功反馈
+ */
+const handleSave = async () => {
+  const body = editorStore.toUpdateBody()
+  if (!body) {
+    message.warning('当前没有可保存的作品')
+    return
+  }
+  await doSave(body)
+}
+
 const handlePublish = () => message.info('发布功能开发中')
 </script>
 
