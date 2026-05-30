@@ -16,7 +16,7 @@ export const useWork = (idSource: MaybeRefOrGetter<unknown>, immediate: boolean 
 
   // 详情加载：错误反馈统一由下方 Modal 接管（silentError），GET 成功无需 toast（silentSuccess）
   const [doFetchDetail, loadLoading] = useService(getWorkDetail, {
-    config: { silentError: true, silentSuccess: true, silentLoading: true },
+    config: { silentError: true, silentSuccess: true },
   })
 
   /**
@@ -73,7 +73,7 @@ export const useWork = (idSource: MaybeRefOrGetter<unknown>, immediate: boolean 
     if (err) {
       if (err.code === UNAUTHORIZED_STATUS) return // 401 已由全局 http:unauthorized 弹「去登录」
       if (err.code === WORK_ERROR_CODE.NOT_EXIST) {
-        showFatalError('作品不存在', '该作品可能已被删除')
+        showFatalError('作品不存在', '该作品可能已被删除或未公开')
         return
       }
       if (err.code === WORK_ERROR_CODE.NO_PERMISSION || err.code === WORK_ERROR_CODE.NO_PUBLIC) {

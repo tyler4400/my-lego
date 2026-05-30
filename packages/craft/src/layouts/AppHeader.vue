@@ -63,7 +63,7 @@ const handleLogin = () => router.push('/login')
 .app-header {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 200;
   display: flex;
   align-items: center;
   padding: 0 24px;

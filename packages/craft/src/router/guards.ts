@@ -11,8 +11,9 @@ import { useSessionStore } from '@/stores/session'
  * - afterEach：根据 meta.title 设置 document.title（拼接站点名与宣传语）
  *
  * 设计要点：
- * - title 用 afterEach 而不是 beforeEach/beforeResolve：
- *   afterEach 在导航 100% 确认完成后触发，不会因为后续守卫取消导航而导致 title 与路由不一致
+ * - title 用 afterEach 而不是 beforeEach/beforeResolve：在导航确认后再设置，避免提前改动
+ * - afterEach 在导航被取消 / 中止 / 重定向时也会触发（第三参为 NavigationFailure），
+ *   故失败时直接 return，避免「离开守卫取消导航后 title 却变成目标页」的问题
  * - fetchMe 仅在 401（token 失效）时主动 logout；网络 / 服务错误保留登录态，
  *   错误提示统一交给全局 httpHandler，守卫只负责导航控制流（避免提示重复）
  * - 三个重定向分支都用 message 提示用户，让用户知晓页面变化的原因
@@ -58,7 +59,9 @@ export const setupRouterGuards = (router: Router) => {
     }
   })
 
-  router.afterEach((to) => {
+  router.afterEach((to, _from, failure) => {
+    // 导航被取消 / 中止 / 重定向时不改 title（重定向后的成功导航会再设置正确 title）
+    if (failure) return
     document.title = buildTitle(to.meta.title)
   })
 }

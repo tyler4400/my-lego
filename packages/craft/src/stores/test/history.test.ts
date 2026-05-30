@@ -226,8 +226,7 @@ describe('useHistoryStore - 纯逻辑', () => {
       history.pushAction(createUpdateCompInput('c1', 'fontSize', '14px', '16px'))
       expect(history.histories.length).toBe(1)
 
-      // 推时间避免与下一条 update 合并；改用 add 制造 forward
-      vi.advanceTimersByTime(2000)
+      // add 与 update 不会合并，用它在 [0] 之后制造一条 forward 记录（保持时间窗内）
       history.pushAction(createAddInput('c2'))
       expect(history.histories.length).toBe(2)
 
@@ -236,7 +235,7 @@ describe('useHistoryStore - 纯逻辑', () => {
       expect(history.historyIndex).toBe(0)
       expect(history.canRedo).toBe(true)
 
-      // 再 push 一条能与 [0] 合并的 update（时间窗内、各字段一致）
+      // 再 push 一条能与 [0] 合并的 update（[0] 自身 pushAt 仍在时间窗内、各字段一致）
       history.pushAction(createUpdateCompInput('c1', 'fontSize', '16px', '20px'))
 
       // 合并 + forward 裁剪：length=1，最新 newValue=20px，redo 不可用
@@ -599,6 +598,80 @@ describe('useHistoryStore + useEditorStore 集成', () => {
       // undo 内部触发 editor.removeElement，editor 又会尝试 push 一条 remove
       // 但 isApplying=true 守卫住，最终 histories 长度不变
       expect(history.histories.length).toBe(lengthBefore)
+    })
+  })
+
+  describe('dirty 与 markSaved（基于历史游标版本）', () => {
+    it('空栈 isDirty=false；编辑后置脏；markSaved 后变干净', () => {
+      const history = useHistoryStore()
+      const editor = useEditorStore()
+
+      expect(history.isDirty).toBe(false)
+
+      editor.addComponent(createImageComponent({ id: 'dirty-1' }))
+      expect(history.isDirty).toBe(true)
+
+      history.markSaved(history.currentVersionId)
+      expect(history.isDirty).toBe(false)
+    })
+
+    it('保存后 undo 回到保存点变干净，redo 离开保存点又变脏', () => {
+      const history = useHistoryStore()
+      const editor = useEditorStore()
+
+      editor.addComponent(createImageComponent({ id: 'dirty-a' }))
+      history.markSaved(history.currentVersionId) // 在 a 处保存
+      expect(history.isDirty).toBe(false)
+
+      vi.advanceTimersByTime(2000)
+      editor.addComponent(createImageComponent({ id: 'dirty-b' }))
+      expect(history.isDirty).toBe(true)
+
+      history.undo() // 回到保存点 a
+      expect(history.isDirty).toBe(false)
+
+      history.redo() // 前进到 b，离开保存点
+      expect(history.isDirty).toBe(true)
+    })
+
+    it('clear 后 isDirty=false', () => {
+      const history = useHistoryStore()
+      const editor = useEditorStore()
+
+      editor.addComponent(createImageComponent({ id: 'dirty-clear' }))
+      expect(history.isDirty).toBe(true)
+
+      history.clear()
+      expect(history.isDirty).toBe(false)
+    })
+  })
+
+  describe('合并闸门：非脏（已保存版本）不并入栈顶', () => {
+    it('脏状态下同属性编辑合并到栈顶（不新增记录）', () => {
+      const history = useHistoryStore()
+      const editor = useEditorStore()
+      editor.addComponent(createImageComponent({ id: 'merge-1' }))
+      editor.updateCompProp('opacity', '0.5', 'merge-1') // 记录 B（updateComp）
+
+      const lenBefore = history.histories.length
+      editor.updateCompProp('opacity', '0.7', 'merge-1') // 脏 + 同属性 + 时间窗内 → 合并进 B
+      expect(history.histories.length).toBe(lenBefore)
+    })
+
+    it('markSaved 后同属性编辑不合并，而是提交新记录并重新置脏', () => {
+      const history = useHistoryStore()
+      const editor = useEditorStore()
+      editor.addComponent(createImageComponent({ id: 'merge-2' }))
+      editor.updateCompProp('opacity', '0.5', 'merge-2') // 记录 B
+
+      const lenBeforeSave = history.histories.length
+      history.markSaved(history.currentVersionId) // 在 B 处保存
+      expect(history.isDirty).toBe(false)
+
+      // 同属性、时间窗内：仅靠 isDirty 闸门阻止合并 → 应提交新记录
+      editor.updateCompProp('opacity', '0.7', 'merge-2')
+      expect(history.histories.length).toBe(lenBeforeSave + 1)
+      expect(history.isDirty).toBe(true)
     })
   })
 })

@@ -48,9 +48,11 @@ export interface ActionPayloadMap {
 /**
  * 单条历史记录的联合类型
  * actionType 与对应 payload 一一绑定，在 switch (h.actionType) 中可被自动收窄
+ * - pushAt：该记录最后一次入栈/合并的时间戳，统一在 commitRecord / 合并时赋值；
+ *   既用于「高频合并时间窗」判断，也作为自动保存防抖的触发源（游标处记录的 pushAt 变化即一次编辑）
  */
 export type ActionHistory = {
-  [K in keyof ActionPayloadMap]: { id: string, actionType: K } & ActionPayloadMap[K]
+  [K in keyof ActionPayloadMap]: { id: string, pushAt?: number, actionType: K } & ActionPayloadMap[K]
 }[keyof ActionPayloadMap]
 
 /**

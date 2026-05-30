@@ -107,11 +107,30 @@ export const useHistoryStore = defineStore('history', () => {
   const canUndo = computed(() => historyIndex.value >= 0 && histories.value.length > 0)
   const canRedo = computed(() => historyIndex.value < histories.value.length - 1)
 
+  // 上次保存时游标处记录的 id（null = 空基线 / historyIndex=-1）
+  const savedVersionId = ref<string | null>(null)
+  // 当前游标处记录的 id（标识当前文档版本）
+  const currentVersionId = computed(() =>
+    historyIndex.value >= 0 ? histories.value[historyIndex.value]?.id ?? null : null,
+  )
+  // 相对「上次保存」是否有改动
+  const isDirty = computed(() => currentVersionId.value !== savedVersionId.value)
+  // 当前游标处记录的入栈/合并时间：既作合并时间窗参照，也作自动保存防抖触发源
+  const lastPushAt = computed(() =>
+    historyIndex.value >= 0 ? histories.value[historyIndex.value]?.pushAt ?? 0 : 0,
+  )
+
+  /**
+   * 标记「已保存到某个版本」
+   * - 必须传入「发起保存那一刻」的版本，而非保存返回时的 currentVersionId，
+   *   否则保存请求飞行途中的编辑会被误判为已保存（静默丢数据）
+   */
+  const markSaved = (version: string | null) => {
+    savedVersionId.value = version
+  }
+
   // 是否正处于 undo/redo 重放过程，重放期间触发的 pushAction 会被忽略，防止递归入栈
   let isApplying = false
-
-  // 最后入栈时间
-  let lastPushAt = 0
 
   // 事务相关api
   let composing = 0
@@ -168,6 +187,9 @@ export const useHistoryStore = defineStore('history', () => {
       histories.value.splice(historyIndex.value + 1)
     }
 
+    // 记录入栈时间（替代原模块级 lastPushAt，时间戳跟着记录走）
+    record.pushAt = Date.now()
+
     // 核心: 入栈
     histories.value.push(record)
     historyIndex.value++ // 游标位置始终跟着栈走
@@ -177,8 +199,6 @@ export const useHistoryStore = defineStore('history', () => {
       histories.value.shift()
       historyIndex.value-- // ⚠️ shift 后必须 historyIndex--，否则游标错位
     }
-
-    lastPushAt = Date.now()
   }
   /**
    * pushAction 的职责变成"前置过滤 + 路由"：
@@ -207,7 +227,9 @@ export const useHistoryStore = defineStore('history', () => {
     // 栈顶合并 // 因为我们在上一步丢弃了forward，所以这样写也OK： const top = histories.value[histories.value.length - 1]
     const top = histories.value[historyIndex.value]
     const now = Date.now()
-    if (top && (now - lastPushAt) < MERGE_WINDOW_MS && canMerge(top, action)) {
+    // isDirty 闸门：处于「已保存版本」时不并入栈顶，改提交新记录，
+    // 否则合并会原地改写已保存的记录、游标 id 不变 → 漏判脏（保存后丢数据）
+    if (top && isDirty.value && (now - (top.pushAt ?? 0)) < MERGE_WINDOW_MS && canMerge(top, action)) {
       // 此时 top 的 actionType 一定是 updateComp或者updatePage，data 一定有 newValue
       (top.data as any).newValue = (action as any).data.newValue
 
@@ -215,8 +237,8 @@ export const useHistoryStore = defineStore('history', () => {
       if (historyIndex.value < histories.value.length - 1) {
         histories.value.splice(historyIndex.value + 1)
       }
-      // 刷新入栈时间
-      lastPushAt = now
+      // 刷新入栈时间（记录级）
+      top.pushAt = now
     }
     else {
       // 不能栈顶合并就入栈
@@ -227,6 +249,8 @@ export const useHistoryStore = defineStore('history', () => {
   const clear = () => {
     historyIndex.value = -1
     histories.value = []
+    // 加载/重置后游标=null=savedVersion → 干净（不脏）
+    savedVersionId.value = null
   }
 
   const undo = () => {
@@ -265,6 +289,10 @@ export const useHistoryStore = defineStore('history', () => {
   return {
     historyIndex: readonly(historyIndex),
     histories: readonly(histories),
+    isDirty,
+    currentVersionId,
+    lastPushAt,
+    markSaved,
     pushAction,
     clear,
     undo,

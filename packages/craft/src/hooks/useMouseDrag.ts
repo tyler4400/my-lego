@@ -44,7 +44,8 @@ export const useMouseDrag = (
 
   const handleMouseUp = (): void => {
     startMouseY = startMouseX = null
-    onMove?.(deltaX, deltaY, true)
+    // 净位移为 0（纯点击 / 拖走又拖回原点）不提交，避免「点击选中」被当成位置变更
+    if (deltaX !== 0 || deltaY !== 0) onMove?.(deltaX, deltaY, true)
 
     document.removeEventListener('mousemove', handleMove)
     document.removeEventListener('mouseup', handleMouseUp)
