@@ -9,7 +9,7 @@ import { useService } from '@/hooks/useService.ts'
 import { useEditorStore } from '@/stores/editor.ts'
 import { useSessionStore } from '@/stores/session.ts'
 
-export const useWork = (idSource: MaybeRefOrGetter<unknown>, immediate: boolean = false) => {
+export const useFetchWork = (idSource: MaybeRefOrGetter<unknown>, immediate: boolean = false) => {
   const router = useRouter()
   const editorStore = useEditorStore()
   const sessionStore = useSessionStore()

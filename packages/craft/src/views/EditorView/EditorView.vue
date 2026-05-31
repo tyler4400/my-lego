@@ -116,7 +116,7 @@ import EditWrapper from '@/components/EditWrapper'
 import LayerList from '@/components/LayerList'
 import PropsTable from '@/components/PropsTable'
 import { defaultTextTemplates } from '@/defaultTemplates.ts'
-import { useWork } from '@/hooks/useWork.ts'
+import { useFetchWork } from '@/hooks/useFetchWork.js'
 import { useEditorStore } from '@/stores/editor.ts'
 import { canvasKey } from '@/views/EditorView/canvasContext.ts'
 import { compPropGroupList, pagePropGroupPropList } from '@/views/EditorView/config.ts'
@@ -129,7 +129,7 @@ initContextMenu('#edit-wrapper')
 
 // 初始化work
 const route = useRoute()
-const [loadingWork] = useWork(() => route.params.id, true)
+const [loadingWork] = useFetchWork(() => route.params.id, true)
 
 export type TabType = 'component' | 'layer' | 'page'
 const activeKey = ref<TabType>('component')

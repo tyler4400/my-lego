@@ -71,7 +71,11 @@ export const useSaveWork = () => {
   // 自动保存：监听 [游标位置, 栈顶记录时间]（commit/undo/redo 靠 index、合并靠 pushAt）
   // 防抖 + 封顶；受开关 + dirty 双门控
   watchDebounced(
-    [() => historyStore.historyIndex, () => historyStore.lastPushAt],
+    [
+      () => historyStore.historyIndex,
+      () => historyStore.lastPushAt,
+      () => autoSaveEnabled.value,
+    ],
     () => {
       if (autoSaveEnabled.value && historyStore.isDirty) save()
     },
