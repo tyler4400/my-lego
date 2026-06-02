@@ -15,12 +15,14 @@ import { WorkUpdateDto } from '@/module/work/dto/work-update.dto'
  *
  * 说明：
  * - title/content 在 CreateDto 中是必填，这里也设为必填
- * - 其他字段允许缺省，交给 mongoose default 或业务自行填充
+ * - 不允许在创建时设置 isPublic / isTemplate / isHot：
+ *   - isPublic / isTemplate 受「必须 Published」约束，新建作品状态为 Initial，违反约束
+ *   - isHot 是运营标记，本期不在创建链路开放
  */
 type CreateWorkInput
   = Required<Pick<Work, 'title'>>
     & { content: NonNullable<Work['content']> }
-    & Partial<Pick<Work, 'desc' | 'coverImg' | 'isTemplate' | 'isPublic' | 'isHot'>>
+    & Partial<Pick<Work, 'desc' | 'coverImg'>>
 
 @Injectable()
 export class WorkService {
@@ -152,7 +154,7 @@ export class WorkService {
   }
 
   /**
-   * 发布为模版：要求 status 已是 Published；不可重复；同时 isTemplate/isPublic 置 true
+   * 发布为模版：要求 status 已是 Published；不可重复；同时 isTemplate 置 true，isPublic可以为false，可以是私有模板
    */
   async publishTemplate(id: number) {
     const existing = await this.findWorkByIdOrThrow(id)
@@ -168,7 +170,7 @@ export class WorkService {
     const updated = await this.workModel
       .findOneAndUpdate(
         { id, isTemplate: { $ne: true }, status: WorkStatusEnum.Published },
-        { $set: { isTemplate: true, isPublic: true } },
+        { $set: { isTemplate: true } },
         { new: true },
       )
       .populate({ path: 'user', select: 'username nickName picture' })
@@ -176,6 +178,38 @@ export class WorkService {
 
     if (!updated) {
       throw new BizException({ errorKey: 'workAlreadyTemplateFail' })
+    }
+
+    return updated
+  }
+
+  /**
+   * 切换作品公开性（isPublic）
+   *
+   * 业务约束：
+   * - 仅 status=Published 的作品才允许调用本接口（无论目标 isPublic 是 true 还是 false）
+   *   原因：未发布的作品不在 H5 渲染白名单内（H5 只看 Published），也不会出现在任何
+   *   对外的可见性列表里，所以「公开/私有」对它没有业务意义。
+   * - 该数据完整性约束对所有角色（含 admin）一视同仁。
+   */
+  async setPublic(id: number, isPublic: boolean) {
+    const existing = await this.findWorkByIdOrThrow(id)
+
+    if (existing.status !== WorkStatusEnum.Published) {
+      throw new BizException({ errorKey: 'workStatusTransferFail' })
+    }
+
+    const updated = await this.workModel
+      .findOneAndUpdate(
+        { id, status: WorkStatusEnum.Published },
+        { $set: { isPublic } },
+        { new: true },
+      )
+      .populate({ path: 'user', select: 'username nickName picture' })
+      .lean()
+
+    if (!updated) {
+      throw new BizException({ errorKey: 'workStatusTransferFail' })
     }
 
     return updated

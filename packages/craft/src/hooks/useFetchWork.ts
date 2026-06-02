@@ -23,9 +23,13 @@ export const useFetchWork = (idSource: MaybeRefOrGetter<unknown>, immediate: boo
    * 是否为「他人的公开模版」
    * - 本人作品（含本人模版）可正常编辑
    * - 他人模版本期不支持直接编辑，仅提示「复制一份」（复制能力二期实现）
+   * - 显式要求 isPublic=true：私有模版理论上后端 CASL 已拦截（返回 NO_PUBLIC），
+   *   这里做一层前端自防御，避免万一接口/权限调整时误把私有模版当公开模版引导用户复制
    */
   const isOthersTemplate = (work: WorkDetailDto) =>
-    Boolean(work.isTemplate) && work.user?.username !== sessionStore.userInfo.username
+    Boolean(work.isTemplate)
+    && Boolean(work.isPublic)
+    && work.user?.username !== sessionStore.userInfo.username
 
   /**
    * 致命错误（作品不存在 / 无权限）：编辑器没有有效内容可继续，提示后返回首页

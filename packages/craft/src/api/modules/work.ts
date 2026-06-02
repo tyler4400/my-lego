@@ -130,15 +130,25 @@ export interface MyListQuery {
 /**
  * 创建作品请求体（与后端 CreateDto 对齐）
  * - title / content 必填
+ * - 不再支持 isTemplate / isPublic / isHot：
+ *   - 创建出来的作品状态恒为 Initial，按业务约束「非 Published 不可公开 / 模板」，
+ *     这两个字段在创建链路上没有合法值
+ *   - 切换可见性需走 publishTemplate / setPublic 专用接口
  */
 export interface CreateWorkReq {
   title: string
   content: WorkContent
   desc?: string
   coverImg?: string
-  isTemplate?: boolean
-  isPublic?: boolean
-  isHot?: boolean
+}
+
+/**
+ * 切换作品公开性请求体（与后端 SetPublicDto 对齐）
+ * - 要求作品 status=Published，否则后端返回 STATUS_TRANSFER_FAIL
+ */
+export interface SetPublicReq {
+  id: number
+  isPublic: boolean
 }
 
 /**
@@ -213,6 +223,12 @@ export const publishWork = (id: number, config?: ServiceConfig<{ id: number }>) 
  */
 export const publishTemplate = (id: number, config?: ServiceConfig<{ id: number }>) =>
   httpTry(http.post<WorkDetailDto, { id: number }>('/v1/work/publishTemplate', { id }, config))
+
+/**
+ * 切换作品公开性（要求 status=Published；可双向切换）
+ */
+export const setPublic = (body: SetPublicReq, config?: ServiceConfig<SetPublicReq>) =>
+  httpTry(http.post<WorkDetailDto, SetPublicReq>('/v1/work/setPublic', body, config))
 
 /**
  * 删除作品（软删除，返回 { success: true }）

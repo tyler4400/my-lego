@@ -67,6 +67,26 @@ Authorization: Bearer {{accessToken}}
   "id": 9
 }
 
+### 切换作品公开性（公开）— 要求 status=Published
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/work/setPublic
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "id": 9,
+  "isPublic": true
+}
+
+### 切换作品公开性（取消公开）— 要求 status=Published
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/work/setPublic
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "id": 7,
+  "isPublic": false
+}
+
 ### 删除作品（软删除）
 POST {{host}}:{{port}}/{{prefix}}/{{version}}/work/delete
 Content-Type: application/json
@@ -78,4 +98,3 @@ Authorization: Bearer {{accessToken}}
 
 ### 获取h5页面
 GET {{host}}:{{port}}/{{prefix}}/{{version}}/work/pages/6/fTPl2sQP
-

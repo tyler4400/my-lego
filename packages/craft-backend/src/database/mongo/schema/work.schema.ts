@@ -64,7 +64,7 @@ export class Work {
   content?: Record<string, any> // 内容数据
 
   @Prop({ type: Boolean, default: false })
-  isTemplate?: boolean // 是否是模版，会在首页模版区域显示。模版必定是公开的
+  isTemplate?: boolean // 是否是模版，会在首页模版区域显示。模版必定可以是私有模版
 
   @Prop({ type: Boolean, default: false })
   isPublic?: boolean // 是否公开 // 公开的可以被别人看到和复制

@@ -11,6 +11,7 @@ import { ChannelUpdateDto } from '@/module/work/dto/channel-update.dto'
 import { CreateChannelDto } from '@/module/work/dto/create-Channel.dto'
 import { CreateDto } from '@/module/work/dto/create-dto'
 import { MyListQueryDto } from '@/module/work/dto/my-list-query.dto'
+import { SetPublicDto } from '@/module/work/dto/set-public.dto'
 import { WorkDetailDto } from '@/module/work/dto/work-detail.dto'
 import { WorkIdDto } from '@/module/work/dto/work-id.dto'
 import { WorkListResponseDto } from '@/module/work/dto/work-list-response.dto'
@@ -108,8 +109,8 @@ export class WorkController {
    * 发布作品为模版
    * - 必须登录
    * - 必须作者本人
-   * - 不可重复发布模版
-   * - 同时置 isTemplate=true 且 isPublic=true
+   * - 不可重复发布模版（业务上模版一旦设置无法取消）
+   * - 置 isTemplate=true（不修改 isPublic，模版默认私有，需通过 setPublic 切换为公开）
    * - 模版要求 status 必须是 Published
    */
   @Post('publishTemplate')
@@ -119,6 +120,22 @@ export class WorkController {
   @Serialize(WorkDetailDto)
   async publishTemplate(@Body() dto: WorkIdDto) {
     return this.workService.publishTemplate(dto.id)
+  }
+
+  /**
+   * 切换作品公开性（公开 / 私有）
+   * - 必须登录
+   * - 必须作者本人（CASL 复用 Update action）
+   * - 业务约束：仅 status=Published 的作品才允许切换（无论目标 isPublic 是 true 还是 false）
+   * - admin 也受同样的状态约束（数据完整性规则，非权限边界）
+   */
+  @Post('setPublic')
+  @UseGuards(JwtAuthGuard, WorkPolicyGuard)
+  @WorkPolicy(WorkAction.Update)
+  @MetaRes({ message: '切换公开性成功' })
+  @Serialize(WorkDetailDto)
+  async setPublic(@Body() dto: SetPublicDto) {
+    return this.workService.setPublic(dto.id, dto.isPublic)
   }
 
   /**
