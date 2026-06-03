@@ -116,6 +116,63 @@ Content-Type: application/json
   });
 %}
 
+### 8) 更新当前用户资料（白名单：nickName / picture）
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/user/update
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "nickName": "新昵称",
+  "picture": "http://typescript-vue.oss-cn-beijing.aliyuncs.com/vue-marker/test-avatar.png"
+}
+
+> {%
+  client.test("更新用户资料", function () {
+    client.assert(response.body.code === 0, "code 应为 0");
+    client.assert(response.body.data.nickName === "新昵称", "nickName 未生效");
+    client.assert(response.body.data.password === undefined, "password 不应返回");
+  });
+%}
+
+### 9) 更新当前用户资料：仅更新 nickName（picture 保持原值）
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/user/update
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "nickName": "只改名字"
+}
+
+### 10) 更新当前用户资料：nickName 太短（应被 DTO 拦截）
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/user/update
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "nickName": "a"
+}
+
+> {%
+  client.test("nickName 长度校验", function () {
+    client.assert(response.body.code !== 0, "应该返回校验失败");
+  });
+%}
+
+### 11) 更新当前用户资料：picture 非合法 URL（应被 DTO 拦截）
+POST {{host}}:{{port}}/{{prefix}}/{{version}}/user/update
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "picture": "not-a-url"
+}
+
+> {%
+  client.test("picture URL 校验", function () {
+    client.assert(response.body.code !== 0, "应该返回校验失败");
+  });
+%}
+
 
 ### 管理员账号登录
 POST {{host}}:{{port}}/{{prefix}}/{{version}}/user/loginByEmail

@@ -6,25 +6,15 @@
       class="app-brand__logo"
       :class="{ 'app-brand__logo--compact': compact }"
     >
-    <span v-if="!compact" class="app-brand__name">{{ brandName }}</span>
+    <span v-if="!compact" class="app-brand__name">海豹乐高</span>
   </router-link>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
 import logo from '@/assets/logo-chrome-512x512.png'
 
 /** compact: 仅显示 logo，给编辑器 header 这种横向空间紧张的场景用 */
 const { compact = false } = defineProps<{ compact?: boolean }>()
-
-const route = useRoute()
-const brandName = computed(() => {
-  if (compact) return ''
-  if (route.name === 'home') return '海豹乐高'
-  if (route.meta.title) return `海豹乐高 - ${route.meta.title}`
-  return '海豹乐高'
-})
 </script>
 
 <style scoped>

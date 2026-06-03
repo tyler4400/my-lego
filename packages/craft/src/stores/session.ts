@@ -1,6 +1,6 @@
 import type { ServiceConfig } from '@/api/http'
 import type { GithubLoginPayload } from '@/api/modules/oauth.ts'
-import type { CreateByEmailReq, LoginByCellphoneReq, LoginByEmailReq, PublicUserDto, SendVerifyCodeReq } from '@/api/modules/user'
+import type { CreateByEmailReq, LoginByCellphoneReq, LoginByEmailReq, PublicUserDto, SendVerifyCodeReq, UpdateUserReq } from '@/api/modules/user'
 import type { OAuthError } from '@/utils/biz/openOauthPopup.ts'
 import { GITHUB_OAUTH_TYPE, tryCatch } from '@my-lego/shared'
 import { defineStore } from 'pinia'
@@ -14,6 +14,7 @@ import {
   loginByCellphone as apiLoginByCellphone,
   loginByEmail as apiLoginByEmail,
   sendVerifyCode as apiSendVerifyCode,
+  updateUser as apiUpdateUser,
 } from '@/api/modules/user'
 import { openOauthPopup } from '@/utils/biz/openOauthPopup.ts'
 
@@ -154,6 +155,18 @@ export const useSessionStore = defineStore('session', () => {
   }
 
   /**
+   * 更新当前登录用户资料（白名单：nickName / picture）
+   * - 成功后用响应数据覆盖全局 userInfo，保证 UserMenu/AppHeader 头像与昵称即时刷新
+   * - 错误透传，业务方据此决定是否回滚 UI
+   */
+  const updateMe = async (payload: UpdateUserReq, config?: ServiceConfig<UpdateUserReq>) => {
+    const [data, err] = await apiUpdateUser(payload, config)
+    if (err) return [null, err] as const
+    setUserInfo(data)
+    return [data, null] as const
+  }
+
+  /**
    * 登出（纯前端）
    * - 后端目前无 logout 接口，仅清空 token + store 状态
    * - JWT 单 token + 无 refresh token 的项目，纯前端登出即可
@@ -174,6 +187,7 @@ export const useSessionStore = defineStore('session', () => {
     registerByEmail,
     sendVerifyCode,
     fetchMe,
+    updateMe,
     logout,
   }
 })

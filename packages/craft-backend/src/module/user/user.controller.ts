@@ -9,6 +9,7 @@ import { LoginByEmailDto } from '@/module/user/dto/login-by-email.dto'
 import { LoginResponseDto } from '@/module/user/dto/login-response.dto'
 import { PublicUserDto } from '@/module/user/dto/public-user.dto'
 import { SendVerifyCodeDto } from '@/module/user/dto/send-verify-code.dto'
+import { UpdateUserDto } from '@/module/user/dto/update-user.dto'
 import { UserService } from '@/module/user/user.service'
 
 @Controller('user')
@@ -66,5 +67,19 @@ export class UserController {
   async me(@Req() req: Request) {
     // req.user 来自 JwtStrategy.validate() 的返回值
     return this.userService.me(req.user!)
+  }
+
+  /**
+   * 更新当前登录用户的可编辑资料（白名单：nickName / picture）。
+   * - JWT 保护
+   * - partial update：DTO 中未传的字段不会被修改
+   * - 返回新的 PublicUserDto（password 默认不返回）
+   */
+  @MetaRes({ message: '更新用户信息成功' })
+  @Serialize(PublicUserDto)
+  @UseGuards(JwtAuthGuard)
+  @Post('/update')
+  async update(@Req() req: Request, @Body() dto: UpdateUserDto) {
+    return this.userService.updateMe(req.user!, dto)
   }
 }

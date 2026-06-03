@@ -136,6 +136,32 @@ export class UserService {
     return user
   }
 
+  /**
+   * 更新当前登录用户的可编辑资料（白名单：nickName / picture）。
+   *
+   * 设计要点：
+   * - DTO 已经把字段范围收窄，service 层只做"过滤掉 undefined"再 $set，避免把未传字段写成 null。
+   * - 使用 findByIdAndUpdate({ new: true }) 直接拿更新后的文档返回给上层，免去再 findById 一次。
+   * - 用户不存在时和 me() 一样按"登录失效"处理（token 仍有效但记录已删除）。
+   */
+  async updateMe(payload: UserPayload, dto: { nickName?: string, picture?: string }) {
+    const update: Record<string, unknown> = {}
+    if (dto.nickName !== undefined) update.nickName = dto.nickName
+    if (dto.picture !== undefined) update.picture = dto.picture
+
+    const updated = await this.userModel.findByIdAndUpdate(
+      payload._id,
+      { $set: update },
+      { new: true },
+    )
+
+    if (!updated) {
+      throw new BizException({ errorKey: 'loginValidateFail', httpStatus: HttpStatus.UNAUTHORIZED })
+    }
+
+    return updated
+  }
+
   private getPhoneVerifyCodeKey(phoneNumber: string) {
     return `user.phoneVerify.${phoneNumber}`
   }

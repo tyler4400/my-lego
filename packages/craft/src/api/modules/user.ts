@@ -101,3 +101,22 @@ export const loginByCellphone = (body: LoginByCellphoneReq, config?: ServiceConf
  */
 export const getMe = (config?: ServiceConfig) =>
   httpTry(http.get<PublicUserDto>('/v1/user/me', config))
+
+/**
+ * 更新当前登录用户资料请求体（与后端 UpdateUserDto 对齐）
+ * - 白名单：仅 nickName / picture 可改；其他字段（username/role/email 等）禁止修改
+ * - 所有字段都是可选：未传字段不更新（partial）
+ */
+export interface UpdateUserReq {
+  /** 昵称，2~20 字符 */
+  nickName?: string
+  /** 头像 URL（必须先把文件上传到图床拿到 url） */
+  picture?: string
+}
+
+/**
+ * 更新当前登录用户资料（JWT 保护）
+ * - 返回更新后的 PublicUserDto；调用方拿到后应同步刷新前端 session.userInfo
+ */
+export const updateUser = (body: UpdateUserReq, config?: ServiceConfig<UpdateUserReq>) =>
+  httpTry(http.post<PublicUserDto, UpdateUserReq>('/v1/user/update', body, config))
