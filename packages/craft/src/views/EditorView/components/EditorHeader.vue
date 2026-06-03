@@ -52,7 +52,7 @@
           @undo="historyStore.undo"
           @redo="historyStore.redo"
         />
-        <Button @click="handlePreview">
+        <Button :loading="preparingPreview" @click="handlePreview">
           <EyeOutlined />
           预览
         </Button>
@@ -109,6 +109,14 @@
       :coverImg="publishCoverImg"
       @update:open="handlePublishOpenChange"
     />
+
+    <!-- 预览弹窗：展示当前画布截图 + 预览二维码（不写后端，纯展示） -->
+    <PreviewWork
+      v-if="previewOpen"
+      :open="previewOpen"
+      :snapshotDataUrl="previewSnapshotDataUrl"
+      @update:open="handlePreviewOpenChange"
+    />
   </header>
 </template>
 
@@ -138,6 +146,7 @@ import { useHistoryStore } from '@/stores/history'
 import { snapshotElement } from '@/utils/snapshotElement.ts'
 import { action as uploadAction, uploadFileRequest } from '@/utils/uploadFileRequest.ts'
 import HistoryArea from './HistoryArea.vue'
+import PreviewWork from './PreviewWork.vue'
 import PublishWork from './PublishWork.vue'
 
 interface UploadResp {
@@ -184,8 +193,59 @@ const handleRenameTitle = (next: string) => {
   editorStore.updatePageData('title', trimmed)
 }
 
-const handlePreview = () => message.info('预览功能开发中')
 const handleSettings = () => message.info('作品设置功能开发中')
+
+// ===== 预览流程：截图 → 打开 PreviewWork 弹窗 =====
+//   预览只是编辑过程中的临时态，不 save、不上传图床、不改后端数据；
+//   预览二维码扫到的仍是上次保存的内容（弹窗内已用文案提示用户）
+
+/** 预览弹窗显隐 */
+const previewOpen = ref(false)
+/** 预览图 dataURL（不上传图床，仅 <img src> 用） */
+const previewSnapshotDataUrl = ref('')
+/** 预览按钮 loading（覆盖截图过程） */
+const preparingPreview = ref(false)
+
+const handlePreview = async () => {
+  if (preparingPreview.value) return
+
+  if (!canSave.value) {
+    message.warning('作品尚未加载完成，无法预览')
+    return
+  }
+
+  preparingPreview.value = true
+
+  try {
+    // 清空选中态：避免 EditWrapper 的 .active 边框 / resizer 控制点被截入图
+    //   hook 内 onclone 也会兜底清理，这里同步清一次让用户视觉上立即感知"进入预览态"
+    editorStore.setCurrentElement(undefined)
+
+    const target = document.getElementById('canvas-area')
+    if (!target) {
+      message.error('找不到画布节点，无法截图')
+      return
+    }
+
+    const [snapshot, snapErr] = await tryCatch(snapshotElement(target))
+    if (snapErr) {
+      message.error(`预览图生成失败：${snapErr.message}`)
+      return
+    }
+
+    previewSnapshotDataUrl.value = snapshot.dataUrl
+    previewOpen.value = true
+  }
+  finally {
+    preparingPreview.value = false
+  }
+}
+
+const handlePreviewOpenChange = (next: boolean) => {
+  previewOpen.value = next
+  // 关闭时清理 dataURL，避免长时间常驻内存
+  if (!next) previewSnapshotDataUrl.value = ''
+}
 
 // ===== 发布流程：silent save (仅 dirty 时) → 截图 → 上传封面 → 打开 PublishWork 弹窗 =====
 

@@ -26,9 +26,17 @@
         <div class="publish-work__title" :title="title">
           {{ title }}
         </div>
-        <div class="publish-work__desc" :title="desc">
-          {{ desc || '暂无描述' }}
-        </div>
+        <!-- 描述可在弹窗内 inline 编辑；变更只更新本地 ref，等点"发布"时跟 coverImg 一起 update 提交 -->
+        <TypographyParagraph
+          class="publish-work__desc"
+          :content="localDesc"
+          :editable="{
+            triggerType: ['text', 'icon'],
+            maxlength: 100,
+            autoSize: { minRows: 2, maxRows: 4 },
+          }"
+          @update:content="(v: string) => (localDesc = v)"
+        />
       </aside>
 
       <!-- 右：渠道管理 -->
@@ -162,23 +170,27 @@ const editorStore = useEditorStore()
 
 // ===== 基础展示数据（从 store 读，弹窗里只读，不写） =====
 const title = computed(() => editorStore.pageData.title || '未命名作品')
-const desc = computed(() => editorStore.pageData.desc || '')
 const workId = computed(() => editorStore.pageData.id)
 const workUuid = computed(() => editorStore.pageData.uuid || '')
 const status = computed(() => editorStore.pageData.status)
 
 /**
  * 渠道用本地 ref 维护，弹窗里所有增/删/改都只更新 localChannels，不再 patch 全局 store。
- * 弹窗关闭后由父组件统一调 useFetchWork.init() 重新拉取详情同步 store。
+ * 弹窗关闭后由父组件统一调 store.reloadCurrentWork() 重新拉取详情同步 store。
  * - 打开瞬间从 store 复制一份初始状态
+ *
+ * 描述（desc）也只更新本地 ref，等点"发布"按钮时随 updateWork 一起提交后端；
+ * 若用户直接关闭弹窗（取消），本地的 desc 修改不会写入服务端，重新打开会回到 store 原值。
  */
 const localChannels = ref<WorkChannel[]>([])
+const localDesc = ref('')
 
 watch(
   () => open,
   (next) => {
     if (next) {
       localChannels.value = (editorStore.pageData.channels ?? []).map(c => ({ ...c }))
+      localDesc.value = editorStore.pageData.desc ?? ''
     }
   },
   { immediate: true },
@@ -271,12 +283,15 @@ const [doPublishWork, publishingWork] = useService(publishWork, {
 const publishing = computed(() => updatingWork.value || publishingWork.value)
 
 /**
- * 两步发布的执行顺序：先 update(coverImg) 再 publish
+ * 两步发布的执行顺序：先 update(coverImg + desc) 再 publish
  *
  * 失败回退分析：
- * - update 失败 → 状态未变、封面未变 → 用户重试即可，零脏数据
- * - update 成功、publish 失败 → 状态还在 Initial、封面已新 → 用户重试，封面被无害再刷一次
- * - 反过来（先 publish 后 update）：publish 成功 update 失败 → 已发布但封面是旧的，列表显示旧封面，最丑陋
+ * - update 失败 → 状态未变、封面/desc 未变 → 用户重试即可，零脏数据
+ * - update 成功、publish 失败 → 状态还在 Initial、封面/desc 已新 → 用户重试，会被无害再刷一次
+ * - 反过来（先 publish 后 update）：publish 成功 update 失败 → 已发布但封面/desc 是旧的，列表展示旧版本，最丑陋
+ *
+ * desc 也在这一步随 update 提交：用户在弹窗里改了 desc 但没点发布就关闭，本地修改会被丢弃
+ * （下次打开弹窗会重新从 store 读取，与服务端保持一致）。
  */
 const handlePublish = async () => {
   if (!workId.value) {
@@ -288,8 +303,12 @@ const handlePublish = async () => {
     return
   }
 
-  // Step 1: 更新封面（两种状态都要做）
-  const [, updateErr] = await doUpdateWork({ id: workId.value, coverImg })
+  // Step 1: 更新封面 + 描述（两种状态都要做）
+  const [, updateErr] = await doUpdateWork({
+    id: workId.value,
+    coverImg,
+    desc: localDesc.value,
+  })
   if (updateErr) return
 
   // Step 2: 仅首次发布才调 publish
@@ -367,15 +386,16 @@ const handleClose = () => {
   line-clamp: 2;
 }
 
+/* desc 用 Ant Design Vue TypographyParagraph editable，需要重置内置 margin 让它贴合卡片 */
 .publish-work__desc {
+  margin: 0 !important;
   font-size: 12px;
   color: #6b7280;
   line-height: 1.6;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
-  line-clamp: 4;
-  overflow: hidden;
+}
+
+.publish-work__desc :deep(.ant-typography-edit-content) {
+  margin: 0 !important;
 }
 
 /* ===== 右侧：渠道管理 ===== */

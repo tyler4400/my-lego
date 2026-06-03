@@ -27,6 +27,7 @@ export const defaultPageProps: PageProps = {
  */
 export const createDefaultPageData = (): PageData => ({
   title: '未命名作品',
+  desc: '添加描述',
 })
 
 export const useEditorStore = defineStore('editor', () => {
