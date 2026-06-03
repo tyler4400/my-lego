@@ -14,6 +14,10 @@
           @update:content="handleRenameTitle"
         />
 
+        <Tag v-if="editorStore.pageData.id" :color="workStatus.color">
+          {{ workStatus.text }}
+        </Tag>
+
         <!-- 保存状态：icon + 小字，点击弹出自动保存开关 -->
         <Popover trigger="click" placement="bottom">
           <template #content>
@@ -52,19 +56,15 @@
           @undo="historyStore.undo"
           @redo="historyStore.redo"
         />
-        <Button :loading="preparingPreview" @click="handlePreview">
-          <EyeOutlined />
-          预览
-        </Button>
-        <Button @click="handleSettings">
-          <SettingOutlined />
-          作品设置
-        </Button>
         <Button :loading="saving" :disabled="!canSave" @click="saveNow">
           <template #icon>
             <SaveOutlined :class="{ 'save-btn-icon--dirty': historyStore.isDirty }" />
           </template>
           保存
+        </Button>
+        <Button :loading="preparingPreview" @click="handlePreview">
+          <EyeOutlined />
+          预览
         </Button>
         <Button
           type="primary"
@@ -133,11 +133,11 @@ import {
   EyeOutlined,
   LoadingOutlined,
   SaveOutlined,
-  SettingOutlined,
 } from '@ant-design/icons-vue'
 import { tryCatch } from '@my-lego/shared'
-import { Button, message, Modal, Popover, Switch, TypographyParagraph } from 'ant-design-vue'
+import { Button, message, Modal, Popover, Switch, Tag, TypographyParagraph } from 'ant-design-vue'
 import { computed, ref } from 'vue'
+import { WorkStatusEnum } from '@/api/modules/work.ts'
 import { useSaveWork } from '@/hooks/useSaveWork.ts'
 import AppBrand from '@/layouts/AppBrand.vue'
 import UserMenu from '@/layouts/UserMenu.vue'
@@ -177,7 +177,17 @@ const SAVE_STATUS_ICON: Record<SaveStatusType, Component> = {
   on: CloudSyncOutlined,
   off: CloudOutlined,
 }
+
+// 状态类型 → 图标组件
+const WORK_STATUS_ENUM: Record<WorkStatusEnum, { text: string, color: string }> = {
+  [WorkStatusEnum.Initial]: { text: '草稿', color: 'processing' },
+  [WorkStatusEnum.Published]: { text: '已发布', color: 'success' },
+  [WorkStatusEnum.Deleted]: { text: '已删除', color: 'error' },
+  [WorkStatusEnum.Declined]: { text: '强制下线', color: 'error' },
+}
 const saveStatusIcon = computed(() => SAVE_STATUS_ICON[saveStatusType.value])
+
+const workStatus = computed(() => WORK_STATUS_ENUM[editorStore.pageData.status!] || { text: '', color: 'default' })
 
 const TITLE_PLACEHOLDER = '未命名作品'
 const title = computed(() => editorStore.pageData.title || TITLE_PLACEHOLDER)
@@ -192,8 +202,6 @@ const handleRenameTitle = (next: string) => {
   if (!trimmed || trimmed === TITLE_PLACEHOLDER) return
   editorStore.updatePageData('title', trimmed)
 }
-
-const handleSettings = () => message.info('作品设置功能开发中')
 
 // ===== 预览流程：截图 → 打开 PreviewWork 弹窗 =====
 //   预览只是编辑过程中的临时态，不 save、不上传图床、不改后端数据；
