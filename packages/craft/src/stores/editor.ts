@@ -5,6 +5,7 @@ import { cloneDeep } from 'lodash-es'
 import { defineStore } from 'pinia'
 import { v4 as uuidv4 } from 'uuid'
 import { reactive, readonly, ref } from 'vue'
+import { getWorkDetail } from '@/api/modules/work.ts'
 import { useHistoryStore } from '@/stores/history.ts'
 
 /**
@@ -213,10 +214,8 @@ export const useEditorStore = defineStore('editor', () => {
    * - content.components → components（整批替换，深拷贝避免与服务端数据互相引用）
    * - content.props → pageProps（缺省回落默认值，兼容空/旧数据）
    * - work 顶层列 → pageData
-   * - 重置选中态/复制态，并清空历史栈（新作品是全新基线，不可撤销到上一个作品）
    */
   const applyDetail = (work: WorkDetailDto) => {
-    reset()
     const nextComponents = work.content?.components ?? []
     components.splice(0, components.length, ...cloneDeep(nextComponents))
 
@@ -238,7 +237,30 @@ export const useEditorStore = defineStore('editor', () => {
       createdAt: work.createdAt,
       updatedAt: work.updatedAt,
       user: work.user ?? undefined,
+      channels: work.channels ?? [],
     }
+  }
+
+  /**
+   * 重新拉取当前作品详情并 applyDetail 到 store
+   *
+   * 适用场景：弹窗 / 子流程内通过其他接口（publish / setPublic / update / channel 系列等）
+   *   改动了服务端数据，关闭子流程时调用本方法把 store 同步到服务端最新状态。
+   *
+   * 注意：
+   * - 内部走 applyDetail，**history 栈会被清空**、画布会重新渲染（视觉上闪一下）。
+   *   这是有意为之：站在"重拉作品"的语义下，把当前编辑态当成全新基线最干净。
+   *   调用前若有未保存的改动，请先 save，否则会丢失（参考 EditorHeader 的发布前 save 逻辑）。
+   */
+  const reloadCurrentWork = async () => {
+    const id = pageData.value.id
+    if (!id) return
+    const [work, err] = await getWorkDetail(id, { silentSuccess: true })
+    if (err || !work) {
+      console.warn('[editor] reloadCurrentWork failed', err)
+      return
+    }
+    applyDetail(work)
   }
 
   /**
@@ -280,6 +302,7 @@ export const useEditorStore = defineStore('editor', () => {
     removeElement,
     batchUpdate,
     applyDetail,
+    reloadCurrentWork,
     reset,
     toUpdateBody,
   }

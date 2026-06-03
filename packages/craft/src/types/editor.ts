@@ -1,4 +1,4 @@
-import type { WorkStatusEnum } from '@/api/modules/work'
+import type { WorkChannel, WorkStatusEnum } from '@/api/modules/work'
 import type { ComponentKey } from '@/components'
 
 export interface ComponentData {
@@ -114,12 +114,16 @@ export interface PageData {
     nickName?: string
     picture?: string
   }
+  /** 投放渠道列表（顶层字段，与 content 无关；通过专用 channel 接口维护） */
+  channels?: WorkChannel[]
 }
 
 /**
  * 可在编辑器中编辑、并纳入 history 撤销重做的页面级字段
  * - 仅限用户可改的元信息（当前只有 title 有编辑入口，desc/coverImg 预留给「作品设置」）
  * - 服务端只读字段（status/author/copiedCount/user 等）不应进入此集合
+ *
+ * 服务端写入字段（status/isPublic/channels 等）不在编辑器侧维护，由 useFetchWork 重新拉取详情同步。
  */
 export type EditablePageField = keyof Pick<PageData, 'title' | 'desc' | 'coverImg'>
 

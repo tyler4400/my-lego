@@ -249,7 +249,9 @@ export const updateChannelName = (body: ChannelUpdateReq, config?: ServiceConfig
   httpTry(http.post<WorkChannel, ChannelUpdateReq>('/v1/work/channel/update', body, config))
 
 /**
- * 删除渠道（至少保留一个渠道，后端校验）
+ * 删除渠道
+ * - 后端不限制最少保留个数（作品可以无渠道，统计层默认归桶）
+ * - 前端 UX 上鼓励保留至少 1 个：发布弹窗里最后 1 个渠道的删除按钮会隐藏
  */
 export const deleteChannel = (body: ChannelDeleteReq, config?: ServiceConfig<ChannelDeleteReq>) =>
   httpTry(http.post<{ success: boolean }, ChannelDeleteReq>('/v1/work/channel/delete', body, config))

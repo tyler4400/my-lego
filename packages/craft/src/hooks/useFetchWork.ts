@@ -64,8 +64,6 @@ export const useFetchWork = (idSource: MaybeRefOrGetter<unknown>, immediate: boo
    * - 拉详情：失败按错误码分支提示；他人模版仅提示不回填；本人作品回填编辑器
    */
   const init = async () => {
-    editorStore.reset()
-
     const id = Number(toValue(idSource))
     if (!Number.isInteger(id) || id <= 0) {
       // 路由正则已限定数字 id，此处仅作兜底
@@ -95,6 +93,7 @@ export const useFetchWork = (idSource: MaybeRefOrGetter<unknown>, immediate: boo
       return
     }
 
+    editorStore.reset()
     editorStore.applyDetail(work)
   }
 

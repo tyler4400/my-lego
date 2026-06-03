@@ -66,7 +66,11 @@
           </template>
           保存
         </Button>
-        <Button type="primary" @click="handlePublish">
+        <Button
+          type="primary"
+          :loading="preparingPublish"
+          @click="handlePublish"
+        >
           <CloudUploadOutlined />
           发布
         </Button>
@@ -97,6 +101,14 @@
         </Button>
       </template>
     </Modal>
+
+    <!-- 发布弹窗：弹窗内完成封面预览 + 渠道管理 + 一键发布 -->
+    <PublishWork
+      v-if="publishOpen"
+      :open="publishOpen"
+      :coverImg="publishCoverImg"
+      @update:open="handlePublishOpenChange"
+    />
   </header>
 </template>
 
@@ -115,14 +127,22 @@ import {
   SaveOutlined,
   SettingOutlined,
 } from '@ant-design/icons-vue'
+import { tryCatch } from '@my-lego/shared'
 import { Button, message, Modal, Popover, Switch, TypographyParagraph } from 'ant-design-vue'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useSaveWork } from '@/hooks/useSaveWork.ts'
 import AppBrand from '@/layouts/AppBrand.vue'
 import UserMenu from '@/layouts/UserMenu.vue'
 import { useEditorStore } from '@/stores/editor'
 import { useHistoryStore } from '@/stores/history'
+import { snapshotElement } from '@/utils/snapshotElement.ts'
+import { action as uploadAction, uploadFileRequest } from '@/utils/uploadFileRequest.ts'
 import HistoryArea from './HistoryArea.vue'
+import PublishWork from './PublishWork.vue'
+
+interface UploadResp {
+  data: { url: string }
+}
 
 const editorStore = useEditorStore()
 const historyStore = useHistoryStore()
@@ -166,7 +186,89 @@ const handleRenameTitle = (next: string) => {
 
 const handlePreview = () => message.info('预览功能开发中')
 const handleSettings = () => message.info('作品设置功能开发中')
-const handlePublish = () => message.info('发布功能开发中')
+
+// ===== 发布流程：silent save (仅 dirty 时) → 截图 → 上传封面 → 打开 PublishWork 弹窗 =====
+
+/** 发布弹窗显隐 */
+const publishOpen = ref(false)
+/** 弹窗使用的封面 URL（上传图床后拿到） */
+const publishCoverImg = ref('')
+/** 发布按钮整体 loading（覆盖 save + 截图 + 上传整个准备过程） */
+const preparingPublish = ref(false)
+
+const handlePublish = async () => {
+  if (preparingPublish.value) return
+
+  // 必须有 work id 才能发布；canSave 为 false 表示无作品（如他人模板空白态）
+  if (!canSave.value) {
+    message.warning('作品尚未加载完成，无法发布')
+    return
+  }
+
+  preparingPublish.value = true
+
+  try {
+    // Step 1: 仅在有未保存改动时 save，避免无意义的 update 请求
+    //   useSaveWork 的 save 内部默认 silentSuccess，失败会自动 toast
+    if (historyStore.isDirty) {
+      const saved = await saveNow()
+      if (!saved) {
+        message.error('保存当前作品失败，已暂停发布；请稍后重试')
+        return
+      }
+    }
+
+    // Step 2: 清空选中态，避免 EditWrapper 的 .active 边框 / resizer 控制点被截入图
+    //   hook 内 onclone 也会兜底清理，但这里同步清一次让用户视觉上立即看到"进入发布态"
+    editorStore.setCurrentElement(undefined)
+
+    // Step 3: 找到画布根节点。EditorView 中只渲染一个 #canvas-area，直接 getElementById
+    const target = document.getElementById('canvas-area')
+    if (!target) {
+      message.error('找不到画布节点，无法截图')
+      return
+    }
+
+    // Step 4: 截图（hook 内部会等下一帧 + 预加载图片为 dataURL 绕 CORS + 兜底清选中 + 清 box-shadow）
+    const [snapshot, snapErr] = await tryCatch(snapshotElement(target))
+    if (snapErr) {
+      message.error(`封面生成失败：${snapErr.message}`)
+      return
+    }
+
+    // Step 5: 上传到图床（复用全项目唯一的上传链路）
+    const [uploaded, uploadErr] = await tryCatch(
+      uploadFileRequest<UploadResp>({
+        action: uploadAction,
+        name: 'upload',
+        file: snapshot.file,
+      }),
+    )
+    if (uploadErr) {
+      message.error(`封面上传失败：${uploadErr.message}`)
+      return
+    }
+
+    publishCoverImg.value = uploaded.data.url
+    publishOpen.value = true
+  }
+  finally {
+    preparingPublish.value = false
+  }
+}
+
+/**
+ * 关闭发布弹窗时：
+ * - 重置内部状态
+ * - 无论"发布成功"还是"用户取消"，都重新拉取作品详情，让 editor store 与服务端同步
+ *   （弹窗内的渠道增删改、再次发布的 coverImg / status 变更都已经写入服务端）
+ */
+const handlePublishOpenChange = (next: boolean) => {
+  publishOpen.value = next
+  if (next) return
+  publishCoverImg.value = ''
+  editorStore.reloadCurrentWork()
+}
 </script>
 
 <style scoped>

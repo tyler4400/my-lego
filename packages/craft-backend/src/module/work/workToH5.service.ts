@@ -90,8 +90,33 @@ export class WorkToH5Service {
     return this.cachedH5ClientAssets
   }
 
-  async getPageData(id: number, uuid: string) {
-    const work = await this.workModel.findOne({ id, uuid, status: WorkStatusEnum.Published }).lean()
+  /**
+   * 获取 H5 页面渲染所需数据
+   *
+   * @param id
+   * @param uuid
+   * @param preview 是否预览模式
+   *
+   * 正式访问（preview=false）：仅 status=Published 的作品才能渲染
+   * 预览模式（preview=true）：允许渲染非 Published 状态（草稿/未发布），便于作者在编辑器
+   *   弹窗内扫码预览实际效果。
+   *
+   * ⚠️ 预览能力鉴权策略（设计决策）：
+   * - 当前实现「不鉴权」：任何拿到 (id, uuid) 的人 + `?preview=true` 都能看到草稿
+   * - 已知隐私风险：作品 id + uuid 一旦泄露，未发布草稿就可能被围观
+   * - 接受此风险的理由：
+   *   1) uuid 是 nanoid(8) 随机串，不易爆破
+   *   2) 预览二维码仅在编辑器内向作者本人展示，泄露面有限
+   *   3) 加鉴权会破坏「扫码即看」的体验
+   *   4) 真的泄露了，作者可以重新生成（删旧建新）止损
+   * - 软删除（status=Deleted）依然不允许预览，避免删除后还能访问的体验问题
+   */
+  async getPageData(id: number, uuid: string, preview = false) {
+    // 预览模式：仅排除软删除；正式访问：严格要求 Published
+    const statusFilter = preview
+      ? { $ne: WorkStatusEnum.Deleted }
+      : WorkStatusEnum.Published
+    const work = await this.workModel.findOne({ id, uuid, status: statusFilter }).lean()
     if (!work || !work.content) {
       throw new BizException({ errorKey: 'workNotExistError' })
     }

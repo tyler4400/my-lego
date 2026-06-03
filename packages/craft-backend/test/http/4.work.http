@@ -96,5 +96,8 @@ Authorization: Bearer {{accessToken}}
   "id": 9
 }
 
-### 获取h5页面
+### 获取h5页面（正式：仅 status=Published 可见）
 GET {{host}}:{{port}}/{{prefix}}/{{version}}/work/pages/6/fTPl2sQP
+
+### 获取h5页面（预览：允许非 Published 渲染，供作者扫码自检；不鉴权）
+GET {{host}}:{{port}}/{{prefix}}/{{version}}/work/pages/6/fTPl2sQP?preview=true

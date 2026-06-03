@@ -210,6 +210,8 @@ export class WorkController {
   /**
    * 在移动端渲染成品
    * - 作品状态必须是已发布
+   * - 支持 ?preview=true（任何非 'false' 的非空字符串都视为 true）开启预览模式：
+   *   允许渲染未发布作品，供作者扫码自检；鉴权说明见 WorkToH5Service.getPageData 注释
    */
   @Get('pages/:id/:uuid')
   async renderH5Page(
@@ -217,9 +219,12 @@ export class WorkController {
     // 但这种“隐式转换”不等价于强校验：比如 id=abc 可能会被转成 NaN 然后继续往下跑
     @Param('id', ParseIntPipe) id: number,
     @Param('uuid') uuid: string,
+    @Query('preview') preview: string | undefined,
     @Res() res: Response,
   ) {
-    const pageData = await this.workToH5Service.getPageData(id, uuid)
+    // 兼容 ?preview / ?preview=1 / ?preview=true 等常见写法；显式 ?preview=false 视为 false
+    const isPreview = preview !== undefined && preview !== 'false'
+    const pageData = await this.workToH5Service.getPageData(id, uuid, isPreview)
     res.render('h5page', pageData)
   }
 }
