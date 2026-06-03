@@ -13,6 +13,29 @@ export enum WorkStatusEnum {
 }
 
 /**
+ * 作品状态展示映射：text + color
+ * - color 用 antd 的状态色关键字（processing / success / error / default / warning）
+ *   这样 antd 主题切换时 Tag/Badge 颜色自动跟着变，不用前端硬编 hex
+ * - 多处复用：EditorHeader / WorksView 等
+ */
+export const WORK_STATUS_INFO_MAP: Record<WorkStatusEnum, { text: string, color: string }> = {
+  [WorkStatusEnum.Initial]: { text: '草稿', color: 'processing' },
+  [WorkStatusEnum.Published]: { text: '已发布', color: 'success' },
+  [WorkStatusEnum.Deleted]: { text: '已删除', color: 'error' },
+  [WorkStatusEnum.Declined]: { text: '强制下线', color: 'error' },
+}
+
+/**
+ * 安全取一条状态信息：未知状态回落到 default 配置，避免页面崩
+ */
+export const getWorkStatusInfo = (status?: WorkStatusEnum) => {
+  if (status === undefined || !(status in WORK_STATUS_INFO_MAP)) {
+    return { text: '', color: 'default' }
+  }
+  return WORK_STATUS_INFO_MAP[status]
+}
+
+/**
  * work 模块业务错误码（与 craft-backend work.error.ts 的 errno 一一对齐）
  * - 业务侧统一用常量判断错误分支，避免散落裸数字
  */
@@ -101,6 +124,7 @@ export interface WorkListItemDto {
   isHot: boolean
   status: WorkStatusEnum
   isTemplate: boolean
+  isPublic?: boolean
   latestPublishAt: string
   createdAt: string
   updatedAt: string

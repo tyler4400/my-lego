@@ -43,7 +43,7 @@ const router = createRouter({
         {
           path: 'works',
           name: 'works',
-          component: () => import('@/views/SettingsView.vue'),
+          component: () => import('@/views/WorksView.vue'),
           meta: { title: '我的作品', requiresAuth: true },
         },
         {

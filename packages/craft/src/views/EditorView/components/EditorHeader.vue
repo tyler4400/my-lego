@@ -137,7 +137,7 @@ import {
 import { tryCatch } from '@my-lego/shared'
 import { Button, message, Modal, Popover, Switch, Tag, TypographyParagraph } from 'ant-design-vue'
 import { computed, ref } from 'vue'
-import { WorkStatusEnum } from '@/api/modules/work.ts'
+import { getWorkStatusInfo } from '@/api/modules/work.ts'
 import { useSaveWork } from '@/hooks/useSaveWork.ts'
 import AppBrand from '@/layouts/AppBrand.vue'
 import UserMenu from '@/layouts/UserMenu.vue'
@@ -178,16 +178,10 @@ const SAVE_STATUS_ICON: Record<SaveStatusType, Component> = {
   off: CloudOutlined,
 }
 
-// 状态类型 → 图标组件
-const WORK_STATUS_ENUM: Record<WorkStatusEnum, { text: string, color: string }> = {
-  [WorkStatusEnum.Initial]: { text: '草稿', color: 'processing' },
-  [WorkStatusEnum.Published]: { text: '已发布', color: 'success' },
-  [WorkStatusEnum.Deleted]: { text: '已删除', color: 'error' },
-  [WorkStatusEnum.Declined]: { text: '强制下线', color: 'error' },
-}
 const saveStatusIcon = computed(() => SAVE_STATUS_ICON[saveStatusType.value])
 
-const workStatus = computed(() => WORK_STATUS_ENUM[editorStore.pageData.status!] || { text: '', color: 'default' })
+// 作品状态展示文案 / 颜色：复用 api/modules/work.ts 中的共享映射
+const workStatus = computed(() => getWorkStatusInfo(editorStore.pageData.status))
 
 const TITLE_PLACEHOLDER = '未命名作品'
 const title = computed(() => editorStore.pageData.title || TITLE_PLACEHOLDER)

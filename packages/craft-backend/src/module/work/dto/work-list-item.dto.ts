@@ -32,6 +32,13 @@ export class WorkListItemDto {
   @Expose()
   isTemplate!: boolean
 
+  /**
+   * 是否公开（与 schema.isPublic 对齐，可选，默认 false）
+   * - 列表卡片用它展示 "公开" 标签，并用于禁用 / 启用切换按钮
+   */
+  @Expose()
+  isPublic?: boolean
+
   @Expose()
   latestPublishAt!: Date
 
@@ -54,5 +61,6 @@ export const projection = [
   'createdAt',
   'updatedAt',
   'isTemplate',
+  'isPublic',
   'latestPublishAt',
 ]
