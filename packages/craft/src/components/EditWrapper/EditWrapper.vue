@@ -7,7 +7,7 @@
     :data-comp-id="comp.id"
     :class="{ active, locked: comp.isLocked }"
     @mousedown.prevent="startMove"
-    @click="() => handleClick(comp.id)"
+    @click.capture.stop.prevent="handleClickCapture"
   >
     <slot />
     <div v-show="active && !comp.isLocked" class="resizer-container">
@@ -43,8 +43,8 @@ const emit = defineEmits<{
 
 const positionStyle = computed(() => pick(comp.props, ['position', 'top', 'left', 'right', 'bottom', 'width', 'height']))
 
-function handleClick(id: string) {
-  emit('setActive', id)
+function handleClickCapture() {
+  emit('setActive', comp.id)
 }
 
 const getCanvasRect = inject(canvasKey)

@@ -1,6 +1,5 @@
 import type { CSSProperties } from 'vue'
 import type { CommonComponentProps } from '@/types/editor.ts'
-import { message } from 'ant-design-vue'
 import { pick } from 'lodash-es'
 import { computed } from 'vue'
 
@@ -9,9 +8,7 @@ function useComponentCommon<T extends CommonComponentProps>(props: Partial<T>, p
 
   const handleClick = () => {
     if (props.actionType === 'url' && props.url) {
-      // window.location.href = props.url // todo
-
-      message.info(`页面跳转：${props.url}`)
+      window.location.href = props.url
     }
   }
 

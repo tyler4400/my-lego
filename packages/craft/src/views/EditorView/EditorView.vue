@@ -36,9 +36,6 @@
             </div>
           </div>
         </Spin>
-        <pre>
-              {{ editorStore.pageData }}
-          </pre>
       </LayoutContent>
       <LayoutSider
         width="300"
@@ -95,9 +92,6 @@
             />
           </TabPane>
         </Tabs>
-        <pre>
-          {{ editorStore.currentElement }}
-        </pre>
       </LayoutSider>
     </Layout>
   </div>
