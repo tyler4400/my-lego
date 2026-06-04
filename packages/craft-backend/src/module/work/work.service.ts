@@ -7,7 +7,9 @@ import { nanoid } from 'nanoid'
 import { BizException } from '@/common/error/biz.exception'
 import { allWorkStatus, Work, WorkDocument, WorkStatusEnum } from '@/database/mongo/schema/work.schema'
 import { MyListQueryDto } from '@/module/work/dto/my-list-query.dto'
+import { PublicListQueryDto } from '@/module/work/dto/public-list-query.dto'
 import { projection } from '@/module/work/dto/work-list-item.dto'
+import { publicListProjection } from '@/module/work/dto/work-public-list-item.dto'
 import { WorkUpdateDto } from '@/module/work/dto/work-update.dto'
 
 /**
@@ -213,6 +215,110 @@ export class WorkService {
     }
 
     return updated
+  }
+
+  /**
+   * 首页公开模版列表
+   *
+   * 过滤条件（服务端固定，不接受外部覆盖）：
+   * - status = Published
+   * - isPublic = true
+   * - isTemplate = true
+   *
+   * - title 支持模糊搜索（DTO 已做正则字面量转义）
+   * - 排序字段限定为 copiedCount / latestPublishAt / createdAt，默认 copiedCount desc
+   * - populate user 拿 username / nickName / picture 用于卡片作者展示
+   */
+  async getPublicWorkList(query: PublicListQueryDto) {
+    const filter: Record<string, any> = {
+      status: WorkStatusEnum.Published,
+      isPublic: true,
+      isTemplate: true,
+    }
+
+    if (query.safeTitle) {
+      filter.title = { $regex: query.safeTitle, $options: 'i' }
+    }
+
+    this.logger.debug(filter)
+    const [list, total] = await Promise.all([
+      this.workModel
+        .find(filter)
+        .select(publicListProjection.join(' '))
+        .populate({ path: 'user', select: 'username nickName picture' })
+        .sort(query.sort)
+        .skip(query.skip)
+        .limit(query.limit)
+        .lean(),
+      this.workModel.countDocuments(filter),
+    ])
+    return { list, total }
+  }
+
+  /**
+   * 复制作品到当前用户名下
+   *
+   * 权限：调用方已通过 WorkPolicyGuard + WorkAction.Read 校验
+   * - 作者本人 OR isPublic=true 才能进到这里
+   *
+   * 业务约束：
+   * - 源作品必须是 Published（防止复制别人未发布的草稿；自己的草稿也没有"复制"语义）
+   * - 副本字段策略：
+   *   - 沿用：title（追加"-副本"）、desc、coverImg、content
+   *   - 重置：status=Initial、isTemplate=false、isPublic=false、isHot=false、copiedCount=0、channels=[]、uuid 重新生成、user/author 为当前用户
+   * - copiedCount 累计策略：仅"非作者复制"才在源 work 上 $inc 1（避免作者自己刷数据）
+   *
+   * 一致性：
+   * - 单机 MongoDB 不支持事务，采用"先创建副本成功后再 $inc 源 work"的弱一致性
+   * - $inc 失败仅记日志，不影响副本创建结果（业务上 copiedCount 偶尔少 1 可接受）
+   */
+  async copyWork(id: number, userPayload: UserPayload) {
+    const source = await this.findWorkByIdOrThrow(id)
+
+    if (source.status !== WorkStatusEnum.Published) {
+      throw new BizException({ errorKey: 'workStatusTransferFail' })
+    }
+
+    const userObjectId = this.getUserObjectId(userPayload)
+    const sourceOwnerId = String((source as any).user?._id ?? (source as any).user ?? '')
+    const isOwner = sourceOwnerId === userPayload._id
+
+    // 副本标题：源标题为空时回落到"未命名作品"，避免出现"-副本"这种孤儿后缀
+    const baseTitle = source.title?.trim() || '未命名作品'
+
+    const copied = await this.workModel.create({
+      title: `${baseTitle}-副本`,
+      desc: source.desc ?? '',
+      coverImg: source.coverImg,
+      content: source.content,
+      uuid: nanoid(8),
+      user: userObjectId,
+      author: userPayload.username,
+      status: WorkStatusEnum.Initial,
+      isTemplate: false,
+      isPublic: false,
+      isHot: false,
+      copiedCount: 0,
+      channels: [],
+    })
+
+    if (!isOwner) {
+      // 弱一致性：失败仅记日志，不抛出，避免副本已建好却返回错误
+      this.workModel
+        .updateOne({ id }, { $inc: { copiedCount: 1 } })
+        .catch((err: unknown) => {
+          this.logger.warn(`copyWork: inc copiedCount failed for work id=${id}: ${String(err)}`)
+        })
+    }
+
+    // populate 后返回，与 detail 结构对齐，方便前端直接 applyDetail 或跳编辑器
+    const populated = await this.workModel
+      .findOne({ id: copied.id })
+      .populate({ path: 'user', select: 'username nickName picture' })
+      .lean()
+
+    // 理论上不可能为 null（刚 create 出来），兜底保留 copied
+    return populated ?? copied
   }
 
   /**

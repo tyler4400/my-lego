@@ -4,7 +4,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import EditorLayout from '@/views/EditorView/EditorLayout.vue'
-import HomeView from '@/views/HomeView.vue'
 import LoginView from '@/views/LoginView.vue'
 
 /**
@@ -37,7 +36,7 @@ const router = createRouter({
         {
           path: '',
           name: 'home',
-          component: HomeView,
+          component: () => import('@/views/HomeView'),
           meta: { title: '首页', requiresAuth: true },
         },
         {

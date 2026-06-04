@@ -5,6 +5,7 @@ import { onBeforeUnmount, toValue, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { UNAUTHORIZED_STATUS } from '@/api/http/constants.ts'
 import { getWorkDetail, WORK_ERROR_CODE } from '@/api/modules/work.ts'
+import { useCopyWork } from '@/hooks/useCopyWork.ts'
 import { useService } from '@/hooks/useService.ts'
 import { useEditorStore } from '@/stores/editor.ts'
 import { useSessionStore } from '@/stores/session.ts'
@@ -18,6 +19,10 @@ export const useFetchWork = (idSource: MaybeRefOrGetter<unknown>, immediate: boo
   const [doFetchDetail, loadLoading] = useService(getWorkDetail, {
     config: { silentError: true, silentSuccess: true },
   })
+
+  // 复制能力复用 useCopyWork：
+  // - 用 replace 跳转：避免用户回退到他人模版页又触发"复制提示"弹窗陷入循环
+  const { doCopy } = useCopyWork({ navigationType: 'replace' })
 
   /**
    * 是否为「他人的公开模版」
@@ -44,16 +49,24 @@ export const useFetchWork = (idSource: MaybeRefOrGetter<unknown>, immediate: boo
   }
 
   /**
-   * 他人模版：提示是否复制一份到自己名下（复制能力二期实现，本期占位）
-   * - 无论确认或关闭，编辑器都保持空白画布（不回填模版数据）
+   * 他人模版：提示是否复制一份到自己名下
+   * - 确认：调 copyWork，成功后自动 router.replace 跳新作品编辑器（useCopyWork 内部处理）
+   *   失败由全局拦截 toast，弹窗会因 onOk 返回的 promise reject 而保留
+   * - 取消：返回上一页，避免在空白编辑器上停留
+   * - 无论确认或关闭，编辑器画布都保持空白（不回填模版数据）
    */
   const showOthersTemplateModal = () => {
+    const workId = Number(toValue(idSource))
     Modal.confirm({
       title: '这是一个公开模版',
       content: '该模版属于其他作者，无法直接编辑。是否复制一份到自己名下进行编辑？',
       okText: '复制一份',
       cancelText: '返回',
-      onOk: () => Modal.info({ title: '提示', content: '复制模版功能开发中，敬请期待' }),
+      onOk: async () => {
+        const newWork = await doCopy(workId)
+        // 复制失败：抛出让 antd Modal 不要自动关闭，用户可重试或点取消
+        if (!newWork) throw new Error('copy failed')
+      },
       onCancel: () => router.back(),
     })
   }

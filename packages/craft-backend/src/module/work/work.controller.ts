@@ -11,10 +11,12 @@ import { ChannelUpdateDto } from '@/module/work/dto/channel-update.dto'
 import { CreateChannelDto } from '@/module/work/dto/create-Channel.dto'
 import { CreateDto } from '@/module/work/dto/create-dto'
 import { MyListQueryDto } from '@/module/work/dto/my-list-query.dto'
+import { PublicListQueryDto } from '@/module/work/dto/public-list-query.dto'
 import { SetPublicDto } from '@/module/work/dto/set-public.dto'
 import { WorkDetailDto } from '@/module/work/dto/work-detail.dto'
 import { WorkIdDto } from '@/module/work/dto/work-id.dto'
 import { WorkListResponseDto } from '@/module/work/dto/work-list-response.dto'
+import { WorkPublicListResponseDto } from '@/module/work/dto/work-public-list-response.dto'
 import { WorkUpdateDto } from '@/module/work/dto/work-update.dto'
 import { WorkService } from '@/module/work/work.service'
 import { WorkChannelService } from '@/module/work/workChannel.service'
@@ -54,6 +56,37 @@ export class WorkController {
   @Serialize(WorkListResponseDto)
   async myList(@Req() req: Request, @Query() dto: MyListQueryDto) {
     return this.workService.getMyWorkList(dto, req.user!)
+  }
+
+  /**
+   * 查询公开模版列表（首页瀑布流）
+   * - 必须登录（与全站鉴权策略对齐）
+   * - 过滤条件由服务端固定：status=Published && isPublic=true && isTemplate=true
+   * - 支持 title 模糊搜索、分页与有限的排序字段
+   */
+  @Get('publicList')
+  @UseGuards(JwtAuthGuard)
+  @MetaRes({ message: '获取公开模版列表成功' })
+  @Serialize(WorkPublicListResponseDto)
+  async publicList(@Query() dto: PublicListQueryDto) {
+    return this.workService.getPublicWorkList(dto)
+  }
+
+  /**
+   * 复制作品到当前用户名下
+   * - 必须登录
+   * - 通过 WorkPolicy(Read) 校验：作者本人 OR isPublic=true
+   * - 业务再校验：源作品必须是 Published（service 层保障）
+   * - 副本字段策略详见 WorkService.copyWork
+   * - 复制成功后返回新作品详情，前端据此跳 /editor/${newId}
+   */
+  @Post('copy')
+  @UseGuards(JwtAuthGuard, WorkPolicyGuard)
+  @WorkPolicy(WorkAction.Read, 'body', 'id', 'workNoPublicFail')
+  @MetaRes({ message: '复制作品成功' })
+  @Serialize(WorkDetailDto)
+  async copy(@Req() req: Request, @Body() dto: WorkIdDto) {
+    return this.workService.copyWork(dto.id, req.user!)
   }
 
   /**

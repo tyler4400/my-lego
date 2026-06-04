@@ -152,6 +152,67 @@ export interface MyListQuery {
 }
 
 /**
+ * 公开模版列表单项（与后端 WorkPublicListItemDto 对齐）
+ * - 比 WorkListItemDto 多 uuid（用于"预览 H5"在新窗口打开）+ user（作者信息）
+ */
+export interface WorkPublicListItemDto {
+  id: number
+  uuid: string
+  author: string
+  copiedCount: number
+  coverImg: string
+  desc: string
+  title: string
+  isHot: boolean
+  status: WorkStatusEnum
+  isTemplate: boolean
+  isPublic?: boolean
+  latestPublishAt: string
+  createdAt: string
+  updatedAt: string
+  user?: WorkDetailUserDto | null
+}
+
+/**
+ * 公开模版列表响应结构
+ */
+export interface WorkPublicListResponse {
+  list: WorkPublicListItemDto[]
+  total: number
+}
+
+/**
+ * 公开模版列表 query（与后端 PublicListQueryDto 对齐）
+ * - 不暴露 status / isPublic / isTemplate：服务端固定 Published + isPublic + isTemplate
+ * - 仅暴露 title 与有限的排序字段
+ */
+export interface PublicListQuery {
+  page?: number
+  pageSize?: number
+  sortBy?: 'copiedCount' | 'latestPublishAt' | 'createdAt'
+  sortOrder?: 'asc' | 'desc'
+  title?: string
+}
+
+/**
+ * 复制次数 → HOT 角标阈值
+ * - 开发阶段先用极低阈值 2，方便联调时验证角标；上线前调到运营约定值
+ * - 与 isHot 字段是 OR 关系（任一为真即视为 HOT），具体逻辑见 isWorkHot
+ */
+export const HOT_COPIED_THRESHOLD = 2
+
+/**
+ * 判断作品是否为「HOT」
+ * - 运营手动标记的 isHot 优先
+ * - 没有手动标记时，按 copiedCount 阈值兜底自动判定
+ * - 同一处实现，列表 / 详情 / 编辑器都从这里读，避免阈值散落
+ */
+export const isWorkHot = (work: { isHot?: boolean, copiedCount?: number }): boolean => {
+  if (work.isHot) return true
+  return (work.copiedCount ?? 0) > HOT_COPIED_THRESHOLD
+}
+
+/**
  * 创建作品请求体（与后端 CreateDto 对齐）
  * - title / content 必填
  * - 不再支持 isTemplate / isPublic / isHot：
@@ -225,10 +286,25 @@ export const getMyWorkList = (query?: MyListQuery, config?: ServiceConfig) =>
   httpTry(http.get<WorkListResponse>('/v1/work/myList', { ...config, params: query }))
 
 /**
+ * 查询公开模版列表（首页瀑布流，分页 + title 模糊搜索 + 有限排序）
+ * - 后端过滤条件固定为：status=Published && isPublic=true && isTemplate=true
+ */
+export const getPublicWorkList = (query?: PublicListQuery, config?: ServiceConfig) =>
+  httpTry(http.get<WorkPublicListResponse>('/v1/work/publicList', { ...config, params: query }))
+
+/**
  * 查询作品详情（id 通过 query string 传递）
  */
 export const getWorkDetail = (id: number, config?: ServiceConfig) =>
   httpTry(http.get<WorkDetailDto>('/v1/work/detail', { ...config, params: { id } }))
+
+/**
+ * 复制作品到当前用户名下
+ * - 要求 id 对应作品满足：未删除 + status=Published + (作者本人 OR isPublic=true)
+ * - 返回新建作品的详情，调用方据此跳 /editor/${newId}
+ */
+export const copyWork = (id: number, config?: ServiceConfig<{ id: number }>) =>
+  httpTry(http.post<WorkDetailDto, { id: number }>('/v1/work/copy', { id }, config))
 
 /**
  * 编辑我的作品（partial：未传字段不更新）
