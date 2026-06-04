@@ -13,7 +13,7 @@ export default defineConfig({
       tsconfigPath: './tsconfig.app.json',
       rollupTypes: true, // rollup 成一个 d.ts
       outDir: 'dist-ssr/types',
-      include: ['src/ssr/**/*'],
+      include: ['src/ssr/**/*', 'env.d.ts'],
       // exclude: ['src/**/*.test.*'],
     }),
   ],
