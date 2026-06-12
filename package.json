@@ -10,7 +10,8 @@
     "format": "pnpm -r run format",
     "test:craft": "pnpm --filter @my-lego/craft test:unit",
     "dev:craft": "pnpm --filter @my-lego/craft dev",
-    "dev:craft-backend": "pnpm --filter @my-lego/craft-backend dev"
+    "dev:craft-backend": "pnpm --filter @my-lego/craft-backend dev",
+    "dev:craft-admin": "pnpm --filter @my-lego/craft-admin dev"
   },
   "keywords": [],
   "author": "",

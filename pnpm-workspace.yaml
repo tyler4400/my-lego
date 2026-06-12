@@ -4,6 +4,7 @@ packages:
   - '!**/test/**'
 allowBuilds:
   '@nestjs/core': true
+  '@parcel/watcher': true
   core-js: true
   esbuild: true
   sharp: true
