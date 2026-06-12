@@ -13,7 +13,9 @@
   },
   "dependencies": {
     "@my-lego/shared": "workspace:*",
+    "@tailwindcss/vite": "^4.3.0",
     "nuxt": "^4.4.8",
+    "tailwindcss": "^4.3.0",
     "vue": "^3.5.35",
     "vue-router": "^5.1.0"
   }

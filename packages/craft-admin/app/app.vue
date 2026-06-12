@@ -13,7 +13,9 @@ const user = useState('user', () => ({
 <template>
   <div>
     <NuxtRouteAnnouncer />
-    <NuxtWelcome />
+    <div class="p-1 rounded bg-gray-400 text-center">
+      首页
+    </div>
     <pre>{{ user }}</pre>
   </div>
 </template>
