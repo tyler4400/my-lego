@@ -3,7 +3,24 @@ import antfu from '@antfu/eslint-config'
 export default antfu(
   {
     // craft-admin 是 Nuxt(Vue3) + TypeScript 项目
-    vue: true,
+    vue: {
+      overrides: {
+        // enforce order of component top-level elements 自定义 Vue 文件中标签的顺序，模板 -> 脚本 -> 样式
+        'vue/block-order': ['error', {
+          order: ['template', 'script', 'style'],
+        }],
+        // 组件名使用 PascalCase，例如 <ComponentList />
+        'vue/component-name-in-template-casing': ['error', 'PascalCase'],
+        // props/attribute 一律使用驼峰写法，禁止 some-prop 这种横线形式（保留 data-*/aria-* 原生属性）
+        'vue/attribute-hyphenation': ['error', 'never', {
+          ignore: ['data-*', 'aria-*'],
+        }],
+        // 事件绑定使用驼峰写法，例如 @onItemClick，不允许 @on-item-click
+        'vue/v-on-event-hyphenation': ['error', 'never'],
+        // 自定义事件名称（emit）使用 camelCase，例如 emit('setActive')
+        'vue/custom-event-name-casing': ['error', 'camelCase'],
+      },
+    },
     typescript: true,
     // 忽略 Nuxt 构建产物与依赖目录
     ignores: ['dist', 'node_modules', '.nuxt', '.output'],

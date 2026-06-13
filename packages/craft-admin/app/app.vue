@@ -1,3 +1,13 @@
+<template>
+  <div>
+    <NuxtRouteAnnouncer />
+    <NuxtLoadingIndicator />
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
+  </div>
+</template>
+
 <script lang="ts" setup>
 // import { isFunction } from '@my-lego/shared'
 //
@@ -9,13 +19,3 @@
 // }
 // ))
 </script>
-
-<template>
-  <div>
-    <NuxtRouteAnnouncer />
-    <NuxtLoadingIndicator />
-    <NuxtLayout>
-      <NuxtPage />
-    </NuxtLayout>
-  </div>
-</template>

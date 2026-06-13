@@ -1,6 +1,3 @@
-<script setup lang="ts">
-</script>
-
 <template>
   <div class="min-h-screen flex flex-col bg-gray-50">
     <!-- 临时 Header 占位（21-17 会做正式的 GlobalHeader 组件） -->
