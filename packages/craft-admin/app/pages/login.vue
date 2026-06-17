@@ -8,36 +8,8 @@
         用户登录
       </h1>
 
-      <!-- email -->
-      <div>
-        <input
-          v-model="email"
-          v-bind="emailAttrs"
-          type="text"
-          placeholder="输入邮箱地址"
-          class="w-full rounded-lg p-3 text-sm border"
-          :class="errors.email ? 'border-red-500' : 'border-gray-200'"
-        >
-        <span v-if="errors.email" class="mt-1 text-xs italic text-red-500">
-          {{ errors.email }}
-        </span>
-      </div>
-
-      <!-- password -->
-      <div>
-        <input
-          v-model="password"
-          v-bind="passwordAttrs"
-          type="password"
-          placeholder="输入密码"
-          class="w-full rounded-lg p-3 text-sm border"
-          :class="errors.email ? 'border-red-500' : 'border-gray-200'"
-          autocomplete="current-password"
-        >
-        <span v-if="errors.password" class="mt-1 text-xs italic text-red-500">
-          {{ errors.password }}
-        </span>
-      </div>
+      <ValidateInput name="email" placeholder="输入邮箱地址" />
+      <ValidateInput name="password" type="password" placeholder="输入密码" />
 
       <button
         type="submit"
@@ -62,13 +34,10 @@ definePageMeta({
   // layoutTransition: { name: 'layout', mode: 'out-in' },
 })
 
-const { values, defineField, errors, handleSubmit, isSubmitting, meta } = useForm({
+const { values, handleSubmit, isSubmitting, meta } = useForm({
   validationSchema: toTypedSchema(userLoginSchema),
   // initialValues: {}
 })
-
-const [email, emailAttrs] = defineField('email')
-const [password, passwordAttrs] = defineField('password')
 
 // handleSubmit 包裹真正的提交逻辑：校验通过后才会调到回调
 const handleLogin = handleSubmit(async () => {
