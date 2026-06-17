@@ -352,6 +352,7 @@ Settings (Preferences on macOS)
 4. **WebStorm 没补全**：先确认 `package.json` 里有 `tailwindcss` 依赖、CSS 入口里有 `@import "tailwindcss";`、WebStorm 版本 ≥ 2024.1；都对的情况下还不行，到 `Settings → Languages & Frameworks → Style Sheets → Tailwind CSS` 手动指定 Language Server 路径。
 5. **`@tailwindcss/vite` 必须调用为函数**：写 `plugins: [tailwindcss()]`，**不能**写成 `plugins: [tailwindcss]`（少了括号会 Vite 报错 "is not a function"）。
 6. **不要在根目录跑 `pnpm add tailwindcss`**。这会装到根 `package.json`，对子包没用，反而可能引入版本冲突。
+7. monorepo 中若 packages/craft 与 packages/craft-admin 使用不同 Vite 版本，nuxt.config.ts 里 vite.plugins: [tailwindcss()] 可能出现 Plugin 类型不兼容。解决：根目录 pnpm.overrides 统一 vite 版本。
 
 ### 4.2 关键 API / 配置速查
 

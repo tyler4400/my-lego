@@ -18,14 +18,14 @@
 
 ### 本节产出
 
-1. 在 `app/layouts/` 下创建两个布局：`default.vue`（主布局，含 Header）和 `auth.vue`（极简布局）。
+1. 在 `app/layouts/` 下创建两个布局：`default.vue`（主布局，含 Header）和 `empty.vue`（极简布局）。
 2. 改造 `app/app.vue`，用 `<NuxtLayout>` 包住 `<NuxtPage />`，启用 Layouts 机制。
 3. 创建 `app/pages/index.vue` 和 `app/pages/login.vue` 两个 page 验证效果。
-4. 用 `definePageMeta({ layout: 'auth' })` 让 `login.vue` 切到极简布局。
+4. 用 `definePageMeta({ layout: 'empty' })` 让 `login.vue` 切到极简布局。
 
 最终效果：访问 `/` 看到带 Header 的主布局；访问 `/login` 看到极简布局。
 
-> 💡 命名差异：课程的极简布局叫 `custom.vue`（讲师在视频里口误说成 "Customer"）。craft-admin 用更语义化的 **`auth.vue`** —— 这层布局本质是给「认证类页面」用的，名字直接说明意图，后续 signup、reset-password 等页面也能复用。文档主线用 `auth.vue`，但会在易错点里告诉你课程为什么用 `custom.vue`。
+> 💡 命名差异：课程的极简布局叫 `custom.vue`（讲师在视频里口误说成 "Customer"）。craft-admin 改名为 **`empty.vue`** —— "empty" 直白表达"空布局、无骨架"，登录 / 注册等认证页都用它。跟课程视频敲时，把讲师说的 `custom.vue` 对应到 `empty.vue` 即可。
 
 ---
 
@@ -38,7 +38,7 @@
 **特殊文件名**：
 
 - `default.vue` —— **默认 fallback**。任何 page 没有显式声明 layout 时都会用它。
-- 其他文件名（`auth.vue` / `admin.vue` / `print.vue` …） —— 普通命名 layout，需要在 page 里用 `definePageMeta({ layout: '...' })` 显式启用。
+- 其他文件名（`empty.vue` / `admin.vue` / `print.vue` …） —— 普通命名 layout，需要在 page 里用 `definePageMeta({ layout: '...' })` 显式启用。
 
 **结构要求**：Layout 是个普通 Vue 组件，必须包含一个 `<slot />`（Nuxt 会把 page 内容塞到 slot 位置）。
 
@@ -66,9 +66,7 @@
 
 ```vue
 <!-- packages/craft-admin/app/layouts/default.vue -->
-<script setup lang="ts">
-</script>
-
+<!-- 纯展示布局，无脚本逻辑时可只写 template（符合 eslint block-order: template→script→style） -->
 <template>
   <div class="min-h-screen flex flex-col bg-gray-50">
     <!-- 临时 Header 占位（21-17 会做正式的 GlobalHeader 组件） -->
@@ -91,10 +89,10 @@
 
 > 💡 视频里讲师在 `default.vue` 直接用了 `<GlobalHeader />`、`<Sidebar />` 等还没创建的组件 —— 这是因为他的课程项目是从已完成的源码倒着讲的。craft-admin 是从零写，**21-3 阶段先用上面的临时 Header**，到 21-17 / 21-18 节再抽离成 `GlobalHeader` 组件并补侧边栏。
 
-#### Step 2 创建 `app/layouts/auth.vue`（课程叫 `custom.vue`）
+#### Step 2 创建 `app/layouts/empty.vue`（课程叫 `custom.vue`）
 
 ```vue
-<!-- packages/craft-admin/app/layouts/auth.vue -->
+<!-- packages/craft-admin/app/layouts/empty.vue -->
 <template>
   <!-- 极简布局：不渲染任何骨架，由 page 自己掌控全屏内容 -->
   <slot />
@@ -102,7 +100,7 @@
 ```
 
 > 💡 这个文件可以更短 —— Nuxt 允许 layout 里只写一个 `<slot />`，连外层 `<div>` 都不需要。
-> 但如果你想给认证页统一加个背景（如渐变背景、品牌色），可以在外层包一个 `<div class="min-h-screen bg-gradient-to-br from-blue-50 to-emerald-50">`。这里先保持极简，21-10 写注册页时再决定要不要加。
+> 但如果你想给认证页统一加个背景（如渐变背景、品牌色），可以在外层包一个 `<div class="min-h-screen bg-linear-to-br from-blue-50 to-emerald-50">`。这里先保持极简，21-10 写注册页时再决定要不要加。
 
 #### Step 3 改造 `app/app.vue` 启用 Layouts
 
@@ -113,6 +111,7 @@
 <template>
   <div>
     <NuxtRouteAnnouncer />
+    <NuxtLoadingIndicator />
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
@@ -123,7 +122,8 @@
 要点：
 
 - **保留 `<NuxtRouteAnnouncer />`** —— 这是 Nuxt 默认模板生成的无障碍组件（路由变化时向屏幕阅读器播报），删掉无副作用但会损失可访问性。
-- **删掉之前的 `useState` / `isFunction` demo** —— 这些只是 21-1 验证 Tailwind 时的临时代码，不再需要。
+- **加上 `<NuxtLoadingIndicator />`** —— Nuxt 内置的顶部路由加载进度条（页面跳转时显示）。课程项目源码 `app.vue` 里就有，craft-admin 一并加上，21-13 / 21-14 登录跳转时有视觉反馈。
+- **删掉之前的 `useState` / `isFunction` demo** —— 这些只是 21-1 验证 Tailwind 时的临时代码，不再需要（craft-admin 实际把它们注释掉了）。
 - `<NuxtPage />` **必须**放在 `<NuxtLayout>` 内层 —— 这是讲师视频中强调的关键点。如果反着写（`<NuxtPage><NuxtLayout/></NuxtPage>`）会报错。
 
 > ⚠️ Nuxt 4 差异（vue-router 版本顺带说一下）
@@ -145,15 +145,8 @@
 
 ```vue
 <!-- packages/craft-admin/app/pages/login.vue -->
-<script setup lang="ts">
-// 关键：通过 definePageMeta 切换到 auth 布局
-definePageMeta({
-  layout: 'auth',
-})
-</script>
-
 <template>
-  <div class="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-emerald-50">
+  <div class="flex min-h-screen items-center justify-center bg-linear-to-br from-blue-50 to-emerald-50">
     <div class="w-full max-w-md rounded-xl bg-white p-8 shadow">
       <h1 class="text-center text-2xl font-bold text-gray-800">用户登录</h1>
       <p class="mt-2 text-center text-sm text-gray-500">这是极简认证布局，没有 Header</p>
@@ -161,6 +154,13 @@ definePageMeta({
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+// 通过 definePageMeta 切换到 empty 布局
+definePageMeta({
+  layout: 'empty',
+})
+</script>
 ```
 
 #### Step 5 启动验证
@@ -175,7 +175,7 @@ pnpm --filter @my-lego/craft-admin dev
 这就证明：
 
 - 默认页面（`index.vue`）走 `default.vue` 布局（约定 fallback）
-- `login.vue` 通过 `definePageMeta({ layout: 'auth' })` 走 `auth.vue` 布局
+- `login.vue` 通过 `definePageMeta({ layout: 'empty' })` 走 `empty.vue` 布局
 
 ### 2.3 `definePageMeta` 的几种 layout 用法（讲师只演示了第 1 种）
 
@@ -183,7 +183,7 @@ pnpm --filter @my-lego/craft-admin dev
 
 | 写法                                                | 含义                                                | 何时用                              |
 | --------------------------------------------------- | --------------------------------------------------- | ----------------------------------- |
-| `definePageMeta({ layout: 'auth' })`                | 指定具名 layout（**讲师演示**）                     | 大多数场景                          |
+| `definePageMeta({ layout: 'empty' })`                | 指定具名 layout（**讲师演示**）                     | 大多数场景                          |
 | `definePageMeta({ layout: false })`                 | 该页面**不使用任何 layout**，连 default 都不套      | 全屏特殊页（如 print 预览、错误页） |
 | `definePageMeta({ layout: 'default' })`             | 显式声明 default（多余但无害）                      | 团队规范要求页面必须声明 layout 时  |
 | 不写 `layout`                                       | 使用 `default.vue`（如有）                          | 默认行为                            |
@@ -195,7 +195,7 @@ pnpm --filter @my-lego/craft-admin dev
 ```vue
 <script setup lang="ts">
 definePageMeta({
-  layout: 'auth',
+  layout: 'empty',
   // 21-3 用不到，但顺带知道：可以给 layout 切换加过渡动画
   layoutTransition: { name: 'layout', mode: 'out-in' },
 })
@@ -247,7 +247,7 @@ definePageMeta({
    - 参数必须是**静态字面量对象**，不能写成 `definePageMeta({ layout: someVariable })`（编译时无法分析）。
    - 不能 `import { definePageMeta }`（已是全局自动导入）。
    - 不要写两个 `definePageMeta` —— 后一个会覆盖前一个，但 IDE 不会提示。
-5. **课程命名陷阱 `custom.vue`**。讲师在视频里读作 "Customer"，实际文件名是 `custom.vue`（去掉 -er）。craft-admin 用语义化的 `auth.vue` 避免误解，但如果你跟着课程视频敲，**写错成 `customer.vue` 会找不到布局**。
+5. **课程命名陷阱 `custom.vue`**。讲师在视频里读作 "Customer"，实际文件名是 `custom.vue`（去掉 -er）。craft-admin 用语义化的 `empty.vue` 避免误解，但如果你跟着课程视频敲，**写错成 `customer.vue` 会找不到布局**。
 6. **`<slot />` 漏写**。Layout 里没有 `<slot />` 的话，page 内容根本不会被渲染（dev tools 也不会报错，只是页面空白）。
 7. **想给单个页面"无 layout"** 用 `definePageMeta({ layout: false })`，不是 `layout: ''` 或 `layout: null`。
 8. **layout 名是文件名（kebab-case）**。如果文件叫 `myAuth.vue`，在 page 里要写 `layout: 'my-auth'`，不是 `myAuth`。这与 middleware 的命名规则一致。
@@ -257,29 +257,29 @@ definePageMeta({
 | API                                              | 作用                                | 调用位置                              |
 | ------------------------------------------------ | ----------------------------------- | ------------------------------------- |
 | `<NuxtLayout>`                                   | layout 渲染槽，包住 `<NuxtPage />`  | `app/app.vue`                         |
-| `<NuxtLayout name="auth">` (prop)                | 在 `app.vue` 强制使用某 layout（覆盖 page 声明） | `app/app.vue`             |
+| `<NuxtLayout name="empty">` (prop)                | 在 `app.vue` 强制使用某 layout（覆盖 page 声明） | `app/app.vue`             |
 | `<NuxtPage />`                                   | 渲染当前路由匹配的 page 组件        | `app/app.vue`（包在 `<NuxtLayout>` 内） |
-| `definePageMeta({ layout: 'auth' })`             | page 静态指定 layout                | page 文件 `<script setup>`            |
+| `definePageMeta({ layout: 'empty' })`             | page 静态指定 layout                | page 文件 `<script setup>`            |
 | `definePageMeta({ layout: false })`              | page 显式不使用 layout              | 同上                                  |
-| `setPageLayout('auth')`                          | **运行时**切换 layout（少用）         | 任意 `<script setup>` 或 composable    |
+| `setPageLayout('empty')`                         | **运行时**切换 layout（少用）         | 任意 `<script setup>` 或 composable    |
 | `definePageMeta({ layoutTransition: {...} })`    | 配置 layout 切换过渡动画            | page 文件                             |
 
 ### 4.3 与课程相比，本节**改写**了什么
 
-- 课程 layout 命名 `custom.vue` → craft-admin 改为 **`auth.vue`**（语义化）。
+- 课程 layout 命名 `custom.vue` → craft-admin 改为 **`empty.vue`**（语义化）。
 - 课程 `default.vue` 内引用了未创建的 `<GlobalHeader />` `<Sidebar />` → craft-admin 用临时 inline Header，21-17 / 21-18 再抽组件。
 - 课程的 `app.vue` 删除了 `<NuxtRouteAnnouncer />` → craft-admin **保留**（无障碍）。
-- 课程没有 `<NuxtLoadingIndicator />` —— 课程项目源码里的 `app.vue` 是有的，视频里没演示。craft-admin 也先不加，21-13 / 21-14 处理登录状态时再考虑。
+- `<NuxtLoadingIndicator />` —— 课程项目源码 `app.vue` 里有但视频没演示；craft-admin 直接加上（路由跳转进度条）。
 
 ---
 
 ## 5. 本节产出 checklist（动手时对照）
 
 - [ ] 新建 `packages/craft-admin/app/layouts/default.vue`（含临时 Header + `<slot />`）
-- [ ] 新建 `packages/craft-admin/app/layouts/auth.vue`（只有 `<slot />`）
+- [ ] 新建 `packages/craft-admin/app/layouts/empty.vue`（只有 `<slot />`）
 - [ ] 改写 `packages/craft-admin/app/app.vue` 为 `<NuxtLayout><NuxtPage /></NuxtLayout>` 形态（保留 `<NuxtRouteAnnouncer />`）
 - [ ] 新建 `packages/craft-admin/app/pages/index.vue`（默认布局首页）
-- [ ] 新建 `packages/craft-admin/app/pages/login.vue`，在 `<script setup>` 里写 `definePageMeta({ layout: 'auth' })`
+- [ ] 新建 `packages/craft-admin/app/pages/login.vue`，在 `<script setup>` 里写 `definePageMeta({ layout: 'empty' })`
 - [ ] **重启 dev server**：`pnpm --filter @my-lego/craft-admin dev`
 - [ ] 访问 `/` 验证 default 布局生效（Header 可见）
 - [ ] 访问 `/login` 验证 auth 布局生效（Header 不可见、全屏渐变）
