@@ -1,8 +1,8 @@
 <template>
-  <div class="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-emerald-50 p-4">
+  <div class="flex min-h-screen items-center justify-center bg-linear-to-br from-blue-50 to-emerald-50 p-4">
     <form
       class="w-full max-w-md space-y-5 rounded-xl bg-white p-8 shadow"
-      @submit.prevent="handleLogin"
+      @submit="handleLogin"
     >
       <h1 class="text-center text-2xl font-bold text-gray-800">
         用户登录
@@ -11,29 +11,31 @@
       <!-- email -->
       <div>
         <input
-          v-model="formData.email"
+          v-model="email"
+          v-bind="emailAttrs"
           type="text"
           placeholder="输入邮箱地址"
           class="w-full rounded-lg p-3 text-sm border"
-          :class="emailError ? 'border-red-500' : 'border-gray-200'"
+          :class="errors.email ? 'border-red-500' : 'border-gray-200'"
         >
-        <span v-if="emailError" class="mt-1 text-xs italic text-red-500">
-          {{ emailError[0] }}
+        <span v-if="errors.email" class="mt-1 text-xs italic text-red-500">
+          {{ errors.email }}
         </span>
       </div>
 
       <!-- password -->
       <div>
         <input
-          v-model="formData.password"
+          v-model="password"
+          v-bind="passwordAttrs"
           type="password"
           placeholder="输入密码"
           class="w-full rounded-lg p-3 text-sm border"
-          :class="passwordError ? 'border-red-500' : 'border-gray-200'"
+          :class="errors.email ? 'border-red-500' : 'border-gray-200'"
           autocomplete="current-password"
         >
-        <span v-if="passwordError" class="mt-1 text-xs italic text-red-500">
-          {{ passwordError[0] }}
+        <span v-if="errors.password" class="mt-1 text-xs italic text-red-500">
+          {{ errors.password }}
         </span>
       </div>
 
@@ -41,17 +43,18 @@
         type="submit"
         class="w-full rounded-lg bg-blue-500 px-5 py-3 text-sm font-medium text-white hover:bg-blue-600"
       >
-        登录
+        {{ isSubmitting ? 'Loading...' : '登录' }}
       </button>
     </form>
+    <pre>{{ meta }}</pre>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { UserLoginType } from '#shared/validators/user'
 // 关键：通过 definePageMeta 切换到 empty 布局
 import { userLoginSchema } from '#shared/validators/user'
-import { z } from 'zod'
+import { toTypedSchema } from '@vee-validate/zod'
+import { useForm } from 'vee-validate'
 
 definePageMeta({
   layout: 'empty',
@@ -59,32 +62,28 @@ definePageMeta({
   // layoutTransition: { name: 'layout', mode: 'out-in' },
 })
 
-const formData = reactive<UserLoginType>({ email: '', password: '' })
+const { values, defineField, errors, handleSubmit, isSubmitting, meta } = useForm({
+  validationSchema: toTypedSchema(userLoginSchema),
+  // initialValues: {}
+})
 
-const emailError = ref<string[]>()
-const passwordError = ref<string[]>()
+const [email, emailAttrs] = defineField('email')
+const [password, passwordAttrs] = defineField('password')
 
-const handleLogin = async () => {
-  const result = userLoginSchema.safeParse(formData)
-  if (!result.success) {
-    const tree = z.treeifyError(result.error)
-    emailError.value = tree.properties?.email?.errors
-    passwordError.value = tree.properties?.password?.errors
-    return
-  }
-  emailError.value = undefined
-  passwordError.value = undefined
-  console.log('valid', result.data)
+// handleSubmit 包裹真正的提交逻辑：校验通过后才会调到回调
+const handleLogin = handleSubmit(async () => {
+  // values 已经是强类型 { email: string; password: string }（toTypedSchema 推断出来）
+  console.log('valid', values)
 
   try {
     const data = await $fetch('/api/users/login', {
       method: 'POST',
-      body: formData,
+      body: values,
     })
     console.log('登录成功', data)
   }
   catch (error) {
     console.error('登录失败', error)
   }
-}
+})
 </script>

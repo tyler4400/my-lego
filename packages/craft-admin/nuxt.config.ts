@@ -17,6 +17,17 @@ export default defineNuxtConfig({
     '@my-lego/shared': fileURLToPath(new URL('../shared/src/index.ts', import.meta.url)),
   },
 
+  modules: [
+    ['@vee-validate/nuxt', {
+      autoImports: true,
+      componentNames: {
+        Form: 'VeeForm',
+        Field: 'VeeField',
+        ErrorMessage: 'VeeErrorMessage',
+      },
+    }],
+  ],
+
   // 把 Tailwind 入口 CSS 加到 css 数组
   css: ['~/assets/css/main.css'],
 
