@@ -16,7 +16,7 @@ export const runValidate = async <T>(
   if (!result.success) {
     throw createError({
       statusCode: 403,
-      message: '验证失败',
+      statusMessage: '参数验证失败',
       data: z.treeifyError(result.error),
     })
   }

@@ -31,6 +31,15 @@
           {{ isSubmitting ? '读取中...' : '注册' }}
         </button>
       </div>
+      <div
+        v-if="callbackMessage.isShow"
+        class="mt-4 rounded border-s-4 p-4"
+        :class="callbackMessage.isValid
+          ? 'border-green-500 bg-green-50 text-green-600'
+          : 'border-red-500 bg-red-50 text-red-600'"
+      >
+        {{ callbackMessage.message }}
+      </div>
     </form>
   </div>
 </template>
@@ -47,9 +56,25 @@ const { handleSubmit, isSubmitting } = useForm({
   // validateOnMount: true,
 })
 
+const callbackMessage = ref({
+  isShow: false,
+  isValid: true,
+  message: '',
+})
+
 const handleSignup = handleSubmit(async (values) => {
-  // values 强类型 { email; password; confirmPwd }
-  console.log('signup values', values)
-  // 21-11 接后端 /api/users/signup
+  try {
+    await $fetch('/api/users/signup', { method: 'POST', body: values })
+    callbackMessage.value = { isShow: true, isValid: true, message: '注册成功，2 秒后跳转登录' }
+    setTimeout(() => navigateTo('/login'), 2000)
+  }
+  catch (err: any) {
+    callbackMessage.value = {
+      isShow: true,
+      isValid: false,
+      // 后端用 statusMessage 返回，$fetch 错误里在 err.data.statusMessage
+      message: err.data?.statusMessage ?? '注册失败',
+    }
+  }
 })
 </script>

@@ -1,0 +1,25 @@
+@email_username = tyler{{$timestamp}}@test.com
+@email_password = 12345678
+@phone_number = 13800000000
+
+### login
+POST {{host}}:{{port}}/api/users/login
+Content-Type: application/json
+
+{
+  "email": "tyler1766558092@test.com",
+  "password": "{{email_password}}"
+}
+
+### signup
+POST {{host}}:{{port}}/api/users/signup
+Content-Type: application/json
+
+{
+  "email": "{{$random.email}}",
+  "password": "12345678",
+  "confirmPwd": "12345678"
+}
+
+### safe （未登录时 会401）
+GET {{host}}:{{port}}/api/safe

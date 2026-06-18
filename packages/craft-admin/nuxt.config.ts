@@ -17,6 +17,18 @@ export default defineNuxtConfig({
     '@my-lego/shared': fileURLToPath(new URL('../shared/src/index.ts', import.meta.url)),
   },
 
+  // 运行时配置：服务端私有 + 公开
+  runtimeConfig: {
+    jwt: {
+      secret: '', // 被 .env 的 NUXT_JWT_SECRET 覆盖
+      expiresIn: 10, // 1 小时（秒）
+      cookieName: 'craft-admin-token',
+    },
+    bcrypt: {
+      saltRounds: 10,
+    },
+  },
+
   modules: [
     ['@vee-validate/nuxt', {
       autoImports: true,
@@ -25,6 +37,11 @@ export default defineNuxtConfig({
         Field: 'VeeField',
         ErrorMessage: 'VeeErrorMessage',
       },
+    }],
+    ['nuxt-mongoose', {
+      // uri: 'mongodb://localhost:27017/your-db', // 会自动去读.env NUXT_MONGOOSE_URI
+      // options: {},
+      modelsDir: 'models', // 模型目录，默认 server/models
     }],
   ],
 
