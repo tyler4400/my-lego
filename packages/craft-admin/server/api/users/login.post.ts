@@ -21,10 +21,16 @@ export default defineEventHandler(async (event) => {
   // 只把关键信息放进 token（不要塞整个 user）
   const userData = { username: user.username, _id: user._id }
   const config = useRuntimeConfig(event)
-  const token = signJwtToken(userData)
-  // const token = jwt.sign(userData, config.jwt.secret, { expiresIn: config.jwt.expiresIn })
+  const token = signJwtToken(userData as unknown as JwtPayload)
+
   // 种 cookie，过期时间与 JWT 一致
-  setCookie(event, config.jwt.cookieName, token, { maxAge: config.jwt.expiresIn })
+  setCookie(event, config.jwt.cookieName, token, {
+    maxAge: config.jwt.expiresIn,
+    httpOnly: true, // JS 不可读，防 XSS 窃取
+    sameSite: 'lax', // 防 CSRF
+    secure: !import.meta.dev, // 生产走 https
+    path: '/',
+  })
 
   // toJSON 触发 transform 删密码
   return user.toJSON()

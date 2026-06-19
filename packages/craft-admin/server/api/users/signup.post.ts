@@ -21,5 +21,5 @@ export default defineEventHandler(async (event) => {
 
   // 创建用户
   const newUser = await UserSchema.create({ username: email, email, password: hash })
-  return newUser
+  return newUser.toJSON()
 })

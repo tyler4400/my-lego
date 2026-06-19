@@ -22,7 +22,7 @@ export const defineAuthResponseHandler = (handler: EventHandler) => {
     }
     catch {
       // token 伪造或过期：清 cookie + 报错
-      deleteCookie(event, 'token')
+      deleteCookie(event, config.jwt.cookieName)
       throw createError({ statusCode: 401, statusMessage: 'Token 已过期' })
     }
 

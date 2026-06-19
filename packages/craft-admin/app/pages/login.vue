@@ -39,6 +39,8 @@ const { values, handleSubmit, isSubmitting, meta } = useForm({
   // initialValues: {}
 })
 
+const currentUser = useCurrentUser()
+
 // handleSubmit 包裹真正的提交逻辑：校验通过后才会调到回调
 const handleLogin = handleSubmit(async () => {
   // values 已经是强类型 { email: string; password: string }（toTypedSchema 推断出来）
@@ -50,6 +52,9 @@ const handleLogin = handleSubmit(async () => {
       body: values,
     })
     console.log('登录成功', data)
+    currentUser.value.isLogin = true
+    currentUser.value.data = data as UserDataProps
+    navigateTo('/')
   }
   catch (error) {
     console.error('登录失败', error)

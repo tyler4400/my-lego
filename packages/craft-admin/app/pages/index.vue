@@ -7,5 +7,12 @@
     <p class="mt-4 text-gray-500">
       这是管理系统首页，应该看到上方的 Header。
     </p>
+    <pre>
+      {{ currentUser }}
+    </pre>
   </div>
 </template>
+
+<script lang="ts" setup>
+const currentUser = useCurrentUser()
+</script>

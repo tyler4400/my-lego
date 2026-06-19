@@ -21,5 +21,8 @@ Content-Type: application/json
   "confirmPwd": "12345678"
 }
 
-### safe （未登录时 会401）
-GET {{host}}:{{port}}/api/safe
+### 当前用户信息 （未登录时 会401）
+GET {{host}}:{{port}}/api/users/current
+
+### 登出
+POST {{host}}:{{port}}/api/users/logout

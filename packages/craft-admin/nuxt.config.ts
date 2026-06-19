@@ -21,7 +21,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     jwt: {
       secret: '', // 被 .env 的 NUXT_JWT_SECRET 覆盖
-      expiresIn: 10, // 1 小时（秒）
+      expiresIn: 60 * 60, // 1 小时（秒）
       cookieName: 'craft-admin-token',
     },
     bcrypt: {
