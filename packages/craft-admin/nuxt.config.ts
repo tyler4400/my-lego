@@ -1,6 +1,5 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import { fileURLToPath } from 'node:url'
-import tailwindcss from '@tailwindcss/vite'
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -30,6 +29,7 @@ export default defineNuxtConfig({
   },
 
   modules: [
+    '@nuxt/ui', // 它会自动处理 Tailwind v4 的 Vite 集成
     ['@vee-validate/nuxt', {
       autoImports: true,
       componentNames: {
@@ -48,8 +48,14 @@ export default defineNuxtConfig({
   // 把 Tailwind 入口 CSS 加到 css 数组
   css: ['~/assets/css/main.css'],
 
-  // 把 @tailwindcss/vite 注册为 Vite 插件
   vite: {
-    plugins: [tailwindcss()],
+    // 冷启动预构建
+    optimizeDeps: {
+      include: [
+        '@vee-validate/zod',
+        'zod',
+      ],
+    },
   },
+
 })

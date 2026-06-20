@@ -15,7 +15,7 @@
 
 ## 0. craft-admin 实测信息（第 21、22 章共用基准）
 
-`packages/craft-admin/` 由 `npx nuxi@latest init craft-admin --packageManager pnpm` 生成并接入 monorepo，实测依赖版本：
+`packages/craft-admin/` 由 `pnpm dlx nuxi@latest init packages/craft-admin --packageManager pnpm --no-install --no-modules` 生成并接入 monorepo，实测依赖版本：
 
 | 依赖             | 版本       | 备注                                                                  |
 | ---------------- | ---------- | --------------------------------------------------------------------- |
