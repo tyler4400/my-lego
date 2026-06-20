@@ -1,22 +1,18 @@
 <template>
-  <div class="min-h-screen flex flex-col bg-gray-50">
-    <!-- 临时 Header 占位（21-17 会做正式的 GlobalHeader 组件） -->
-    <header class="bg-gray-800 text-white shadow">
-      <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
-        <h1 class="text-lg font-semibold">
-          craft-admin
-        </h1>
-        <nav class="text-sm text-gray-300">
-          <NuxtLink to="/" class="hover:text-white">
-            首页
-          </NuxtLink>
-        </nav>
-      </div>
-    </header>
+  <div class="min-h-screen flex flex-col">
+    <GlobalHeader />
 
-    <!-- 业务页面内容渲染在这里 -->
-    <main class="flex-1 mx-auto w-full max-w-7xl p-4">
-      <slot />
-    </main>
+    <!-- 左右两栏：左侧定宽 Sidebar，右侧 flex-1 内容区 -->
+    <div class="flex flex-1">
+      <aside class="w-62.5 border-r border-gray-200 dark:border-gray-700 px-2 pt-3">
+        <Sidebar />
+      </aside>
+      <main class="flex-1 bg-gray-50 dark:bg-gray-800 px-4 pt-5 overflow-auto">
+        <slot />
+      </main>
+    </div>
   </div>
 </template>
+
+<script setup lang="ts">
+</script>

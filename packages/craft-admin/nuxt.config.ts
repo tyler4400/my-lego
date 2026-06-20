@@ -16,6 +16,26 @@ export default defineNuxtConfig({
     '@my-lego/shared': fileURLToPath(new URL('../shared/src/index.ts', import.meta.url)),
   },
 
+  // app 是对整个应用程序的配置，代码中使用useRuntimeConfig()获取
+  // 其下的 head 对应 HTML 的 <head> 标签内容。可在这里全局设置第三方 CSS、字符编码、标题、meta 等。
+  app: {
+    // pageTransition: { name: 'page', mode: 'out-in' },
+    head: {
+      // 整页编码
+      charset: 'utf-8',
+      // 全局标题
+      title: '海豹乐高后台管理平台',
+      // meta 标签数组，可多个
+      meta: [
+        { name: 'description', content: '海豹乐高后台管理平台' },
+      ],
+      // link 标签数组：可加第三方 CSS 等
+      // link: [
+      //   { rel: 'stylesheet', href: 'https://cdn.example.com/some.css' },
+      // ],
+    },
+  },
+
   // 运行时配置：服务端私有 + 公开
   runtimeConfig: {
     jwt: {
