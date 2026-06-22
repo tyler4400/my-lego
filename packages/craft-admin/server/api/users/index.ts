@@ -1,0 +1,33 @@
+import type { SortOrder } from 'mongoose'
+
+interface Query {
+  currentPage: string
+  pageSize: string
+  orderBy: string
+  order: string
+}
+
+export default defineAuthResponseHandler(async (event) => {
+  const query = getQuery<Query>(event)
+  // query 里取出来都是 string，转成 number
+  const currentPage = Number(query.currentPage ?? 1)
+  const pageSize = Number(query.pageSize ?? 10)
+
+  const orderBy = (query.orderBy as string) ?? 'createdAt'
+  const order = (query.order as string) ?? 'desc'
+
+  const skip = (currentPage - 1) * pageSize
+  // MongoDB sort：{ 字段: 'asc' | 'desc' }
+  const sort = { [orderBy]: order as SortOrder }
+
+  const users = await UserSchema
+    .find({})
+    .skip(skip)
+    .limit(pageSize)
+    .sort(sort)
+    .select('username nickName type role createdAt updatedAt')
+    .lean()
+
+  const total = await UserSchema.countDocuments({})
+  return { list: users, total, currentPage, pageSize, orderBy, order }
+})

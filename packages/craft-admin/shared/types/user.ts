@@ -18,3 +18,5 @@ export interface UserProps {
   isLogin: boolean
   data: UserDataProps | null
 }
+
+export type UserListData = Pick<UserDataProps, 'username' | 'nickName' | 'type' | 'role' | 'createdAt' | 'updatedAt'>

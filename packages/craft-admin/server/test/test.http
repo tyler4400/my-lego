@@ -26,3 +26,6 @@ GET {{host}}:{{port}}/api/users/current
 
 ### 登出
 POST {{host}}:{{port}}/api/users/logout
+
+### 用户列表（auth）
+GET {{host}}:{{port}}/api/users
