@@ -47,12 +47,14 @@
 <script setup lang="ts">
 import type { PagedData } from '#shared/types/common'
 import type { TableColumn } from '@nuxt/ui'
-import { UBadge } from '#components'
+import { UBadge, UDropdownMenu } from '#components'
 import { getErrorMessage } from '#shared/utils'
+import { tryCatch } from '@my-lego/shared'
 import dayjs from 'dayjs'
 import { z } from 'zod'
 
 const toast = useToast()
+const me = useCurrentUser()
 
 const currentPage = ref(1)
 const pageSize = ref(10)
@@ -82,7 +84,7 @@ const onClear = () => {
 }
 
 // query 传响应式：currentPage 变化时 useFetch 自动重新请求（替代手写 watch + refresh）
-const { data, pending } = await useFetch<PagedData<UserListData>>('/api/users', {
+const { data, pending, refresh } = await useFetch<PagedData<UserListData>>('/api/users', {
   query: {
     currentPage,
     pageSize,
@@ -130,6 +132,33 @@ const sortableHeader = (column: string, label: string) => () => {
   })
 }
 
+const setUserRole = async (id: string, role: string) => {
+  const [, err] = await tryCatch($fetch(`/api/users/${id}`, { method: 'PATCH', body: { role } }))
+  if (err && import.meta.client) {
+    toast.add({ title: getErrorMessage(err), color: 'error' })
+    return
+  }
+  refresh()
+}
+
+const getRowItems = (row: UserListData) => {
+  if (row.role === 'admin') {
+    return [
+      {
+        label: '降级为普通用户',
+        onSelect: () => setUserRole(row._id, 'normal'),
+      },
+    ]
+  }
+  else {
+    return [
+      {
+        label: '升级为管理员',
+        onSelect: () => setUserRole(row._id, 'admin'),
+      },
+    ]
+  }
+}
 // v4 列定义：TanStack 的 accessorKey + header（不再是 {key,label}）
 const columns: TableColumn<UserListData>[] = [
   { accessorKey: 'username', header: '用户名' },
@@ -153,6 +182,36 @@ const columns: TableColumn<UserListData>[] = [
     accessorKey: 'updatedAt',
     header: sortableHeader('updatedAt', '更新时间'),
     cell: ({ row }) => dayjs(row.original.updatedAt).format('YYYY-MM-DD HH:mm:ss'),
+  },
+  {
+    id: 'action',
+    meta: {
+      class: {
+        td: 'text-right',
+      },
+    },
+    cell: ({ row }) => {
+      if (row.original._id === me.value.data?._id) {
+        return '您自己'
+      }
+      return h(
+        UDropdownMenu,
+        {
+          'content': {
+            align: 'end',
+          },
+          'items': getRowItems(row.original),
+          'aria-label': 'Actions dropdown',
+        },
+        () =>
+          h(UButton, {
+            'icon': 'i-lucide-ellipsis-vertical',
+            'color': 'neutral',
+            'variant': 'ghost',
+            'aria-label': 'Actions dropdown',
+          }),
+      )
+    },
   },
 ]
 </script>

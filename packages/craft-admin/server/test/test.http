@@ -29,3 +29,11 @@ POST {{host}}:{{port}}/api/users/logout
 
 ### 用户列表（auth）
 GET {{host}}:{{port}}/api/users
+
+### 设置用户的role
+PATCH {{host}}:{{port}}/api/users/6a338bb99f36fc781ce0230b
+Content-Type: application/json
+
+{
+  "role": "normal"
+}

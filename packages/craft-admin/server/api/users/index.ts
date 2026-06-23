@@ -29,7 +29,7 @@ export default defineAuthResponseHandler(async (event) => {
     .skip(skip)
     .limit(pageSize)
     .sort(sort)
-    .select('username nickName type role createdAt updatedAt')
+    .select('username nickName type role createdAt updatedAt') // lean() 默认含 _id
     .lean()
 
   const total = await UserSchema.countDocuments(findCondition)
