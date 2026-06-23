@@ -23,6 +23,7 @@
 </template>
 
 <script setup lang="ts">
+import { getErrorMessage } from '#shared/utils'
 // 关键：通过 definePageMeta 切换到 empty 布局
 import { userLoginSchema } from '#shared/validators/user'
 import { toTypedSchema } from '@vee-validate/zod'
@@ -39,6 +40,7 @@ const { values, handleSubmit, isSubmitting, meta } = useForm({
   // initialValues: {}
 })
 
+const toast = useToast()
 const currentUser = useCurrentUser()
 
 // handleSubmit 包裹真正的提交逻辑：校验通过后才会调到回调
@@ -57,6 +59,9 @@ const handleLogin = handleSubmit(async () => {
     navigateTo('/')
   }
   catch (error) {
+    if (import.meta.client) {
+      toast.add({ title: getErrorMessage(error), color: 'error' })
+    }
     console.error('登录失败', error)
   }
 })

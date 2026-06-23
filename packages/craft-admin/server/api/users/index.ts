@@ -5,6 +5,7 @@ interface Query {
   pageSize: string
   orderBy: string
   order: string
+  keyword: string
 }
 
 export default defineAuthResponseHandler(async (event) => {
@@ -20,14 +21,17 @@ export default defineAuthResponseHandler(async (event) => {
   // MongoDB sort：{ 字段: 'asc' | 'desc' }
   const sort = { [orderBy]: order as SortOrder }
 
+  const keyword = (query.keyword as string) ?? ''
+  const findCondition = keyword ? { username: { $regex: keyword } } : {}
+
   const users = await UserSchema
-    .find({})
+    .find(findCondition)
     .skip(skip)
     .limit(pageSize)
     .sort(sort)
     .select('username nickName type role createdAt updatedAt')
     .lean()
 
-  const total = await UserSchema.countDocuments({})
+  const total = await UserSchema.countDocuments(findCondition)
   return { list: users, total, currentPage, pageSize, orderBy, order }
 })

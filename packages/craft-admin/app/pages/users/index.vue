@@ -1,5 +1,37 @@
 <template>
+  <form class="mb-4 flex items-center gap-2" @submit="onSearch">
+    <UInput
+      v-model="keyword"
+      v-bind="keywordAttrs"
+      placeholder="按用户名搜索"
+      icon="i-lucide-search"
+      :color="errors.keyword ? 'error' : 'success'"
+      :ui="{ trailing: 'pe-1' }"
+      class="w-3xs"
+    >
+      <template v-if="keyword?.length" #trailing>
+        <UButton
+          color="neutral"
+          variant="link"
+          size="sm"
+          icon="i-lucide-circle-x"
+          aria-label="Clear input"
+          @click="keyword = ''"
+        />
+      </template>
+    </UInput>
+    <UButton type="submit" label="查询" />
+    <UButton
+      v-if="showClear"
+      label="重置"
+      color="neutral"
+      variant="outline"
+      @click="onClear"
+    />
+  </form>
+
   <UTable :data="data?.list ?? []" :columns="columns" :loading="pending" />
+
   <div class="mt-4 flex items-center justify-between">
     <UBadge color="neutral" variant="subtle">
       共 {{ data?.total ?? 0 }} 条
@@ -16,7 +48,11 @@
 import type { PagedData } from '#shared/types/common'
 import type { TableColumn } from '@nuxt/ui'
 import { UBadge } from '#components'
+import { getErrorMessage } from '#shared/utils'
 import dayjs from 'dayjs'
+import { z } from 'zod'
+
+const toast = useToast()
 
 const currentPage = ref(1)
 const pageSize = ref(10)
@@ -25,16 +61,45 @@ const sort = ref<{ column: string, direction: 'asc' | 'desc' }>({
   direction: 'desc', // 默认按创建时间倒序（最新在前）
 })
 
+const searchSchema = z.object({ keyword: z.string().min(1) })
+const { handleSubmit, resetForm, defineField, errors } = useForm({
+  validationSchema: toTypedSchema(searchSchema),
+  initialValues: { keyword: '' },
+})
+const [keyword, keywordAttrs] = defineField('keyword')
+// 关键：用单独的 searchText 触发请求，而不是直接用 keyword（v-model 会一直变）
+const searchText = ref('')
+const onSearch = handleSubmit((values) => {
+  // 验证通过才更新 searchText（同时改两个 ref，useFetch 会合并成一次请求）
+  searchText.value = values.keyword
+  currentPage.value = 1 // 搜索回到第一页
+})
+const showClear = computed(() => searchText.value !== '')
+const onClear = () => {
+  searchText.value = ''
+  currentPage.value = 1
+  resetForm() // 清空表单 + 错误状态
+}
+
 // query 传响应式：currentPage 变化时 useFetch 自动重新请求（替代手写 watch + refresh）
 const { data, pending } = await useFetch<PagedData<UserListData>>('/api/users', {
   query: {
     currentPage,
     pageSize,
+    keyword: computed(() => searchText.value),
     // computed：sort 变化时 query 变化 → 自动 refetch
     order: computed(() => sort.value.direction),
     orderBy: computed(() => sort.value.column),
   },
   headers: useRequestHeaders(['cookie']),
+  onResponseError({ response }) {
+    if (import.meta.client) {
+      toast.add({ title: getErrorMessage(response._data), color: 'error' })
+    }
+    if (response.status === 401) {
+      navigateTo('/login')
+    }
+  },
 })
 
 // h() 里用组件要 resolveComponent
