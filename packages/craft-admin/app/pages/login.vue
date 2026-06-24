@@ -40,7 +40,7 @@ definePageMeta({
   // layoutTransition: { name: 'layout', mode: 'out-in' },
 })
 
-const { values, handleSubmit, isSubmitting, meta } = useForm({
+const { values, handleSubmit, isSubmitting } = useForm({
   validationSchema: toTypedSchema(userLoginSchema),
   // initialValues: {}
 })
