@@ -17,8 +17,13 @@
       >
         {{ isSubmitting ? 'Loading...' : '登录' }}
       </button>
+      <p class="text-sm text-gray-500">
+        没有账户？
+        <NuxtLink to="/signup" class="underline">
+          立即注册
+        </NuxtLink>
+      </p>
     </form>
-    <pre>{{ meta }}</pre>
   </div>
 </template>
 

@@ -18,10 +18,9 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: '该用户不存在或者密码错误' })
   }
 
-  // 以后还要改为仅admin角色才可以登录
+  // 仅admin角色才可以登录
   if (user.role !== 'admin') {
-    console.warn('非admin用户。以后还要改为仅admin角色才可以登录')
-    throw createError({ statusCode: 404, statusMessage: '非admin用户，不可以访问' })
+    throw createError({ statusCode: 404, statusMessage: '仅限admin用户访问，请联系管理员' })
   }
 
   // 只把关键信息放进 token（不要塞整个 user）
